@@ -5,7 +5,6 @@
  */
 
 import home from '../../index/component/index';
-import list from '../../index/component/list';
 
 export const routeConfig = [
     {
@@ -15,9 +14,5 @@ export const routeConfig = [
     {
         name: 'home',
         path: home
-    },
-    {
-        name: 'list',
-        path: list
     }
 ];
