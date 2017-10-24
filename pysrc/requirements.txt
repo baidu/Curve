@@ -1,0 +1,4 @@
+Flask-SQLAlchemy==2.2
+Flask-RESTful==0.3.6
+Flask-Cors==3.0.3
+jsonschema==2.6.0

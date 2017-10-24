@@ -1,0 +1,20 @@
+{
+  "success": true,
+  "message": "xxx",
+  "data": {
+    "data": [
+      {
+        "text": "11",
+        "type": "1"
+      },
+      {
+        "text": "22",
+        "type": "2"
+      },
+      {
+        "text": "33",
+        "type": "3"
+      }
+    ]
+  }
+}

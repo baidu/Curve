@@ -1,0 +1,273 @@
+{
+  "success": true,
+  "message": "xxx",
+  "data": {
+    "data": {
+      "yAxis": [0, 180],
+      "trends":[
+        {
+          "name": "base line",
+          "type": "line",
+          "data": [
+            [155.8, 10],
+            [157.0, 13],
+            [159.5, 34],
+            [161.2, 43],
+            [167.5, 22],
+            [168.5, 33],
+            [177.5, 2],
+            [187.5, 44],
+            [197.5, 1],
+            [207.5, 0]
+          ]
+        },
+        {
+          "name": "label line",
+          "type": "line",
+          "data": [
+            [155.8, null],
+            [157.0, null],
+            [159.5, 34],
+            [161.2, 43],
+            [167.5, 22],
+            [168.5, null],
+            [177.5, 2],
+            [187.5, 44],
+            [197.5, 1],
+            [207.5, null]
+          ]
+        },
+        {
+          "name": "Weekly ratio",
+          "type": "line",
+          "data": [
+            [
+              155.8,
+              13.6
+            ],
+            [
+              157.0,
+              43.0
+            ],
+            [
+              159.5,
+              29.2
+            ],
+            [
+              161.2,
+              21.6
+            ],
+            [
+              167.5,
+              79.0
+            ],
+            [
+              168.5,
+              50.0
+            ],
+            [
+              177.5,
+              70.0
+            ],
+            [
+              187.5,
+              50.0
+            ],
+            [
+              197.5,
+              90.0
+            ],
+            [
+              207.5,
+              12.0
+            ]
+          ]
+        },
+        {
+          "name": "Reference interval",
+          "type": "arearange",
+          "data": [
+            [155.8, 0.6, 28],
+            [157.0, 13.0, 66],
+            [159.5, 9.2, 60],
+            [161.2, 1.6, 51],
+            [167.5, 49.0, 101],
+            [168.5, 20.0, 90],
+            [177.5, 40.0, 100],
+            [187.5, 10.0, 80],
+            [197.5, 30.0, 120],
+            [207.5, 0.0, 52]
+          ]
+        },
+        {
+          "name": "Abnormal annotation 1",
+          "type": "area",
+          "data": [
+            [155.8, null],
+            [157.0, null],
+            [159.5, null],
+            [161.2, 180],
+            [167.5, 180],
+            [168.5, null],
+            [177.5, null],
+            [187.5, null],
+            [197.5, 180],
+            [207.5, 180]
+          ]
+        },
+        {
+          "name": "Abnormal annotation 2",
+          "type": "area",
+          "data": [
+            [155.8, null],
+            [157.0, null],
+            [159.5, null],
+            [161.2, null],
+            [167.5, null],
+            [168.5, null],
+            [177.5, 180],
+            [187.5, 180],
+            [197.5, 180],
+            [207.5, null]
+          ]
+        },
+        {
+          "name": "Abnormal annotation 3",
+          "type": "area",
+          "data": [
+            [155.8, 180],
+            [157.0, 180],
+            [159.5, null],
+            [161.2, null],
+            [167.5, null],
+            [168.5, null],
+            [177.5, null],
+            [187.5, null],
+            [197.5, null],
+            [207.5, null]
+          ]
+        }
+      ],
+      "bands": [
+        {
+          "bands": [
+            {
+              "nextTime": {
+                "duration": {
+                  "start": 1,
+                  "end": 1
+                },
+                "show": {
+                  "start": 1,
+                  "end": 1
+                }
+              },
+              "currentTime": {
+                "duration": {
+                  "start": 1,
+                  "end": 1
+                },
+                "show": {
+                  "start": 1,
+                  "end": 1
+                }
+              },
+              "reliablity": 1,
+              "preTime": {
+                "duration": {
+                  "start": 1,
+                  "end": 1
+                },
+                "show": {
+                  "start": 1,
+                  "end": 1
+                }
+              },
+              "bandNo": 1,
+              "bandCount": 2,
+              "index": [3, 4]
+            },
+            {
+              "nextTime": {
+                "duration": {
+                  "start": 2,
+                  "end": 2
+                },
+                "show": {
+                  "start": 2,
+                  "end": 2
+                }
+              },
+              "currentTime": {
+                "duration": {
+                  "start": 2,
+                  "end": 2
+                },
+                "show": {
+                  "start": 2,
+                  "end": 2
+                }
+              },
+              "reliablity": 2,
+              "preTime": {
+                "duration": {
+                  "start": 2,
+                  "end": 2
+                },
+                "show": {
+                  "start": 2,
+                  "end": 2
+                }
+              },
+              "bandNo": 2,
+              "bandCount": 4,
+              "index": [8, 9]
+            }
+          ],
+          "name": "Abnormal annotation 1"
+        },
+        {
+          "bands": [
+            {
+              "nextTime": {
+                "duration": {
+                  "start": 0,
+                  "end": 0
+                },
+                "show": {
+                  "start": 0,
+                  "end": 0
+                }
+              },
+              "currentTime": {
+                "duration": {
+                  "start": 0,
+                  "end": 0
+                },
+                "show": {
+                  "start": 0,
+                  "end": 0
+                }
+              },
+              "reliablity": 0,
+              "preTime": {
+                "duration": {
+                  "start": 0,
+                  "end": 0
+                },
+                "show": {
+                  "start": 0,
+                  "end": 0
+                }
+              },
+              "bandNo": 1,
+              "bandCount": 2,
+              "index": [6, 7, 8]
+            }
+          ],
+          "name": "Abnormal annotation 2"
+        }
+      ]
+    }
+  }
+}

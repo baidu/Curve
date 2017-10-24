@@ -1,0 +1,28 @@
+{
+    "message": "",
+    "success": true,
+    "data": [
+        {
+            "hna": ["96%", true],
+            "beijing": ["96%", false],
+            "tucheng": "0.00%",
+            "shanghai": "Not deployed",
+            "nanjing": "97.88%",
+            "cluster": "wwwac",
+            "hangzhou": "97.43%",
+            "hnb": "99.06%",
+            "date": "2017080319"
+        },
+        {
+            "hna": "96.84%",
+            "beijing": "100.00%",
+            "tucheng": "100.00%",
+            "shanghai": "Not deployed",
+            "nanjing": "97.89%",
+            "cluster": "www_da_qt",
+            "hangzhou": "100.00%",
+            "hnb": "97.87%",
+            "date": "2017080319"
+        }
+    ]
+}

@@ -1,0 +1,510 @@
+swagger: '2.0'
+info:
+  title: Web API for Curve
+  description: Web API for Curve, which is a label tool for Time-series data
+  version: 0.1.2
+host: ''
+schemes:
+  - https
+  - http
+basePath: /v1
+consumes:
+  - application/form-data
+produces:
+  - application/json
+paths:
+  '/menus':
+    get:
+      summary: get operation list
+      tags:
+        - menu
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/MenuResponse'
+  '/datas':
+    get:
+      summary: get data list
+      tags:
+        - data
+      description:
+      parameters:
+        - name: pattern
+          in: query
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/DataListResponse'
+  '/data/{dataName}':
+    post:
+      summary: upload data
+      tags:
+        - data
+      consumes:
+        - multipart/form-data
+      parameters:
+        - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/file'
+      responses:
+        '201':
+          description: OK
+          headers:
+            Location:
+              description: download uri
+              type: string
+          schema:
+            $ref: '#/definitions/DataMetaResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/CommonResponse'
+    get:
+      summary: download data
+      tags:
+        - data
+      parameters:
+        - $ref: '#/parameters/dataName'
+      produces:
+        - multipart/form-data
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: file
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+    put:
+      summary: data operation
+      tags:
+        - menu
+      description: ''
+      parameters:
+        - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/startTime'
+        - $ref: '#/parameters/endTime'
+        - $ref: '#/parameters/action'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/CommonResponse'
+    delete:
+      summary: delete data
+      tags:
+        - data
+      description: ''
+      parameters:
+        - $ref: '#/parameters/dataName'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '405':
+          description: Not Acceptable
+          schema:
+            $ref: '#/definitions/CommonResponse'
+  '/data/{dataName}/curves':
+    get:
+      summary: get raw, ref, label data and bands in given period
+      tags:
+        - trend
+        - label
+      description: ''
+      parameters:
+        - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/startTime'
+        - $ref: '#/parameters/endTime'
+        - name: bandName
+          in: query
+          type: string
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/TrendResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+  '/data/{dataName}/thumb':
+    get:
+      summary: get sample data for thumb
+      tags:
+        - trend
+      parameters:
+        - $ref: '#/parameters/dataName'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/ThumbResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+  '/data/{dataName}/label':
+    put:
+      summary: mark normal or abnormal
+      tags:
+        - label
+      parameters:
+        - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/startTime'
+        - $ref: '#/parameters/endTime'
+        - $ref: '#/parameters/label'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '422':
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/CommonResponse'
+  '/data/{dataName}/band/{bandName}':
+    get:
+      summary: get band
+      tags:
+        - band
+      description: ''
+      parameters:
+        - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/bandName'
+        - name: startTime
+          description: ms
+          in: query
+          type: integer
+          format: int64
+          default: 0
+        - name: endTime
+          description: ms
+          in: query
+          type: integer
+          format: int64
+          default: 0
+        - $ref: '#/parameters/bandOrder'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/BandResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+    delete:
+      summary: delete band
+      tags:
+        - band
+      description: ''
+      parameters:
+        - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/bandName'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+
+parameters:
+  dataName:
+    name: dataName
+    in: path
+    required: true
+    type: string
+  file:
+    description: csv file with <timestamp, value, label>
+    name: file
+    in: formData
+    type: file
+  bandName:
+    name: bandName
+    in: path
+    required: true
+    type: string
+  startTime:
+    description: ms
+    name: startTime
+    in: query
+    required: true
+    type: integer
+    format: int64
+  endTime:
+    description: ms
+    name: endTime
+    in: query
+    required: true
+    type: integer
+    format: int64
+  action:
+    description: operation name
+    name: action
+    in: query
+    required: true
+    type: string
+  label:
+    name: label
+    in: query
+    required: true
+    type: integer
+    format: int64
+    enum:
+      - 0
+      - 1
+      - -1
+  bandOrder:
+    name: order
+    in: query
+    type: string
+    enum:
+      - time
+      - reliability
+    default: time
+definitions:
+  Action:
+    properties:
+      name:
+        type: string
+        enum:
+          - 'Mark Normal'
+      action:
+        type: string
+        enum:
+          - 'cancel_label'
+  Time:
+    description: ms
+    type: integer
+    format: int64
+  TimeSlot:
+    required:
+      - start
+      - end
+    properties:
+      start:
+        $ref: '#/definitions/Time'
+      end:
+        $ref: '#/definitions/Time'
+  Meta:
+    required:
+      - id
+      - name
+      - uri
+      - time
+      - period
+      - labelRatio
+    properties:
+      id:
+        type: integer
+        format: int64
+      name:
+        type: string
+      uri:
+        description: download uri
+        type: string
+      time:
+        $ref: '#/definitions/TimeSlot'
+      period:
+        required:
+          - length
+          - ratio
+        properties:
+          length:
+            type: integer
+            format: int64
+          ratio:
+            type: number
+            format: float
+      labelRatio:
+        type: number
+        format: float
+      createTime:
+        $ref: '#/definitions/Time'
+      updateTime:
+        $ref: '#/definitions/Time'
+  Trend:
+    required:
+      - name
+      - type
+      - data
+    properties:
+      name:
+        type: string
+      type:
+        type: string
+      data:
+        type: array
+        xml:
+          name: point
+          wrapped: true
+        items:
+          type: array
+          xml:
+            name: value
+            wrapped: true
+          minItems: 2
+          maxItems: 3
+          items:
+            type: number
+  BandTime:
+    required:
+      - duration
+      - show
+    properties:
+      duration:
+        $ref: '#/definitions/TimeSlot'
+      show:
+        $ref: '#/definitions/TimeSlot'
+  BandItems:
+    type: array
+    xml:
+      name: band
+      wrapped: true
+    items:
+      required:
+        - bandNo
+        - bandCount
+        - currentTime
+        - reliability
+      properties:
+        bandNo:
+          type: integer
+          format: int64
+        bandCount:
+          type: integer
+          format: int64
+        currentTime:
+          $ref: '#/definitions/BandTime'
+        preTime:
+          $ref: '#/definitions/TimeSlot'
+        nextTime:
+          $ref: '#/definitions/TimeSlot'
+        reliability:
+          type: number
+          format: float
+  BandCategory:
+    required:
+      - name
+      - bands
+    properties:
+      name:
+        type: string
+      bands:
+        $ref: '#/definitions/BandItems'
+  CommonResponse:
+    required:
+      - msg
+      - server
+      - traceId
+    properties:
+      msg:
+        type: string
+      server:
+        type: string
+      traceId:
+        type: string
+  MenuResponse:
+    required:
+      - data
+    allOf:
+      - $ref: '#/definitions/CommonResponse'
+      - properties:
+          data:
+            type: array
+            xml:
+              name: menu
+              wrapped: true
+            items:
+              $ref: '#/definitions/Action'
+  DataMetaResponse:
+    required:
+      - data
+    allOf:
+      - $ref: '#/definitions/CommonResponse'
+      - properties:
+          data:
+            $ref: '#/definitions/Meta'
+  DataListResponse:
+    required:
+      - data
+    allOf:
+      - $ref: '#/definitions/CommonResponse'
+      - properties:
+          data:
+            type: array
+            xml:
+              name: meta
+              wrapped: true
+            items:
+              $ref: '#/definitions/Meta'
+  TrendResponse:
+    required:
+      - data
+    allOf:
+      - $ref: '#/definitions/CommonResponse'
+      - properties:
+          data:
+            required:
+              - trends
+              - bands
+              - yAxis
+            properties:
+              trends:
+                type: array
+                items:
+                  $ref: '#/definitions/Trend'
+              bands:
+                type: array
+                items:
+                  $ref: '#/definitions/BandCategory'
+              yAxis:
+                type: array
+                xml:
+                  name: value
+                  wrapped: true
+                minItems: 2
+                maxItems: 2
+                items:
+                  type: number
+                  format: float
+  ThumbResponse:
+    required:
+      - data
+    allOf:
+      - $ref: '#/definitions/CommonResponse'
+      - properties:
+          data:
+            $ref: '#/definitions/Trend'
+  BandResponse:
+    required:
+      - data
+    allOf:
+      - $ref: '#/definitions/CommonResponse'
+      - properties:
+          data:
+            $ref: '#/definitions/BandItems'

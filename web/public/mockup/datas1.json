@@ -1,0 +1,8 @@
+{
+  "msg": "string",
+  "traceId": "string",
+  "data": [
+
+  ],
+  "server": "string"
+}

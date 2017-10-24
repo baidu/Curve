@@ -1,0 +1,39 @@
+{
+  "msg": "string",
+  "traceId": "string",
+  "data": [
+    {
+      "updateTime": 0,
+      "name": "string1",
+      "createTime": 0,
+      "uri": "string",
+      "period": {
+        "length": 0,
+        "ratio": 0.0830
+      },
+      "labelRatio": 0.0830,
+      "time": {
+        "start": 0,
+        "end": 0
+      },
+      "id": 0
+    },
+    {
+      "updateTime": 0,
+      "name": "string2",
+      "createTime": 0,
+      "uri": "string",
+      "period": {
+        "length": 0,
+        "ratio": 0.0130
+      },
+      "labelRatio": 0.0130,
+      "time": {
+        "start": 0,
+        "end": 0
+      },
+      "id": 0
+    }
+  ],
+  "server": "string"
+}
