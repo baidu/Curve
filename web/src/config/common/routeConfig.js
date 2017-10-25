@@ -1,7 +1,7 @@
 /**
  * @file Routing configuration
  *
- * @author mohaiyan
+ * @author cuiyuan
  */
 
 import home from '../../index/component/index';
