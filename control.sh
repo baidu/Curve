@@ -18,6 +18,7 @@ help() {
 
 start() {
     cd ${G_SOURCEROOT}
+    mkdir -p ${G_SOURCEROOT}/log
     source ${G_VENV}
     uwsgi uwsgi.ini
 }
