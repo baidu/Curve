@@ -15,7 +15,7 @@ help() {
 # TODO: check before operation
 
 start() {
-    [ -e "${G_SOURCEROOT}/curve/web" ] || build.sh
+    [ -e "${G_SOURCEROOT}/curve/web" ] || ./build.sh
     cd ${G_SOURCEROOT}
     mkdir -p ${G_SOURCEROOT}/log
     source ${G_VENV}
@@ -29,7 +29,7 @@ stop() {
 }
 
 reload() {
-    [ -e "${G_SOURCEROOT}/curve/web" ] || build.sh
+    [ -e "${G_SOURCEROOT}/curve/web" ] || ./build.sh
     cd ${G_SOURCEROOT}
     source ${G_VENV}
     uwsgi --reload uwsgi.pid
