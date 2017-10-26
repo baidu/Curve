@@ -1,6 +1,6 @@
 /**
  * @file response
- * @author mohaiyan
+ * @author cuiyuan
  */
 
 import './index.less';

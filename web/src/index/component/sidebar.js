@@ -1,6 +1,6 @@
 /**
  * @file sidebar
- * @author mohaiyan
+ * @author cuiyuan
  */
 import './sidebar.less';
 
