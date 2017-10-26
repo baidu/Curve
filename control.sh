@@ -7,8 +7,6 @@ readonly G_SOURCEROOT="${G_HOME}/pysrc"
 
 # TODO: check if built before
 
-source ${G_VENV}
-
 help() {
     echo "${0} <start|stop|reload|terminate>"
     exit 1
@@ -17,6 +15,7 @@ help() {
 # TODO: check before operation
 
 start() {
+    [ -e "${G_SOURCEROOT}/curve/web" ] || build.sh
     cd ${G_SOURCEROOT}
     mkdir -p ${G_SOURCEROOT}/log
     source ${G_VENV}
@@ -30,6 +29,7 @@ stop() {
 }
 
 reload() {
+    [ -e "${G_SOURCEROOT}/curve/web" ] || build.sh
     cd ${G_SOURCEROOT}
     source ${G_VENV}
     uwsgi --reload uwsgi.pid

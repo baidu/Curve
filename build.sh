@@ -32,8 +32,15 @@ mv ${BIN_DIR}/curve/static/v1 ${BIN_DIR}/curve/web/
 sed -i -e "s%/static/v1/swagger.json%/web/v1/swagger.json%g" ${BIN_DIR}/curve/web/swagger-ui/index.html
 rm -rf ${BIN_DIR}/curve/static
 pip install -r ${BIN_DIR}/requirements.txt
+pip install uwsgi
 
 # package
-echo "build done, usage:"
-echo "1. cd ${BIN_DIR} && python -m curve"
-echo "2. pip install uWSGI && cd ${BIN_DIR} && uwsgi uwsgi.ini"
+if [ $? -ne 0 ]; then
+    echo "========================================"
+    echo "build uwsgi error, direct usage:"
+    echo "cd ${BIN_DIR} && python -m curve"
+else
+    echo "========================================"
+    echo "build done, usage:"
+    echo "./control.sh start"
+fi
