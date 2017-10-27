@@ -15,9 +15,10 @@ Curve is originally developed by Baidu and Tsinghua Netman Lab.
 Make sure bash, python2.7+ with pip and nodejs with npm is on your unix-like system, then run build script.
 
 ```bash
+# bash is required
 # python2.7+ is required
 # npm is required
-bash -x build.sh
+./build.sh
 ```
 
 Power Shell will be supported in future.
@@ -31,22 +32,17 @@ Server will blind 0.0.0.0:8080 by default, change port in configure file if nece
 ```modify port config in config.py```
 
 ```bash
-# TODO: add support for module, which is confict with baidu codestyle
-cp ${BIN_DIR}/curve/__init__.py ${BIN_DIR}/curve/__main__.py
 # run command
 # TODO: add command args support for config
 cd ${BIN_DIR} && python -m curve
 ```
-
-```maybe ```
 
 #### run with uwsgi
 
 ```modify port config in uwsgi.ini```
 
 ```bash
-pip install uWSGI
-cd ${BIN_DIR} && uwsgi uwsgi.ini
+./control.sh start
 ```
 
 ## test
@@ -57,5 +53,5 @@ cd ${BIN_DIR} && pytest
 
 ## plugin dir
 
-```curve/curve/v1/plugins```
+```pysrc/curve/v1/plugins```
 
