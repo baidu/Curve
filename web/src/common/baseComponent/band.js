@@ -148,7 +148,8 @@ export default class Band extends Component {
                     };
                     if (init && !index) {
                         style = {
-                            background: color
+                            background: color,
+                            opacity: 0.6
                         };
                     }
                     return (

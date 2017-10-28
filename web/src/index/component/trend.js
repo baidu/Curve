@@ -95,7 +95,8 @@ export default class Trend extends Component {
             let axis = chart && chart.xAxis[0].getExtremes();
             let min = axis && axis.min;
             let max = axis && axis.max;
-            let step = 200000000;
+            let step = 2000000;
+            // If there is no data and the minimum value is greater than or equal to the maximum value, the keyboard operation is no longer performed
             if (min + step <= max - step) {
                 if (t === 38 || t === 87) {
                     chart.xAxis[0].setExtremes(min + step, max - step);
@@ -266,9 +267,12 @@ export default class Trend extends Component {
             }
         }, 800);
 
-        // eventProxy.on('loadLatestTrend', name => {
-        //     self.setState();
-        // });
+        // Operation  menu
+        $('body').delegate('.label-opera', 'click', function (e) {
+            let startTime = $(this).attr('data-current-start-time');
+            let endTime = $(this).attr('data-current-end-time');
+            self.label(startTime, endTime);
+        });
     }
 
     // redraw trend
@@ -277,7 +281,7 @@ export default class Trend extends Component {
         let start = min;
         let end = max;
         let name = self.props.params.name;
-        let url = api.getTrend
+        let url = api.getTrendg
             + name
             + '/curves?'
             + 'startTime=' + start
@@ -353,6 +357,110 @@ export default class Trend extends Component {
             }
         }
         return selectedIndex;
+    }
+
+    label(start, end) {
+        const self = this;
+        const me = self.chart;
+        let originIndex1 = 0;
+        let name = self.props.params.name;
+        for (let i = 0; i < me.series.length; i++) {
+            if (me.series[i].name === 'base line') {
+                originIndex1 = i;
+                break;
+            }
+        }
+        let selectedIndex = [];
+        let series = me.options.series[originIndex1];
+        series.data.map((item, index) => {
+            if (item[0] >= parseInt(start, 10) && item[0] <= parseInt(end, 10)) {
+                selectedIndex.push(index);
+            }
+        });
+        selectedIndex = self.dealSelectedIndex(me, originIndex1, selectedIndex);
+        let finalAbnormalSelectedIndex = selectedIndex;
+        for (let n = 0; n < self.abnormalSelectedIndex.length; n++) {
+            if (selectedIndex.indexOf(self.abnormalSelectedIndex[n]) === -1) {
+                finalAbnormalSelectedIndex.push(self.abnormalSelectedIndex[n]);
+            }
+        }
+
+        self.abnormalSelectedIndex = finalAbnormalSelectedIndex;
+
+        self.abnormalSelectedIndex.sort(function (a, b) {
+            return a - b;
+        });
+
+        if (!window.selectedIndex[name]) {
+            window.selectedIndex[name] = [];
+        }
+        // To merge the subscripts of selected data points
+        let finalSelectedIndex = [];
+        finalSelectedIndex = self.abnormalSelectedIndex;
+        for (let m = 0; m < window.selectedIndex[name].length; m++) {
+            if (self.abnormalSelectedIndex.indexOf(window.selectedIndex[name][m]) === -1) {
+                finalSelectedIndex.push(window.selectedIndex[name][m]);
+            }
+        }
+
+        window.selectedIndex[name] = finalSelectedIndex;
+
+        window.selectedIndex[name].sort(function (a, b) {
+            return a - b;
+        });
+
+        let result = [];
+        let removeIndex = 0;
+        for (let i = 0; i < me.series.length; i++) {
+            if (me.series[i].color === 'red') {
+                removeIndex = i;
+                break;
+            }
+        }
+
+        for (let i = 0; i < series.data.length; i++) {
+            if (window.selectedIndex[name].indexOf(i) !== -1) {
+                result.push([series.data[i][0], series.data[i][1]]);
+            }
+            else {
+                result.push([series.data[i][0], null]);
+            }
+        }
+
+        me.series[removeIndex].remove();
+
+        let startTime = Math.round(start);
+        let endTime = Math.round(end);
+        let label = 1;
+        window.startTime = startTime;
+        window.endTime = endTime;
+        let url = api.labelTrend
+            + name + '/label'
+            + '?startTime=' + startTime
+            + '&endTime=' + endTime
+            + '&label=' + label;
+        axiosInstance.put(url).then(function (response) {
+            // add label line
+            me.addSeries({
+                name: 'label line',
+                data: result,
+                type: 'line',
+                lineWidth: 2,
+                color: 'red',
+                zIndex: 101,
+                showInLegend: false,
+                enableMouseTracking: true,
+                marker: {
+                    states: {
+                        hover: {
+                            enabled: true
+                        }
+                    }
+                }
+            }, false);
+            me.redraw();
+            self.abnormalSelectedIndex = [];
+        });
     }
 
     // Get the configuration of the trend graph
@@ -639,7 +747,7 @@ export default class Trend extends Component {
         // In two ways:
         // First: band, ie area, display tooltip;
         // Second: label line, display operation menu; base line does not display the operation menu;
-        let tooltipFormatterFunction = function () {
+        let tooltipFormatterFunction = function (e) {
             const me = this;
             if (this.series.userOptions.type === 'area') {
                 let tooltip = '';
@@ -649,6 +757,7 @@ export default class Trend extends Component {
                 let band;
                 let pre;
                 let next;
+                let currentTime;
                 for (let i = 0; i < self.state.bands.length; i++) {
                     band = self.state.bands[i];
                     if (band.name === bandName) {
@@ -659,10 +768,17 @@ export default class Trend extends Component {
                                 total = band.bands[j].bandCount;
                                 pre = band.bands[j].preTime;
                                 next = band.bands[j].nextTime;
+                                currentTime = band.bands[j].currentTime;
                                 if (current === total && current === 1) {
                                     tooltip += '<div class="area-tooltip">'
                                         + '<div class="area-tooltip-content">'
-                                        + '<p class="label" style="cursor: pointer; color: #388ff7;">Label</p>'
+                                        + '<p class="label-opera label" '
+                                        + 'style="cursor: pointer; color: #388ff7;" '
+                                        + 'data-current-start-time="'
+                                        + currentTime.duration.start + '" '
+                                        + 'data-current-end-time="'
+                                        + currentTime.duration.end
+                                        + '">Label</p>'
                                         + '<div class="num-tooltip">'
                                         + '<span class="current-tooltip">'
                                         + current
@@ -678,7 +794,13 @@ export default class Trend extends Component {
                                 else if (current < total && current === 1) {
                                     tooltip += '<div class="area-tooltip">'
                                         + '<div class="area-tooltip-content">'
-                                        + '<p class="label" style="cursor: pointer; color: #388ff7;">Label</p>'
+                                        + '<p class="label-opera label" '
+                                        + 'style="cursor: pointer; color: #388ff7;" '
+                                        + 'data-current-start-time="'
+                                        + currentTime.duration.start
+                                        + '" data-current-end-time="'
+                                        + currentTime.duration.end
+                                        + '">Label</p>'
                                         + '<div class="num-tooltip">'
                                         + '<span class="current-tooltip">'
                                         + current
@@ -703,7 +825,13 @@ export default class Trend extends Component {
                                 else if (current === total && current !== 1) {
                                     tooltip += '<div class="area-tooltip">'
                                         + '<div class="area-tooltip-content">'
-                                        + '<p class="label" style="cursor: pointer; color: #388ff7;">Label</p>'
+                                        + '<p class="label-opera label" '
+                                        + 'style="cursor: pointer; color: #388ff7;" '
+                                        + 'data-current-start-time="'
+                                        + currentTime.duration.start
+                                        + '" data-current-end-time="'
+                                        + currentTime.duration.end
+                                        + '">Label</p>'
                                         + '<div class="num-tooltip">'
                                         + '<i class="anticon anticon-caret-left load-trend" '
                                         + 'style="cursor: pointer; color: #388ff7" '
@@ -728,7 +856,13 @@ export default class Trend extends Component {
                                 else {
                                     tooltip += '<div class="area-tooltip">'
                                         + '<div class="area-tooltip-content">'
-                                        + '<p class="label" style="cursor: pointer; color: #388ff7;">Label</p>'
+                                        + '<p class="label-opera label" '
+                                        + 'style="cursor: pointer; color: #388ff7;" '
+                                        + 'data-current-start-time="'
+                                        + currentTime.duration.start
+                                        + '" data-current-end-time="'
+                                        + currentTime.duration.end
+                                        + '">Label</p>'
                                         + '<div class="num-tooltip">'
                                         + '<i class="anticon anticon-caret-left load-trend"'
                                         + 'style="cursor: pointer; color: #388ff7" '
@@ -806,6 +940,7 @@ export default class Trend extends Component {
             lang: {
                 noData: 'No data found in the uploaded file, please check.'
             },
+            colors: ['#7cb5ec'],
             noData: {
                 style: {
                     fontWeight: 'bold',
@@ -948,7 +1083,8 @@ export default class Trend extends Component {
                     pointerEvents: 'auto'
                 },
                 useHTML: true,
-                formatter: tooltipFormatterFunction
+                formatter: tooltipFormatterFunction,
+                hideDelay: 5000
             },
             xAxis: {
                 crosshair: false,
@@ -998,6 +1134,9 @@ export default class Trend extends Component {
                     },
                     point: {
                         events: {}
+                    },
+                    tooltip: {
+                        hideDelay: 5000
                     }
                 },
                 area: {
@@ -1401,15 +1540,7 @@ export default class Trend extends Component {
         );
     }
 
-    label() {
-
-    }
-
     returnDataList(dataList) {
-        // this.props.returnDataList(dataList);
-        // this.setState({
-        //     dataList: dataList
-        // });
         eventProxy.trigger('refreshDataList', dataList);
     }
 
