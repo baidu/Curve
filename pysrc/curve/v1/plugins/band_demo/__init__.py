@@ -24,7 +24,7 @@ def init_band(api):
     for point_no, point in enumerate(sorted(line)[6:]):
         if point[1] > sum([
             x[1]
-            for x in line[point_no - 6:point_no - 1]
+            for x in line[point_no:point_no + 5]
             if x[1] is not None
         ]) * 0.21:
             if not abnormal_bands or len(abnormal_bands[-1]) == 2:

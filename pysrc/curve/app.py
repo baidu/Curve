@@ -11,6 +11,7 @@ from __future__ import absolute_import
 
 import flask
 from flask_cors import CORS
+from werkzeug.routing import BaseConverter
 
 from .config import INDEX_PAGE
 from .config import SQLITE_PATH
@@ -19,12 +20,19 @@ from .v1 import bp
 from .v1.models import db
 
 
+class RegexConverter(BaseConverter):
+    def __init__(self, url_map, *items):
+        super(RegexConverter, self).__init__(url_map)
+        self.regex = items[0]
+
+
 def create_app():
     """
     init app
     :return: flask app
     """
     app = flask.Flask(__name__, static_folder=STATIC_PATH)
+    app.url_map.converters['regex'] = RegexConverter
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + SQLITE_PATH
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
     db.init_app(app)
@@ -33,8 +41,8 @@ def create_app():
     app.register_blueprint(bp, url_prefix='/v1')
     CORS(app)
 
-    @app.route('/')
-    def index():
+    @app.route('/<regex("$"):url>')
+    def index(url=None):
         """
         redirect to index
         :return:
