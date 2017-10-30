@@ -10,7 +10,7 @@ Curve is originally developed by Baidu and Tsinghua Netman Lab.
 
 ## Getting Started
 
-### install dependency and build*
+### Install dependency and build*
 
 Make sure bash, python2.7+ with pip and nodejs with npm is on your unix-like system, then run build script.
 
@@ -23,11 +23,11 @@ Make sure bash, python2.7+ with pip and nodejs with npm is on your unix-like sys
 
 Power Shell will be supported in future.
 
-### run
+### Run
 
 Server will blind 0.0.0.0:8080 by default, change port in configure file if necessary.
 
-#### run as a python module
+#### Run as a python module
 
 ```modify port config in config.py```
 
@@ -37,7 +37,7 @@ Server will blind 0.0.0.0:8080 by default, change port in configure file if nece
 cd ${BIN_DIR} && python -m curve
 ```
 
-#### run with uwsgi
+#### Run with uwsgi
 
 ```modify port config in uwsgi.ini```
 
@@ -45,13 +45,13 @@ cd ${BIN_DIR} && python -m curve
 ./control.sh start
 ```
 
-## test
+## Test
 
 ```bash
 cd ${BIN_DIR} && pytest
 ```
 
-## plugin dir
+## Plugin dir
 
 ```pysrc/curve/v1/plugins```
 
