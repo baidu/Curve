@@ -2,6 +2,7 @@
 .DS_Store
 
 # web
+/web/package-lock.json
 /web/node_modules
 npm-debug.log*
 yarn-debug.log*
@@ -10,12 +11,15 @@ yarn-error.log*
 # data & test
 
 test.csv
-/pysrc/curve/curve.db
+*.pid
+*.db
+*.db-journal
 /pysrc/curve/web/
 /pysrc/curve/v1/routes.py
 /pysrc/curve/v1/schemas.py
 /pysrc/curve/v1/validators.py
 /pysrc/curve/static/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
