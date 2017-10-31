@@ -120,8 +120,8 @@ class DataDataname(Resource):
                 # TODO: sqlite3 with chinese field
                 band_name = urllib.quote(band_name)
                 bands = [
-                    Band(data_name, band_name, band_start, band_end, 0.5)
-                    for band_start, band_end in bands
+                    Band(data_name, band_name, band_start, band_end, 0.5, band_no + 1)
+                    for band_no, (band_start, band_end) in enumerate(bands)
                 ]
                 for band in bands:
                     db.session.add(band)
