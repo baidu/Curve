@@ -54,6 +54,10 @@ export default class Sidebar extends Component {
             $(this).find('.view-summary').css('top', top + 'px');
             $(this).find('.view-summary').show();
         });
+        // Hide the view-summary dom
+        $('.data-list-container').scroll(function () {
+            $('.data-list .view-summary').hide();
+        });
         // refresh the left side of the data list
         eventProxy.on('refreshDataList', dataList => {
             let list = self.state.dataList.concat(dataList);
@@ -258,10 +262,13 @@ export default class Sidebar extends Component {
                                 </div>
                             </div>
                             <div className="summary-content-footer">
-                                <Button className="opera-button">View</Button>
-                                <Button className="opera-button">Export</Button>
                                 <Button className="opera-button"
-                                        onClick={this.deleteData.bind(this, item.name)}
+                                        onClick={self.exportData.bind(self, item.name)}
+                                >
+                                    Export
+                                </Button>
+                                <Button className="opera-button"
+                                        onClick={self.deleteData.bind(self, item.name)}
                                 >
                                     Delete
                                 </Button>
@@ -275,8 +282,38 @@ export default class Sidebar extends Component {
 
     // delete data
     deleteData(name) {
-        // const self = this;
-        // axiosInstance.delete();
+        const self = this;
+        let url = api.deleteData + name;
+        axiosInstance.delete(url).then(function (response) {
+            const data = response.data;
+            let dataList = self.state.dataList;
+            let currentIndex;
+            let nextName;
+            for (let i = 0; i < dataList.length; i++) {
+                if (dataList[i].name === name) {
+                    currentIndex = i;
+                    nextName = dataList[i + 1] ? dataList[i + 1].name : dataList[0].name;
+                    dataList.splice(i, 1);
+                    break;
+                }
+            }
+            let isShow = self.state.isShow;
+            delete isShow[name];
+            let nextUrl =  '/home/' + nextName;
+            self.setState({
+                dataList,
+                isShow
+            });
+            // redirect new router
+            hashHistory.push(nextUrl);
+        });
+    }
+
+    // export data
+    exportData(name) {
+        const self = this;
+        let url = api.exportData + name;
+        window.open(url);
     }
 
     returnDataList(dataList) {

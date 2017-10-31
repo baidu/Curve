@@ -27,7 +27,11 @@ let apiConfig = {
     // upload data
     uploadData: COMMON_SERVER + '/v1/data/',
     // Get the data list
-    getDataList: COMMON_SERVER + '/v1/datas'
+    getDataList: COMMON_SERVER + '/v1/datas',
+    // delete data
+    deleteData: COMMON_SERVER + '/v1/data/',
+    // export data
+    exportData: COMMON_SERVER + '/v1/data/'
 };
 
 if (DEV) {

@@ -47,11 +47,18 @@ export default class UploadData extends Component {
                 self.setState({
                     fileName: file.name.split('.')[0]
                 });
+                // Check whether the uploaded file is renamed
+                // let dataList = self.state.dataList;
+                // dataList.map((item, index) => {
+                //     if (item.name === file.name.split('.')[0]) {
+                //         message.error(self.state.fileName + " upload failed...Can't upload file with the same name, please try again");
+                //         return false;
+                //     }
+                // });
             },
             onStart(file) {
                 // console.log('onStart', file.name);
                 // this.refs.inner.abort(file);
-                // const self = this;
                 self.setState({
                     dataList: self.props.dataList ? self.props.dataList : self.state.dataList,
                     fileName: file.name.split('.')[0]
@@ -80,11 +87,9 @@ export default class UploadData extends Component {
                 let url = '/home/' + result.data.name;
                 hashHistory.push(url);
                 eventProxy.trigger('loadTrend', list);
-                // eventProxy.trigger('loadLatestTrend', list);
             },
             onProgress(step, file, result) {
                 // console.log('onProgress', Math.round(step.percent), file.name);
-                // console.log(Math.round(step.percent))
                 let num = 1;
                 window.timeIds = setInterval(function () {
                     if (num === 1) {
@@ -111,10 +116,14 @@ export default class UploadData extends Component {
             },
             onError(err) {
                 // console.log('onError', err);
-                message.error(self.state.fileName + ' upload failed...please try again');
-                $('.trend').find('.loading-process').remove();
                 clearInterval(window.timeIds);
                 clearInterval(window.timeIds1);
+                $('.trend').find('.loading-process').remove();
+                if (err.status === '422' || err.status === 422) {
+                    message.error(self.state.fileName + " upload failed...Can't upload file with the same name, please try again");
+                    return false;
+                }
+                message.error(self.state.fileName + ' upload failed...please try again');
             }
         };
         let className = 'upload-button';

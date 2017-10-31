@@ -18,6 +18,7 @@ import Band from '../../common/baseComponent/band';
 const api = require('../../common/api').default.api;
 
 window.selectedIndex = {};
+window.labelObj = {};
 
 let key = {
     keyMap: {a: 65, d: 68, s: 83, w: 87, z: 90, spacebar: 32},
@@ -122,10 +123,8 @@ export default class Trend extends Component {
             let action = $(this).attr('data-action');
             let startTime = 0;
             let endTime = 0;
-            let currentPoint = window.currentOperaPoint;
-            let currentTime = currentPoint.target;
-            let currentTimeIndex = 0;
             let chart = window.chartTrend;
+            let currentX = window.currentX;
             let series;
             let startIndex;
             let endIndex;
@@ -135,76 +134,29 @@ export default class Trend extends Component {
                     return;
                 }
             });
-            let points = series.points;
             let xData = series.xData;
-            currentTimeIndex = window.currentIndex;
-            let startFlag = false;
-            let endFlag = false;
-            while (currentTimeIndex >= 0) {
-                if (points[currentTimeIndex].y) {
-                    currentTimeIndex--;
-                    if (currentTimeIndex === -1) {
-                        startTime = points[currentTimeIndex + 1].x;
-                        startFlag = true;
-                        break;
-                    }
-                }
-                else {
-                    startTime = points[currentTimeIndex + 1].x;
+            // get real startTime and endTime
+            for (let i = 0; i < window.labelObj[name].length; i++) {
+                if (currentX >= window.labelObj[name][i][0] && currentX <= window.labelObj[name][i][1]) {
+                    startTime = window.labelObj[name][i][0];
+                    endTime = window.labelObj[name][i][1];
                     break;
                 }
             }
-            currentTimeIndex = currentTime.index;
-            while (currentTimeIndex < points.length) {
-                if (points[currentTimeIndex].y) {
-                    currentTimeIndex++;
-                    if (currentTimeIndex === points.length) {
-                        endTime = points[currentTimeIndex - 1].x;
-                        endFlag = true;
-                        break;
-                    }
-                }
-                else {
-                    endTime = points[currentTimeIndex - 1].x;
-                    break;
-                }
-            }
-            xData.map((item, index) => {
-                if (item === startTime) {
-                    startIndex = index;
-                }
-                if (item === endTime) {
-                    endIndex = index;
-                }
-            });
+            // get real index of startTime and endTime
+            startIndex = xData.indexOf(startTime) + 1;
+            endIndex = xData.indexOf(endTime);
 
-            if (startFlag && endFlag) {
-                startIndex += 4;
-                endIndex += 4;
-            }
-            else if (startFlag && !endFlag) {
-                endIndex += 4;
-            }
-            else if (!startFlag && endFlag) {
-                startIndex += 4;
-            }
-            else {
-
-            }
-            // get final startTime and endTime
-            startTime = xData[startIndex];
-            endTime = xData[endIndex];
             let url = api.menuOpera
                 + name
                 + '?startTime=' + startTime
                 + '&endTime=' + endTime
                 + '&action=' + action;
+            // get current trend graph max and min
             let min = Math.round(chart.xAxis[0].min);
             let max = Math.round(chart.xAxis[0].max);
 
             axiosInstance.put(url).then(function (response) {
-                // redraw trend
-                self.redrawTrend(min, max);
                 // update selectedIndex
                 if (!window.selectedIndex[name]) {
                     window.selectedIndex[name] = [];
@@ -214,12 +166,14 @@ export default class Trend extends Component {
                     cancelIndex.push(i);
                 }
                 let finalResult = [];
-                for (let j = 0; j < window.selectedIndex.length; j++) {
-                    if (cancelIndex.indexOf(window.selectedIndex[j]) === -1) {
-                        finalResult.push(window.selectedIndex[j]);
+                for (let j = 0; j < window.selectedIndex[name].length; j++) {
+                    if (cancelIndex.indexOf(window.selectedIndex[name][j]) === -1) {
+                        finalResult.push(window.selectedIndex[name][j]);
                     }
                 }
-                window.selectedIndex = finalResult;
+                window.selectedIndex[name] = finalResult;
+                // redraw trend
+                self.redrawTrend(min, max);
             });
         });
         // Operation tooltip
@@ -281,7 +235,7 @@ export default class Trend extends Component {
         let start = min;
         let end = max;
         let name = self.props.params.name;
-        let url = api.getTrendg
+        let url = api.getTrend
             + name
             + '/curves?'
             + 'startTime=' + start
@@ -377,6 +331,16 @@ export default class Trend extends Component {
                 selectedIndex.push(index);
             }
         });
+
+        let xData = me.series[originIndex1].xData;
+        let startTime = xData[selectedIndex[0]];
+        let endTime = xData[selectedIndex[selectedIndex.length - 1]];
+
+        if (!window.labelObj[name]) {
+            window.labelObj[name] = [];
+        }
+        window.labelObj[name].push([startTime, endTime]);
+
         selectedIndex = self.dealSelectedIndex(me, originIndex1, selectedIndex);
         let finalAbnormalSelectedIndex = selectedIndex;
         for (let n = 0; n < self.abnormalSelectedIndex.length; n++) {
@@ -429,8 +393,6 @@ export default class Trend extends Component {
 
         me.series[removeIndex].remove();
 
-        let startTime = Math.round(start);
-        let endTime = Math.round(end);
         let label = 1;
         window.startTime = startTime;
         window.endTime = endTime;
@@ -653,6 +615,16 @@ export default class Trend extends Component {
                     selectedIndex.push(index);
                 }
             });
+
+            let xData = me.series[originIndex1].xData;
+            let startTime = xData[selectedIndex[0]];
+            let endTime = xData[selectedIndex[selectedIndex.length - 1]];
+
+            if (!window.labelObj[name]) {
+                window.labelObj[name] = [];
+            }
+            window.labelObj[name].push([startTime, endTime]);
+            
             selectedIndex = self.dealSelectedIndex(me, originIndex1, selectedIndex);
             let finalAbnormalSelectedIndex = selectedIndex;
             for (let n = 0; n < self.abnormalSelectedIndex.length; n++) {
@@ -705,8 +677,6 @@ export default class Trend extends Component {
 
             me.series[removeIndex].remove();
 
-            let startTime = Math.round(e.xAxis[0].min);
-            let endTime = Math.round(e.xAxis[0].max);
             let label = 1;
             window.startTime = startTime;
             window.endTime = endTime;
@@ -934,6 +904,7 @@ export default class Trend extends Component {
             window.currentOperaPoint = e;
             window.chartTrend = e.target.series.chart;
             window.currentIndex = e.target.index;
+            window.currentX = e.target.x;
         };
         // The configuration parameters required for the trend graph
         let options = {
@@ -1317,11 +1288,17 @@ export default class Trend extends Component {
                 }
             });
             let selectedIndex = [];
+            let tempStartTime;
+            let tempEndTime;
             trends.map((item, i) => {
                 if (item.name === 'base line') {
                     item.data = result;
                 }
                 if (item.name === 'label line') {
+                    if (!window.labelObj[name]) {
+                        window.labelObj[name] = [];
+                    }
+
                     item.data = resultLabel;
                     item.data.map((data, j) => {
                         if (data[1]) {
@@ -1340,6 +1317,19 @@ export default class Trend extends Component {
                         }
                     });
 
+                    let num = 0;
+                    for (let i = 0; i < selectedIndex.length; i++) {
+                        if (selectedIndex[i] + 1 === selectedIndex[i + 1]) {
+                            num++;
+                        }
+                        else {
+                            tempEndTime = resultLabel[selectedIndex[i]][0];
+                            tempStartTime = resultLabel[selectedIndex[i - num]][0];
+                            num = 0;
+                            window.labelObj[name].push([tempStartTime, tempEndTime]);
+                        }
+                    }
+
                     if (self.state.setExtremes) {
                         window.selectedIndex[name] = [];
                     }
@@ -1348,6 +1338,8 @@ export default class Trend extends Component {
                             window.selectedIndex[name] = [];
                         }
                     }
+
+
 
                     if (selectedIndex.length < window.selectedIndex[name].length) {
                         for (let m = 0; m < selectedIndex.length; m++) {
