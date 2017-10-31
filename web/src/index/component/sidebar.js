@@ -179,7 +179,7 @@ export default class Sidebar extends Component {
                     + item.period.length + 's'
                     + ' (' + (item.period.ratio * 100 + '').split('.')[0]
                     + '.'
-                    + (item.period.ratio * 100 + '').split('.')[1].substring(0, 2) + ')%';
+                    + (item.period.ratio * 100 + '').split('.')[1].substring(0, 4) + ')%';
             }
             else {
                 ratio = ''
@@ -189,10 +189,10 @@ export default class Sidebar extends Component {
                     + '00)%';
             }
             let labelRatio;
-            if ((item.labelRatio * 100 + '').split('.') > 1) {
+            if ((item.labelRatio * 100 + '').split('.').length > 1) {
                 labelRatio = (item.labelRatio * 100 + '').split('.')[0]
                     + '.'
-                    + (item.labelRatio * 100 + '').split('.')[1].substring(0, 2) + '%';
+                    + (item.labelRatio * 100 + '').split('.')[1].substring(0, 4) + '%';
             }
             else {
                 labelRatio = (item.labelRatio * 100 + '').split('.')[0]

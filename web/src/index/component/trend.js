@@ -1500,7 +1500,7 @@ export default class Trend extends Component {
                 + summary.period.length + 's'
                 + ' (' + (summary.period.ratio * 100 + '').split('.')[0]
                 + '.'
-                + (summary.period.ratio * 100 + '').split('.')[1].substring(0, 2) + ')%';
+                + (summary.period.ratio * 100 + '').split('.')[1].substring(0, 4) + ')%';
         }
         else {
             length = 'Interval: '
@@ -1510,10 +1510,10 @@ export default class Trend extends Component {
                 + '00)%';
         }
         let labelRatio;
-        if ((summary.labelRatio * 100 + '').split('.') > 1) {
+        if ((summary.labelRatio * 100 + '').split('.').length > 1) {
             labelRatio = (summary.labelRatio * 100 + '').split('.')[0]
                 + '.'
-                + (summary.labelRatio * 100 + '').split('.')[1].substring(0, 2) + '%';
+                + (summary.labelRatio * 100 + '').split('.')[1].substring(0, 4) + '%';
         }
         else {
             labelRatio = (summary.labelRatio * 100 + '').split('.')[0]
