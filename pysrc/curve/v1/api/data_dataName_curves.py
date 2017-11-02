@@ -63,7 +63,7 @@ class DataDatanameCurves(Resource):
         y_axis[0] = max(y_axis[0], y_axis_ref[0])
         y_axis = self.__y_axis_filter(y_axis)
         # get bands
-        bands, band_lines = self.__get_bands(data_service, start_time, end_time, line, y_axis)
+        bands, band_lines = self.__get_bands(plugin, data_service, start_time, end_time, line, y_axis)
         # make trends for web front-end
         trends = [raw_line] + [label_line] + ref_lines + band_lines
 
@@ -136,11 +136,13 @@ class DataDatanameCurves(Resource):
             })
         return ref_lines, y_axis
 
-    def __get_bands(self, data_service, start_time, end_time, line, y_axis):
+    def __get_bands(self, plugin, data_service, start_time, end_time, line, y_axis):
         bands = []
         band_lines = []
         band_names = db.session.query(db.distinct(Band.name)).all()
         period = data_service.get_meta().period
+        period = max(period, (end_time-start_time)/1000)
+        _, line = plugin('sampling', line, 1000)
         for band_name, in band_names:
             # render bands for colored square
             band_name = urllib.unquote(band_name.encode('utf-8'))
@@ -160,6 +162,8 @@ class DataDatanameCurves(Resource):
                 'type': 'area',
                 'data': s2ms(band_line)
             })
+            if len(band_items) > 100:
+                continue
             # band tooltip render
             for band_no, band in enumerate(band_items):
                 band_items[band_no] = {
