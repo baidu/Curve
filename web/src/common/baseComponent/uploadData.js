@@ -83,10 +83,19 @@ export default class UploadData extends Component {
                 $('.trend').find('.loading-process').remove();
                 clearInterval(window.timeIds);
                 clearInterval(window.timeIds1);
-                let list = self.props.returnDataList(dataList);
+                let list = [];
+                if (self.props.type === 'sidebar') {
+                    list = self.props.returnDataList(dataList);
+                }
+                else {
+                    list = dataList;
+                }
                 let url = '/home/' + result.data.name;
                 hashHistory.push(url);
-                eventProxy.trigger('loadTrend', list);
+                eventProxy.trigger('loadTrend', {
+                    list,
+                    type: self.props.type
+                });
             },
             onProgress(step, file, result) {
                 // console.log('onProgress', Math.round(step.percent), file.name);

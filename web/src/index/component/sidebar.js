@@ -6,7 +6,7 @@ import './sidebar.less';
 
 import React, {Component} from 'react';
 import {Link, hashHistory} from 'react-router';
-import {Button} from 'antd';
+import {Button, Icon} from 'antd';
 import {axiosInstance} from '../../tools/axiosInstance';
 import eventProxy from '../../tools/eventProxy';
 import UploadData from '../../common/baseComponent/uploadData';
@@ -63,6 +63,51 @@ export default class Sidebar extends Component {
             let list = self.state.dataList.concat(dataList);
             self.setState({
                 dataList: list
+            });
+        });
+        // confirm delete data
+        eventProxy.on('confirmDialog', name => {
+            let url = api.deleteData + name;
+            axiosInstance.delete(url).then(function (response) {
+                self.refs.overlayBlack.style.display = 'none';
+                self.refs.dialog.style.display = 'none';
+                const data = response.data;
+                let dataList = self.state.dataList;
+                let currentIndex;
+                let nextName;
+                if (dataList.length > 1) {
+                    for (let i = 0; i < dataList.length; i++) {
+                        if (dataList[i].name === name) {
+                            currentIndex = i;
+                            nextName = dataList[i + 1] ? dataList[i + 1].name : dataList[0].name;
+                            dataList.splice(i, 1);
+                            break;
+                        }
+                    }
+                }
+                else {
+                    nextName = '';
+                    dataList = [];
+                }
+                let isShow = self.state.isShow;
+                delete isShow[name];
+                let nextUrl =  '/home/' + nextName;
+                // redirect new router
+                hashHistory.push(nextUrl);
+                if (!dataList.length) {
+                    window.location.reload();
+                }
+            });
+        });
+
+        // open dialog
+        eventProxy.on('openDialog', obj => {
+            self.refs.overlayBlack.style.display = 'block';
+            self.refs.dialog.style.display = 'block';
+            self.setState({
+                dialogTitle: obj.title,
+                dialogContent: obj.content,
+                dialogName: obj.name
             });
         });
     }
@@ -144,7 +189,8 @@ export default class Sidebar extends Component {
         });
         self.setState({
             isShow,
-            top
+            top,
+            toggle: true
         });
         let showFlag = false;
         for (let key in isShow) {
@@ -168,7 +214,7 @@ export default class Sidebar extends Component {
         const self = this;
         let dataList;
         let html;
-        dataList = self.state.dataList;
+        dataList = self.state.dataList.length === 0 ? self.props.list : self.state.dataList;
         let isShow;
         html = dataList.map((item, i) => {
             let start = moment(item.time.start).format('YYYYMMDD');
@@ -211,12 +257,15 @@ export default class Sidebar extends Component {
                     className = '';
                 }
             }
-            if (self.state.dataList.length) {
-                if (self.props.params.name !== self.state.dataList[0].name) {
+            if (dataList.length) {
+                if (self.props.params.name !== dataList[0].name) {
                     className = '';
                 }
                 if (self.props.params.name === item.name) {
                     className = 'active';
+                }
+                else {
+                    className = '';
                 }
             }
             let link = '/home/' + item.name;
@@ -283,29 +332,10 @@ export default class Sidebar extends Component {
     // delete data
     deleteData(name) {
         const self = this;
-        let url = api.deleteData + name;
-        axiosInstance.delete(url).then(function (response) {
-            const data = response.data;
-            let dataList = self.state.dataList;
-            let currentIndex;
-            let nextName;
-            for (let i = 0; i < dataList.length; i++) {
-                if (dataList[i].name === name) {
-                    currentIndex = i;
-                    nextName = dataList[i + 1] ? dataList[i + 1].name : dataList[0].name;
-                    dataList.splice(i, 1);
-                    break;
-                }
-            }
-            let isShow = self.state.isShow;
-            delete isShow[name];
-            let nextUrl =  '/home/' + nextName;
-            self.setState({
-                dataList,
-                isShow
-            });
-            // redirect new router
-            hashHistory.push(nextUrl);
+        eventProxy.trigger('openDialog', {
+            title: 'Delete',
+            content: 'Are you sure you want to delete ' + name + '?',
+            name
         });
     }
 
@@ -318,15 +348,27 @@ export default class Sidebar extends Component {
 
     returnDataList(dataList) {
         const self = this;
-        let list = self.state.dataList.concat(dataList);
+        let list = self.state.dataList.length === 0 ? self.props.list.concat(dataList) : self.state.dataList.concat(dataList);
         self.setState({
             dataList: list
         });
         return list;
     }
 
+    dialogConfirm(name) {
+        const self = this;
+        eventProxy.trigger('confirmDialog', name);
+    }
+
+    dialogCancel(){
+        const self = this;
+        self.refs.overlayBlack.style.display = 'none';
+        self.refs.dialog.style.display = 'none';
+    }
+
     render() {
         let link = 'list';
+        let self = this;
         return (
             <div>
                 <div style={{position: 'relative', zIndex: '1'}}>
@@ -334,13 +376,28 @@ export default class Sidebar extends Component {
                         <span className="dataset">Data</span>
                         <Link to={link} className="link"><span className="show-all">Show All</span></Link>
                     </div>
-                    <UploadData returnDataList={dataList => this.returnDataList(dataList)}></UploadData>
+                    <UploadData returnDataList={dataList => this.returnDataList(dataList)}
+                                type="sidebar"
+                    ></UploadData>
                     <div className="data-list-container" style={{maxHeight: '500px', overflowY: 'auto'}}>
                         <ul className="data-list" style={{height: this.props.height + 'px'}}>
                             {this.renderDataList()}
                         </ul>
                     </div>
-
+                </div>
+                <div className="overlay-black" ref="overlayBlack" style={{display: 'none'}}></div>
+                <div className="dialog" ref="dialog" style={{display: 'none'}}>
+                    <div className="dialog-header">
+                        <div className="dialog-title">{this.state.dialogTitle}</div>
+                        <Icon type="close" className="dialog-close"></Icon>
+                    </div>
+                    <div className="dialog-body">
+                        <div className="dialog-content">{this.state.dialogContent}</div>
+                        <div className="dialog-footer">
+                            <button className="confirm operation-btn" ref="dialogConfirm" onClick={self.dialogConfirm.bind(self, self.state.dialogName)}>Delete</button>
+                            <button className="cancel operation-btn" ref="dialogCancel" onClick={self.dialogCancel.bind(self, self.state.dialogName)}>Cancel</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         );
