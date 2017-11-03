@@ -292,27 +292,25 @@ export default class Trend extends Component {
         });
 
         // loading trend graph
-        if (self.props.params.list && self.props.params.list.length) {
-            self.loadingTime = setInterval(function () {
-                let text = '';
-                if (num === 1) {
-                    text = 'The trend is loading, please wait' + '.';
+        self.loadingTime = setInterval(function () {
+            let text = '';
+            if (num === 1) {
+                text = 'The trend is loading, please wait' + '.';
+            }
+            else if (num === 2) {
+                text = 'The trend is loading, please wait' + '..';
+            }
+            else if (num === 3) {
+                text = 'The trend is loading, please wait' + '...';
+                num = 0;
+            }
+            num++;
+            if (self.props.params.list && self.props.params.list.length && self.state.loading) {
+                if (self.refs.loadingContainer) {
+                    self.refs.loadingContainer.innerHTML = text;
                 }
-                else if (num === 2) {
-                    text = 'The trend is loading, please wait' + '..';
-                }
-                else if (num === 3) {
-                    text = 'The trend is loading, please wait' + '...';
-                    num = 0;
-                }
-                num++;
-                if (self.props.params.list && self.props.params.list.length && self.state.loading) {
-                    if (self.refs.loadingContainer) {
-                        self.refs.loadingContainer.innerHTML = text;
-                    }
-                }
-            }, 800);
-        }
+            }
+        }, 800);
 
         // Operation  menu
         $('body').delegate('.label-opera', 'click', function (e) {
@@ -375,6 +373,58 @@ export default class Trend extends Component {
                     }
                 }
                 window.selectedIndex[name] = selectedIndex;
+            }
+        });
+
+        eventProxy.on('loadTrend', obj => {
+            let text = 'The trend is loading, please wait';
+            if (obj.list.length && self.state.loading) {
+                // Add trend loading tips
+                if (!self.refs.loadingContainer && self.refs.loadingTip) {
+                    self.refs.loadingTip.style.display = 'block';
+                    self.loadingTrendTipTime = setInterval(function () {
+                        if (num === 1) {
+                            text = 'The trend is loading, please wait' + '.';
+                        }
+                        else if (num === 2) {
+                            text = 'The trend is loading, please wait' + '..';
+                        }
+                        else if (num === 3) {
+                            text = 'The trend is loading, please wait' + '...';
+                            num = 0;
+                        }
+                        num++;
+                        if (self.refs.loadingTip) {
+                            self.refs.loadingTip.innerHTML = text;
+                        }
+                    }, 800);
+                }
+            }
+        });
+
+        eventProxy.on('loadingTip', () => {
+            let text = 'The trend is loading, please wait';
+            if (self.state.loading) {
+                // Add trend loading tips
+                if (!self.refs.loadingContainer && self.refs.loadingTip) {
+                    self.refs.loadingTip.style.display = 'block';
+                    self.loadingTipTime = setInterval(function () {
+                        if (num === 1) {
+                            text = 'The trend is loading, please wait' + '.';
+                        }
+                        else if (num === 2) {
+                            text = 'The trend is loading, please wait' + '..';
+                        }
+                        else if (num === 3) {
+                            text = 'The trend is loading, please wait' + '...';
+                            num = 0;
+                        }
+                        num++;
+                        if (self.refs.loadingTip) {
+                            self.refs.loadingTip.innerHTML = text;
+                        }
+                    }, 800);
+                }
             }
         });
     }
@@ -1001,8 +1051,8 @@ export default class Trend extends Component {
             colors: ['#7cb5ec'],
             noData: {
                 style: {
-                    fontWeight: 'bold',
-                    fontSize: '15px',
+                    fontWeight: 'normal',
+                    fontSize: '12px',
                     color: '#ccc'
                 }
             },
@@ -1415,8 +1465,13 @@ export default class Trend extends Component {
             options.series = trends;
             options.chart.width = self.getTrendWidth();
             clearInterval(self.loadingTime);
+            clearInterval(self.loadingTipTime);
+            clearInterval(self.loadingTrendTipTime);
             if (self.refs.loadingContainer) {
                 self.refs.loadingContainer.innerHTML = '';
+            }
+            if (self.refs.loadingTip) {
+                self.refs.loadingTip.style.display = 'none';
             }
             self.setState({
                 title: name,
@@ -1568,10 +1623,11 @@ export default class Trend extends Component {
 
     render() {
         const self = this;
+        let text = 'The trend is loading, please wait';
         if (self.props.params.list.length) {
             if (self.state.loading) {
                 return (
-                    <div className="loading-trend" ref="loadingContainer"></div>
+                    <div className="loading-trend" ref="loadingContainer">The trend is loading, please wait</div>
                 );
             }
             else {
@@ -1600,6 +1656,7 @@ export default class Trend extends Component {
                                    returnChart = {chart => this.returnChart(chart)}
                                    neverReflow={self.state.neverReflow}
                             />
+                            <div ref="loadingTip" className="loading-tip">{text}</div>
                         </div>
                     </div>
                 );
@@ -1615,6 +1672,7 @@ export default class Trend extends Component {
                                     type="trend"
                         ></UploadData>
                     </div>
+                    <div ref="loadingTip" className="loading-tip">{text}</div>
                 </div>
             );
         }
