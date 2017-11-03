@@ -10,40 +10,61 @@ Curve is originally developed by Baidu and Tsinghua Netman Lab.
 
 ## Getting Started
 
-### Install dependency and build*
+### Install dependencies and build*
 
-Make sure bash, python2.7+ with pip and nodejs with npm is on your unix-like system, then run build script.
+Make sure bash, `python2.7+ with pip` and `nodejs with npm` are already installed. Then run the build script. It will install all the dependenceis and build Curve. 
 
 ```bash
-# bash is required
-# python2.7+ is required
-# npm is required
 ./build.sh
 ```
 
-Power Shell will be supported in future.
-
-### Run
-
-Server will blind 0.0.0.0:8080 by default, change port in configure file if necessary.
-
-#### Run as a python module
-
-```modify port config in config.py```
-
-```bash
-# run command
-# TODO: add command args support for config
-cd ${BIN_DIR} && python -m curve
-```
-
-#### Run with uwsgi
-
-```modify port config in uwsgi.ini```
+### Run and stop
+Simply use control.sh to start or stop Curve.
 
 ```bash
 ./control.sh start
+./control.sh stop
 ```
+Server will blind 8080 by default, you can change it in `./pysrc/uwsgi.ini`.
+
+*If you pull updates from github, make sure to rebuild first*
+
+
+### Data format
+
+You can load a CSV file into Curve. The CSV should have the following format
+
+* First column is the timestamp
+* Second column is the value
+* Third column (optional) is the label. 0 for normal and 1 for abnormal.
+
+The header of CSV is optinal, like `timestamp,value,label`.  
+
+Some examples of valid CSV
+
+* With a header and the label column
+
+|timestamp|value|label|
+|---|---|---|
+|1476460800|2566.35|0|
+|1476460860|2704.65|0|
+|1476460920|2700.05|0|
+
+
+* Without the header
+ 
+|1476460800|2566.35|0|
+|---|---|---|
+|1476460860|2704.65|0|
+|1476460920|2700.05|0|
+
+* Without the header and the label colum
+
+|1476460800|2566.35|
+|---|---|
+|1476460860|2704.65|
+|1476460920|2700.05|
+
 
 ## Test
 

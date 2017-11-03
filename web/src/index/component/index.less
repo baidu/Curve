@@ -67,3 +67,79 @@
 .guide-page {
   width: 100%;
 }
+.overlay-black {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  opacity: 0.3;
+  z-index: 1;
+}
+.dialog {
+  width: 400px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-left: -200px;
+  margin-top: -200px;
+  z-index: 2;
+  .dialog-close {
+    font-size: 18px;
+    position: absolute;
+    top: 50%;
+    right: 20px;
+    margin-top: -9px;
+    color: #fff;
+    &:hover {
+      cursor: pointer;
+    }
+  }
+  .dialog-header {
+    position: relative;
+    height: 36px;
+    line-height: 36px;
+    background: #388ff7;
+    .dialog-title {
+      color: #fff;
+      margin-left: 20px;
+    }
+  }
+  .dialog-body {
+    background: #fff;
+    padding-bottom: 30px;
+  }
+  .dialog-content {
+    height: 100px;
+    text-align: center;
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 30px;
+    padding-bottom: 30px;
+  }
+  .dialog-footer {
+    text-align: center;
+    .operation-btn {
+      border-radius: 1px;
+      border: 0 none;
+      color: #fff;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    .confirm {
+      background:#f36754;
+      border-radius:1px;
+      width:60px;
+      height:24px;
+      margin-right: 20px;
+    }
+    .cancel {
+      background:#388ff7;
+      border-radius:1px;
+      width:60px;
+      height:24px;
+    }
+  }
+}

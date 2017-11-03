@@ -11,8 +11,6 @@ import Sidebar from './sidebar';
 import Trend from './trend';
 import eventProxy from '../../tools/eventProxy';
 import guidePage from '../../common/image/guide-page.png';
-
-
 import $ from 'jquery';
 
 const {Sider, Content} = Layout;
@@ -28,7 +26,10 @@ export default class Home extends Component {
             foldMenu: 'block',
             unFoldMenu: 'none',
             list: [],
-            overlayDisplay: 'none'
+            overlayDisplay: 'none',
+            dialogTitle: '',
+            dialogContent: '',
+            overlayBlack: 'none'
         };
     }
 
@@ -36,11 +37,11 @@ export default class Home extends Component {
         const self = this;
         eventProxy.on('loadTrend', obj => {
             self.refs.hotKey.style.display = 'block';
-            if (typeof obj === 'string') {
+            if (typeof obj.list === 'string') {
                 return;
             }
             self.setState({
-                list: obj
+                list: obj.list
             });
         });
     }
@@ -106,7 +107,7 @@ export default class Home extends Component {
         return (
             <Layout>
                 <Sider className="index-sidebar"
-                       style={{display: this.state.menuDisplay}}
+                       style={{display: this.state.menuDisplay, position: 'static'}}
                 >
                     <Sidebar height={siderbarHeight}
                              returnSummary={(name, list) => this.returnSummary(name, list)}
@@ -114,6 +115,9 @@ export default class Home extends Component {
                              returnShowOverlay={show => this.returnShowOverlay(show)}
                              params={params}
                              overlay={this.refs.overlay}
+                             list={this.state.list}
+                             type={this.state.type}
+                             ref="sidebar"
                     >
                     </Sidebar>
                 </Sider>

@@ -154,9 +154,7 @@ export default class Band extends Component {
                     }
                     return (
                         <label className={classes} key={index} onClick={self.toggleBand.bind(self, index, item.name)}>
-                    <span className="symbol"
-                          style={style}
-                    ></span>
+                            <span className="symbol" style={style}></span>
                             {item.name}
                         </label>
                     );
