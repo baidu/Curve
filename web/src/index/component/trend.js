@@ -70,6 +70,10 @@ export default class Trend extends Component {
         };
         this.abnormalSelectedPoints = [];
         this.abnormalSelectedIndex = [];
+        // The maximum value the x-axis can set when zooming in
+        this.enlargeExtremesMax = undefined;
+        // The minimum value that the x-axis can set when reducing the operation
+        this. enlargeExtremesMin = undefined;
     }
 
     componentDidMount() {
@@ -88,6 +92,10 @@ export default class Trend extends Component {
             e.preventDefault();
             e = e ? e : window.event;
             let t = e.keyCode || e.which || e.charCode;
+            let keyArr = [32, 38, 87, 40, 83, 37, 65, 39, 68];
+            if (!t || (t && keyArr.indexOf(t) === -1)) {
+                return;
+            }
             if (t === 32) {
                 key.currentKey = null;
             }
@@ -106,8 +114,8 @@ export default class Trend extends Component {
             if (min <= max) {
                 step = parseInt((max - min) * 0.25, 10);
             }
-            let extremesMax = window.thumbExtremes[name].max;
-            let extremesMin = window.thumbExtremes[name].min;
+            let extremesMax = window.thumbExtremes[name] ? window.thumbExtremes[name].max : max;
+            let extremesMin = window.thumbExtremes[name] ? window.thumbExtremes[name].min : min;
             // If there is no data and the minimum value is greater than or equal to the maximum value, the keyboard operation is no longer performed
             if (t === 38 || t === 87) {
                 if (min + step < max - step) {
@@ -1054,7 +1062,7 @@ export default class Trend extends Component {
                 }
             },
             rangeSelector: {
-                // allButtonsEnabled: true,
+                allButtonsEnabled: true,
                 buttons: [{
                     type: 'hour',
                     count: 1,
@@ -1445,16 +1453,35 @@ export default class Trend extends Component {
     afterSetExtremes(e) {
         const self = this;
         let trigger = ['navigator', 'rangeSelectorButton'];
+        let option;
+        let startTime;
+        let endTime;
+        let url;
+        // Set the extreme value to avoid the big picture redrawing before the request
+        self.refs.container.chart.xAxis[0].setExtremes(self.min, self.max);
         if (e.trigger) {
             if (trigger.indexOf(e.trigger) === -1) {
                 return;
             }
+            if (e.trigger === 'rangeSelectorButton') {
+                option = self.state.options;
+                let selectedButtons = option.rangeSelector.buttons;
+                let currentSelectedText  = e.rangeSelectorButton.text;
+                selectedButtons.map((item, index) => {
+                    if (item.text === currentSelectedText) {
+                        option.rangeSelector.selected = index;
+                        return;
+                    }
+                });
+            }
+            startTime = e.userMin;
+            endTime = e.userMax;
             let url = api.getTrend
                 + self.props.params.name
                 + '/curves?'
-                + 'startTime=' + Math.round(e.min)
-                + '&endTime=' + Math.round(e.max);
-            self.getTrendData(url, undefined, true, false);
+                + 'startTime=' + startTime
+                + '&endTime=' + endTime;
+            self.getTrendData(url, option, true, false);
         }
     }
 
