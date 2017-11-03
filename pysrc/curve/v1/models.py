@@ -94,13 +94,15 @@ class Band(db.Model):
     # TODO: tooltips comment
     # comment = db.Column(db.Text, nullable=False)
     reliability = db.Column(db.Float, nullable=True)
+    index = db.Column(db.Integer, nullable=False)
 
-    def __init__(self, data_name, name, start_time, end_time, reliability):
+    def __init__(self, data_name, name, start_time, end_time, reliability, index):
         self.data_name = data_name
         self.name = name
         self.start_time = start_time
         self.end_time = end_time
         self.reliability = reliability
+        self.index = index
 
     def __repr__(self):
         return repr_p(self)

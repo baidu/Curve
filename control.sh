@@ -29,7 +29,6 @@ stop() {
 }
 
 reload() {
-    [ -e "${G_SOURCEROOT}/curve/web" ] || ./build.sh
     cd ${G_SOURCEROOT}
     source ${G_VENV}
     uwsgi --reload uwsgi.pid

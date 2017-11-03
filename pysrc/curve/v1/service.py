@@ -34,6 +34,7 @@ class DataMeta(object):
     """
     meta definition
     """
+
     def __init__(self, data):
         self.name = data.name
         self.start_time = data.start_time
@@ -47,6 +48,7 @@ class DataService(object):
     """
     data operations
     """
+
     def __init__(self, data_name, meta=None, points=None):
         self.data_name = data_name
         self.cache = {}
@@ -69,10 +71,10 @@ class DataService(object):
         :return: [DataMeta]
         """
         if pattern:
-            return Data.query.\
-                filter(db.text("name like :name")).\
-                params(name='%%%s%%' % pattern).\
-                order_by(Data.name).\
+            return Data.query. \
+                filter(db.text("name like :name")). \
+                params(name='%%%s%%' % pattern). \
+                order_by(Data.name). \
                 all()
         return Data.query.order_by(Data.name).all()
 
@@ -124,8 +126,8 @@ class DataService(object):
             line = [[point.timestamp, point.value, point.label] for point in points]
             timestamps = {point.timestamp for point in points}
             for timestamp in range(
-                floor(start_time, self.data.period),
-                floor(end_time, self.data.period), self.data.period
+                    floor(start_time, self.data.period),
+                    floor(end_time, self.data.period), self.data.period
             ):
                 if timestamp not in timestamps:
                     line.append([timestamp, None, None])
@@ -161,8 +163,8 @@ class DataService(object):
             line = [[point.timestamp, point.value] for point in points]
             timestamps = {point.timestamp for point in points}
             for timestamp in range(
-                floor(start_time, self.data.period),
-                floor(end_time, self.data.period), self.data.period
+                    floor(start_time, self.data.period),
+                    floor(end_time, self.data.period), self.data.period
             ):
                 if timestamp not in timestamps:
                     line.append([timestamp, None])
@@ -199,8 +201,8 @@ class DataService(object):
             line = [[point.timestamp, point.value] for point in points]
             timestamps = {point.timestamp for point in points}
             for timestamp in range(
-                floor(start_time, self.data.period),
-                floor(end_time, self.data.period), self.data.period
+                    floor(start_time, self.data.period),
+                    floor(end_time, self.data.period), self.data.period
             ):
                 if timestamp not in timestamps:
                     line.append([timestamp, None])
@@ -248,6 +250,14 @@ class DataService(object):
         )).update({Point.label: label}, synchronize_session=False)
         db.session.commit()
 
+    def count_bands(self, band_name):
+        """
+        count bands
+        :param band_name:
+        :return:
+        """
+        return Band.query.filter_by(data_name=self.data_name, name=urllib.quote(band_name)).count()
+
     def get_band(self, band_name, start_time=None, end_time=None):
         """
         search band
@@ -258,24 +268,22 @@ class DataService(object):
         """
         band_name = urllib.quote(band_name)
         query = Band.query.filter_by(data_name=self.data_name, name=band_name)
-        if start_time is not None and end_time is not None:
-            query = query.filter(db.and_(Band.start_time < end_time, Band.end_time > start_time))
+        if start_time is not None:
+            query.filter(Band.end_time < start_time)
+        if end_time is not None:
+            query.filter(Band.start_time > end_time)
         order = Band.start_time
         bands = query.order_by(order).all()
-        bands = [(band.start_time, band.end_time, band.reliability) for band in bands]
 
         return bands
 
-    def add_band(self, band_name, start_time, end_time, reliability):
+    def add_band(self, bands):
         """
         add band
-        :param band_name:
-        :param start_time:
-        :param end_time:
-        :param reliability:
+        :param bands: [(band_name, start_time, end_time, reliability)]
         """
-        band = Band(self.data_name, band_name, start_time, end_time, reliability)
-        db.session.add(band)
+        for band_no, (band_name, start_time, end_time, reliability) in enumerate(bands):
+            db.session.add(Band(self.data_name, band_name, start_time, end_time, reliability, band_no + 1))
         db.session.commit()
 
     def delete(self):
@@ -411,13 +419,10 @@ class API(object):
         """
         return self.data_service.set_label(start_time, end_time, label)
 
-    def add_band(self, band_name, start_time, end_time, reliability):
+    def add_bands(self, bands):
         """
         add a band
-        :param band_name:
-        :param start_time:
-        :param end_time:
-        :param reliability:
+        :param bands: [(band_name, start_time, end_time, reliability)]
         :return:
         """
-        return self.data_service.add_band(band_name, start_time, end_time, reliability)
+        return self.data_service.add_band(bands)

@@ -56,19 +56,19 @@ class DataDatanameBandBandname(Resource):
 
         for band_no, band in enumerate(band_items):
             band_items[band_no] = {
-                'bandNo': band_no + 1,
+                'bandNo': band.index,
                 'bandCount': len(band_items),
                 'currentTime': {
                     'duration': {
-                        'start': band[0] * 1000,
-                        'end': band[1] * 1000
+                        'start': band.start_time * 1000,
+                        'end': band.end_time * 1000
                     },
                     'show': {
-                        'start': (band[0] - (start_time - end_time) / 2) * 1000,
-                        'end': (band[1] + (start_time - end_time) / 2) * 1000
+                        'start': (band.start_time - (start_time - end_time) / 2) * 1000,
+                        'end': (band.end_time + (start_time - end_time) / 2) * 1000
                     },
                 },
-                'reliability': band[2]
+                'reliability': band.reliability
             }
         for band_no, band in enumerate(band_items):
             if band_no - 1 > -1:
