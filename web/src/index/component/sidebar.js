@@ -142,6 +142,9 @@ export default class Sidebar extends Component {
             if (self.props.params.name !== name && self.props.params.name !== undefined) {
                 url = '/home/' + self.props.params.name;
             }
+            if (data.data.length) {
+                eventProxy.trigger('loadingTip');
+            }
             hashHistory.push(url);
             self.setState({
                 dataList: data.data,
@@ -292,37 +295,36 @@ export default class Sidebar extends Component {
                         <i></i>
                     </div>
                     <div className="summary-content"
-                             style={{display: isShow,
-                                 top: self.state.top + 'px'}}
-                        >
-                            <h4 className="summary-content-head">{item.name}</h4>
-                            <div className="summary-content-body">
-                                <div className="summary-content-item">
-                                    <span>Data range: </span>
-                                    <span>{start} ~ {end}</span>
-                                </div>
-                                <div className="summary-content-item">
-                                    <span>Interval: </span>
-                                    <span>{ratio}</span>
-                                </div>
-                                <div className="summary-content-item">
-                                    <span>Anomaly percent: </span>
-                                    <span>{labelRatio}</span>
-                                </div>
+                         style={{display: isShow, top: self.state.top + 'px'}}
+                    >
+                        <h4 className="summary-content-head">{item.name}</h4>
+                        <div className="summary-content-body">
+                            <div className="summary-content-item">
+                                <span>Data range: </span>
+                                <span>{start} ~ {end}</span>
                             </div>
-                            <div className="summary-content-footer">
-                                <Button className="opera-button"
-                                        onClick={self.exportData.bind(self, item.name)}
-                                >
-                                    Export
-                                </Button>
-                                <Button className="opera-button"
-                                        onClick={self.deleteData.bind(self, item.name)}
-                                >
-                                    Delete
-                                </Button>
+                            <div className="summary-content-item">
+                                <span>Interval: </span>
+                                <span>{ratio}</span>
+                            </div>
+                            <div className="summary-content-item">
+                                <span>Anomaly percent: </span>
+                                <span>{labelRatio}</span>
                             </div>
                         </div>
+                        <div className="summary-content-footer">
+                            <Button className="opera-button"
+                                    onClick={self.exportData.bind(self, item.name)}
+                            >
+                                Export
+                            </Button>
+                            <Button className="opera-button"
+                                    onClick={self.deleteData.bind(self, item.name)}
+                            >
+                                Delete
+                            </Button>
+                        </div>
+                    </div>
                 </li>
             );
         });
@@ -389,7 +391,7 @@ export default class Sidebar extends Component {
                 <div className="dialog" ref="dialog" style={{display: 'none'}}>
                     <div className="dialog-header">
                         <div className="dialog-title">{this.state.dialogTitle}</div>
-                        <Icon type="close" className="dialog-close"></Icon>
+                        <Icon type="close" className="dialog-close" onClick={self.dialogCancel.bind(self, self.state.dialogName)}></Icon>
                     </div>
                     <div className="dialog-body">
                         <div className="dialog-content">{this.state.dialogContent}</div>

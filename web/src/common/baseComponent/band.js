@@ -27,8 +27,8 @@ export default class Band extends Component {
         this.renderBand();
         eventProxy.on('loadBand', obj => {
             self.setState({
-                init: true,
-                legend: {}
+                init: !self.state.init ? self.state.init : true,
+                legend: !self.isEmpty(self.state.legend) ? self.state.legend : {}
             });
         });
         eventProxy.on('loadedChart', chart => {
@@ -38,6 +38,16 @@ export default class Band extends Component {
         });
     }
 
+    // Determine whether the object is empty
+    isEmpty(obj) {
+        const self = this;
+        for (let key in obj) {
+            return false;
+        }
+        return true;
+    }
+
+    // Expand or collapse the right sidebar
     toggleBandMenu() {
         const self = this;
         let isShow;
@@ -65,6 +75,7 @@ export default class Band extends Component {
 
     }
 
+    // Switch band display
     toggleBand(index, name) {
         const self = this;
         let legend = self.state.legend;
@@ -122,6 +133,7 @@ export default class Band extends Component {
 
     }
 
+    // Render the band
     renderBand() {
         const self = this;
         let html = '';
@@ -144,8 +156,15 @@ export default class Band extends Component {
                     });
                     style = {
                         background: !className
-                        || className.length === 0 ? 'rgba(204,204,204, 0.3)' : color ? color : '#000'
+                        || className.length === 0 ? 'rgba(204,204,204, 0.3)' : color ? color : '#000',
+                        opacity: 0.6
                     };
+                    if (!index && className && className.length) {
+                        style = {
+                            background: color,
+                            opacity: 0.6
+                        };
+                    }
                     if (init && !index) {
                         style = {
                             background: color,
@@ -164,6 +183,7 @@ export default class Band extends Component {
         }
     }
 
+    // Render the reference line
     renderReferenceLine() {
         const self = this;
         let html = '';
