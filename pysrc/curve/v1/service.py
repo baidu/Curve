@@ -42,6 +42,7 @@ class DataMeta(object):
         self.period = data.period
         self.period_ratio = data.period_ratio
         self.label_ratio = data.label_ratio
+        self.readable_timestamp = data.readable_timestamp
 
 
 class DataService(object):

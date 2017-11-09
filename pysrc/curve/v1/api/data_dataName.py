@@ -55,10 +55,12 @@ class DataDataname(Resource):
             data_name.encode('utf-8')
         try:
             string_io = StringIO()
-            data = DataService(data_name).get_data()
-            for key, point in enumerate(data):
-                data[key][0] = time2str(data[key][0])
-            csv.writer(string_io).writerows(data)
+            data_service = DataService(data_name)
+            data = data_service.get_data()
+            if data_service.get_meta().readable_timestamp:
+                for key, point in enumerate(data):
+                    data[key][0] = time2str(data[key][0])
+            csv.writer(string_io).writerows([['timestamp', 'value', 'label']] + data)
 
             return self.render_file('%s.csv' % data_name, string_io.getvalue())
         except DataNotFoundException:
@@ -80,13 +82,19 @@ class DataDataname(Resource):
             points = []
             try:
                 reader = csv.reader(upload_file)
+                readable_timestamp = False
                 try:
-                    points.append(self.__parse_point(data_name, reader.next()))
+                    line = reader.next()
+                    points.append(self.__parse_point(data_name, line))
+                    if len(line[0]) == 14:
+                        readable_timestamp = True
                 except ValueError:
                     pass
                 for line in reader:
                     line_no += 1
                     points.append(self.__parse_point(data_name, line))
+                    if len(line[0]) == 14:
+                        readable_timestamp = True
             except Exception as e:
                 return self.render(msg='line %d: %s' % (line_no, e.message)), 422, {}
             if len(points) < 2:
@@ -110,7 +118,8 @@ class DataDataname(Resource):
                 period_ratio=period_ratio,
                 label_ratio=sum([1 for point in points if point.label]) * 1. / len(points),
                 create_time=int(time.time()),
-                update_time=int(time.time())
+                update_time=int(time.time()),
+                readable_timestamp=readable_timestamp
             )
             db.session.add(data)
             # band
