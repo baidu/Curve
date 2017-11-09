@@ -27,12 +27,13 @@ class Data(db.Model):
     label_ratio = db.Column(db.Float, nullable=False)
     create_time = db.Column(db.Integer, nullable=False)
     update_time = db.Column(db.Integer, nullable=False)
+    readable_timestamp = db.Column(db.Boolean, nullable=False, default=True)
 
     def __init__(self, name,
                  start_time, end_time,
                  period, period_ratio,
                  label_ratio,
-                 create_time, update_time):
+                 create_time, update_time, readable_timestamp):
         self.name = name
         self.start_time = start_time
         self.end_time = end_time
@@ -41,6 +42,7 @@ class Data(db.Model):
         self.label_ratio = label_ratio
         self.create_time = create_time
         self.update_time = update_time
+        self.readable_timestamp = readable_timestamp
 
     def __repr__(self):
         return repr_p(self)
