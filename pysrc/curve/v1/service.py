@@ -250,6 +250,12 @@ class DataService(object):
             Point.timestamp.between(start_time, end_time)
         )).update({Point.label: label}, synchronize_session=False)
         db.session.commit()
+        Data.query.filter_by(name=self.data_name).update({
+            Data.label_ratio:
+                Point.query.filter_by(data_name=self.data_name, label=LABEL_ENUM.abnormal).count() * 1.
+                / Point.query.filter_by(data_name=self.data_name).count()
+        })
+        db.session.commit()
 
     def count_bands(self, band_name):
         """
