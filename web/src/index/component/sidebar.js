@@ -52,10 +52,7 @@ export default class Sidebar extends Component {
             $('.view-summary').hide();
             let top = 36 * $(this).index() - $('.data-list-container').scrollTop() + 18 + 50 + 10;
             $(this).find('.view-summary').css('top', top + 'px');
-            console.log($(this).index())
-            console.log(36 * $(this).index())
-            console.log($('.data-list-container').height())
-            console.log($('.data-list-container').scrollTop())
+            // If the current hover data height is not enough 20 pixels, do not show the summary prompt
             let diffHeight = $('.data-list-container').height() - (36 * $(this).index() - $('.data-list-container').scrollTop());
             if (diffHeight >= 20) {
                 $(this).find('.view-summary').show();
@@ -64,7 +61,6 @@ export default class Sidebar extends Component {
         // Hide the view-summary dom and summary panel
         $('.data-list-container, .data-list').scroll(function () {
             $('.data-list .view-summary').hide();
-            // $('.summary-content').hide();
             for (let key in self.state.isShow) {
                 isShow[key] = false;
             }

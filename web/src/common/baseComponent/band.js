@@ -24,14 +24,12 @@ export default class Band extends Component {
 
     componentDidMount() {
         const self = this;
-        // this.renderBand();
         self.initBand();
         eventProxy.on('loadBand', obj => {
             let legend = !self.isEmpty(self.state.legend[obj.name]) ? self.state.legend[obj.name] : {0: 'show'};
             self.state.legend[obj.name] = legend;
             cookie.save('bandStatus', self.state.legend);
             self.setState({
-                // init: !self.state.init ? self.state.init : true,
                 legend: self.state.legend
             });
             eventProxy.trigger('bandVisible', legend);
@@ -173,7 +171,6 @@ export default class Band extends Component {
         let classes = 'legend';
         let style = {};
         let color = '';
-        // let init = self.state.init;
         let className = '';
         let chart = self.state.chart;
         let dataName = self.props.name;
