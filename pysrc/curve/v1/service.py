@@ -42,6 +42,7 @@ class DataMeta(object):
         self.period = data.period
         self.period_ratio = data.period_ratio
         self.label_ratio = data.label_ratio
+        self.readable_timestamp = data.readable_timestamp
 
 
 class DataService(object):
@@ -248,6 +249,12 @@ class DataService(object):
             Point.data_name.is_(self.data_name),
             Point.timestamp.between(start_time, end_time)
         )).update({Point.label: label}, synchronize_session=False)
+        db.session.commit()
+        Data.query.filter_by(name=self.data_name).update({
+            Data.label_ratio:
+                Point.query.filter_by(data_name=self.data_name, label=LABEL_ENUM.abnormal).count() * 1.
+                / Point.query.filter_by(data_name=self.data_name).count()
+        })
         db.session.commit()
 
     def count_bands(self, band_name):
