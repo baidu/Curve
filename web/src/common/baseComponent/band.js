@@ -7,6 +7,7 @@ import '../../index/component/sidebar.less';
 
 import React, {Component} from 'react';
 import eventProxy from '../../tools/eventProxy';
+import cookie from 'react-cookies';
 
 export default class Band extends Component {
     constructor(props) {
@@ -17,24 +18,56 @@ export default class Band extends Component {
             series: [],
             legend: {},
             bandMenuStyle: true,
-            smallBandMenuStyle: false,
-            init: true
+            smallBandMenuStyle: false
         };
     }
 
     componentDidMount() {
         const self = this;
-        this.renderBand();
+        // this.renderBand();
+        self.initBand();
         eventProxy.on('loadBand', obj => {
+            let legend = !self.isEmpty(self.state.legend[obj.name]) ? self.state.legend[obj.name] : {0: 'show'};
+            self.state.legend[obj.name] = legend;
+            cookie.save('bandStatus', self.state.legend);
             self.setState({
-                init: !self.state.init ? self.state.init : true,
-                legend: !self.isEmpty(self.state.legend) ? self.state.legend : {}
+                // init: !self.state.init ? self.state.init : true,
+                legend: self.state.legend
             });
+            eventProxy.trigger('bandVisible', legend);
         });
         eventProxy.on('loadedChart', chart => {
             self.setState({
                 chart
             });
+        });
+    }
+
+    initBand() {
+        const self = this;
+        let bandSeries = self.props.bandSeries;
+        let name = self.props.name;
+        let legend = cookie.load('bandStatus') || self.state.legend || {};
+        let list = self.props.list;
+        list.map((item, index) => {
+            if (!self.isEmpty(legend[item.name])) {
+
+            }
+            else {
+                legend[item.name] = {};
+                bandSeries.map((series, index) => {
+                    if (!index) {
+                        legend[item.name][index] = 'show';
+                    }
+                    else {
+                        legend[item.name][index] = '';
+                    }
+                });
+            }
+        });
+        cookie.save('bandStatus', legend);
+        self.setState({
+            legend
         });
     }
 
@@ -82,23 +115,24 @@ export default class Band extends Component {
         let chart = self.state.chart;
         let series = {};
         let bandSeries = self.props.bandSeries;
+        let dataName = self.props.name;
         chart.series.map((item, index) => {
             if (item.name === name) {
                 series = chart.series[index];
             }
         });
         bandSeries.map((item, index) => {
-            legend[index] = '';
+            legend[dataName][index] = '';
         });
         if (series.visible) {
             series.hide();
             bandSeries.map((item, i) => {
                 if (item.name === name) {
-                    if (legend[i] === 'show') {
-                        legend[i] = '';
+                    if (legend[dataName][i] === 'show') {
+                        legend[dataName][i] = '';
                     }
                     else {
-                        legend[i] = '';
+                        legend[i][dataName] = '';
                     }
                 }
             });
@@ -107,11 +141,11 @@ export default class Band extends Component {
             series.show();
             bandSeries.map((item, i) => {
                 if (item.name === name) {
-                    if (legend[i] === '') {
-                        legend[i] = 'show';
+                    if (legend[dataName][i] === '') {
+                        legend[dataName][i] = 'show';
                     }
                     else {
-                        legend[i] = '';
+                        legend[dataName][i] = '';
                     }
                 }
             });
@@ -125,10 +159,9 @@ export default class Band extends Component {
                 }
             });
         }
-
+        cookie.save('bandStatus', legend);
         self.setState({
-            legend: legend,
-            init: false
+            legend: legend
         });
 
     }
@@ -140,14 +173,27 @@ export default class Band extends Component {
         let classes = 'legend';
         let style = {};
         let color = '';
-        let init = self.state.init;
+        // let init = self.state.init;
         let className = '';
         let chart = self.state.chart;
+        let dataName = self.props.name;
+        let legend = cookie.load('bandStatus') || self.state.legend || {};
         if (chart) {
             if (self.props.bandSeries && self.props.bandSeries.length) {
                 html = self.props.bandSeries.map((item, index) => {
                     classes = 'legend ';
-                    className = self.state.legend[index];
+                    if (!legend[dataName]) {
+                        legend[dataName] = {};
+                    }
+                    if (legend[dataName][index] === undefined) {
+                        if (!index) {
+                            legend[dataName][index] = 'show';
+                        }
+                        else {
+                            legend[dataName][index] = '';
+                        }
+                    }
+                    className = legend[dataName][index];
                     classes += className ? className : '';
                     chart.series.map((item, i) => {
                         if (item.name === self.props.bandSeries[index].name) {
@@ -160,12 +206,6 @@ export default class Band extends Component {
                         opacity: 0.6
                     };
                     if (!index && className && className.length) {
-                        style = {
-                            background: color,
-                            opacity: 0.6
-                        };
-                    }
-                    if (init && !index) {
                         style = {
                             background: color,
                             opacity: 0.6

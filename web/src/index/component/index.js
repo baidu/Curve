@@ -94,10 +94,6 @@ export default class Home extends Component {
     }
 
     render() {
-        let siderbarHeight = $('body').height() - 50 - 36 - 45;
-        if (siderbarHeight <= 750) {
-            siderbarHeight = 750;
-        }
         let params = {
             name: this.props.params.name,
             list: this.state.list,
@@ -109,8 +105,7 @@ export default class Home extends Component {
                 <Sider className="index-sidebar"
                        style={{display: this.state.menuDisplay, position: 'static'}}
                 >
-                    <Sidebar height={siderbarHeight}
-                             returnSummary={(name, list) => this.returnSummary(name, list)}
+                    <Sidebar returnSummary={(name, list) => this.returnSummary(name, list)}
                              hideSummary={this.state.hideSummary}
                              returnShowOverlay={show => this.returnShowOverlay(show)}
                              params={params}

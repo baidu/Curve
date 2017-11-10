@@ -47,14 +47,6 @@ export default class UploadData extends Component {
                 self.setState({
                     fileName: file.name.split('.')[0]
                 });
-                // Check whether the uploaded file is renamed
-                // let dataList = self.state.dataList;
-                // dataList.map((item, index) => {
-                //     if (item.name === file.name.split('.')[0]) {
-                //         message.error(self.state.fileName + " upload failed...Can't upload file with the same name, please try again");
-                //         return false;
-                //     }
-                // });
             },
             onStart(file) {
                 // console.log('onStart', file.name);
