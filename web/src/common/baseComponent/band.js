@@ -130,7 +130,7 @@ export default class Band extends Component {
                         legend[dataName][i] = '';
                     }
                     else {
-                        legend[i][dataName] = '';
+                        legend[dataName][i] = '';
                     }
                 }
             });
