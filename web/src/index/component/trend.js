@@ -1627,6 +1627,22 @@ export default class Trend extends Component {
                     }
                 });
             }
+            else {
+                option = self.state.options;
+                let hour = Math.round(e.userMax) - Math.round(e.userMin) / 1000 / 60 / 60;
+                let day = hour / 24;
+                let hourIndex = [1, 6, 12].indexOf(hour) || 0;
+                let dayIndex = [1, 3, 7, 14].indexOf(day) || 0;
+                if (hourIndex !== -1) {
+                    option.rangeSelector.selected = hourIndex;
+                }
+                else if (dayIndex !== -1) {
+                    option.rangeSelector.selected = 3 + dayIndex;
+                }
+                else {
+                    option.rangeSelector.selected = undefined;
+                }
+            }
             startTime = Math.round(e.userMin);
             endTime = Math.round(e.userMax);
             let url = api.getTrend
