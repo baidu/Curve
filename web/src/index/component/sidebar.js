@@ -52,11 +52,21 @@ export default class Sidebar extends Component {
             $('.view-summary').hide();
             let top = 36 * $(this).index() - $('.data-list-container').scrollTop() + 18 + 50 + 10;
             $(this).find('.view-summary').css('top', top + 'px');
-            $(this).find('.view-summary').show();
+            // If the current hover data height is not enough 20 pixels, do not show the summary prompt
+            let diffHeight = $('.data-list-container').height() - (36 * $(this).index() - $('.data-list-container').scrollTop());
+            if (diffHeight >= 20) {
+                $(this).find('.view-summary').show();
+            }
         });
-        // Hide the view-summary dom
-        $('.data-list-container').scroll(function () {
+        // Hide the view-summary dom and summary panel
+        $('.data-list-container, .data-list').scroll(function () {
             $('.data-list .view-summary').hide();
+            for (let key in self.state.isShow) {
+                isShow[key] = false;
+            }
+            self.setState({
+                isShow
+            });
         });
         // refresh the left side of the data list
         eventProxy.on('refreshDataList', dataList => {
@@ -376,13 +386,14 @@ export default class Sidebar extends Component {
                 <div style={{position: 'relative', zIndex: '1'}}>
                     <div className="data-set">
                         <span className="dataset">Data</span>
-                        <Link to={link} className="link"><span className="show-all">Show All</span></Link>
+                        <span className="show-all">Show All</span>
                     </div>
                     <UploadData returnDataList={dataList => this.returnDataList(dataList)}
                                 type="sidebar"
                     ></UploadData>
-                    <div className="data-list-container" style={{maxHeight: '500px', overflowY: 'auto'}}>
-                        <ul className="data-list" style={{height: this.props.height + 'px'}}>
+                    <div className="data-list-container" style={{maxHeight: '450px', overflowY: 'auto'}}>
+                        <ul className="data-list"
+                        >
                             {this.renderDataList()}
                         </ul>
                     </div>

@@ -234,7 +234,7 @@ export default class Trend extends Component {
                     endIndex = i;
                 }
             }
-
+            endIndex--;
             let url = api.menuOpera
                 + name
                 + '?startTime=' + startTime
@@ -262,8 +262,51 @@ export default class Trend extends Component {
                 window.selectedIndex[name] = finalResult;
                 // update window.labelObj
                 window.labelObj[name].splice(currentIndex, 1);
+                let result = [];
+                // remove old label line
+                let removeIndex = 0;
+                let originIndex = 0;
+                self.chart.series.map((item, index) => {
+                    if (item.name === 'base line') {
+                        originIndex = index;
+                        return;
+                    }
+                });
+                self.chart.series.map((item, index) => {
+                    if (item.name === 'label line') {
+                        removeIndex = index;
+                        return;
+                    }
+                });
+                self.chart.series[removeIndex].remove();
+                // get result data
+                for (let i = 0; i < self.chart.series[originIndex].points.length; i++) {
+                    if (window.selectedIndex[name].indexOf(i) !== -1) {
+                        result.push([self.chart.series[originIndex].points[i].x, self.chart.series[originIndex].points[i].y]);
+                    }
+                    else {
+                        result.push([self.chart.series[originIndex].points[i].x, null]);
+                    }
+                }
                 // redraw trend
-                self.redrawTrend(min, max);
+                self.chart.addSeries({
+                    name: 'label line',
+                    data: result,
+                    type: 'line',
+                    lineWidth: 2,
+                    color: 'red',
+                    zIndex: 101,
+                    showInLegend: false,
+                    enableMouseTracking: true,
+                    marker: {
+                        states: {
+                            hover: {
+                                enabled: true
+                            }
+                        }
+                    }
+                }, false);
+                self.chart.redraw();
             });
         });
         // Operation tooltip
@@ -316,7 +359,7 @@ export default class Trend extends Component {
         $('body').delegate('.label-opera', 'click', function (e) {
             let startTime = $(this).attr('data-current-start-time');
             let endTime = $(this).attr('data-current-end-time');
-            self.label(startTime, endTime);
+            self.label(startTime, endTime, false);
         });
 
         // Gets the subscript of the selected point
@@ -427,6 +470,20 @@ export default class Trend extends Component {
                 }
             }
         });
+
+        eventProxy.on('bandVisible', legend => {
+            self.state.bandSeries.map((item, index) => {
+                if (!legend[index]) {
+                    item.visible = false;
+                }
+                else if (legend[index] === 'show') {
+                    item.visible = true;
+                }
+            });
+            self.setState({
+                bandSeries: self.state.bandSeries
+            });
+        });
     }
 
     // redraw trend
@@ -514,7 +571,7 @@ export default class Trend extends Component {
     }
 
     // label data
-    label(start, end) {
+    label(start, end, isDealSelectedIndex) {
         const self = this;
         const me = self.chart;
         let originIndex1 = 0;
@@ -529,14 +586,25 @@ export default class Trend extends Component {
         let points = me.series[originIndex1].points;
         points.map((item, index) => {
             if (item.x >= Math.round(start) && item.x <= Math.round(end)) {
-                selectedIndex.push(index);
+                if (item.y) {
+                    selectedIndex.push(index);
+                }
             }
         });
 
-        selectedIndex = self.dealSelectedIndex(me, originIndex1, selectedIndex);
+        if (isDealSelectedIndex !== false) {
+            selectedIndex = self.dealSelectedIndex(me, originIndex1, selectedIndex);
+        }
 
-        let startTime = points[selectedIndex[0]].x;
-        let endTime = points[selectedIndex[selectedIndex.length - 1]].x;
+        let startTime;
+        let endTime;
+        if (selectedIndex.length) {
+            startTime = points[selectedIndex[0]].x;
+            endTime = points[selectedIndex[selectedIndex.length - 1]].x;
+        }
+        else {
+            return;
+        }
 
         if (!window.labelObj[name]) {
             window.labelObj[name] = [];
@@ -644,14 +712,24 @@ export default class Trend extends Component {
         let points = me.series[originIndex].points;
         points.map((item, index) => {
             if (item.x >= Math.round(start) && item.x <= Math.round(end)) {
-                unselectedIndex.push(index);
+                if (item.y) {
+                    unselectedIndex.push(index);
+                }
             }
         });
         unselectedIndex = self.dealSelectedIndex(me, originIndex, unselectedIndex);
 
-        let startTime = points[unselectedIndex[0]].x;
-        let endTime = points[unselectedIndex[unselectedIndex.length - 1]].x;
 
+        let startTime;
+        let endTime;
+
+        if (unselectedIndex.length) {
+            startTime = points[unselectedIndex[0]].x;
+            endTime = points[unselectedIndex[unselectedIndex.length - 1]].x;
+        }
+        else {
+            return;
+        }
         if (!window.labelObj[name]) {
             window.labelObj[name] = [];
         }
@@ -869,8 +947,8 @@ export default class Trend extends Component {
                     band = self.state.bands[i];
                     if (band.name === bandName) {
                         for (let j = 0; j < band.bands.length; j++) {
-                            if (band.bands[j].currentTime.duration.start === me.x
-                                || band.bands[j].currentTime.duration.end === me.x) {
+                            if (band.bands[j].currentTime.duration.start <= me.x
+                                && band.bands[j].currentTime.duration.end >= me.x) {
                                 current = band.bands[j].bandNo;
                                 total = band.bands[j].bandCount;
                                 pre = band.bands[j].preTime;
@@ -1112,7 +1190,6 @@ export default class Trend extends Component {
                 }
             },
             rangeSelector: {
-                allButtonsEnabled: true,
                 buttons: [{
                     type: 'hour',
                     count: 1,
@@ -1122,25 +1199,50 @@ export default class Trend extends Component {
                     count: 6,
                     text: '6h'
                 }, {
-                    type: 'hour',
-                    count: 12,
-                    text: '12h'
+                    type: 'minute',
+                    count: 720,
+                    text: '12h',
+                    dataGrouping: {
+                        units: [
+                            ['minute', [1]]
+                        ]
+                    }
                 }, {
-                    type: 'day',
-                    count: 1,
-                    text: '1d'
+                    type: 'minute',
+                    count: 1440,
+                    text: '1d',
+                    dataGrouping: {
+                        units: [
+                            ['minute', [1]]
+                        ]
+                    }
                 }, {
-                    type: 'day',
-                    count: 3,
-                    text: '3d'
+                    type: 'minute',
+                    count: 4320,
+                    text: '3d',
+                    dataGrouping: {
+                        units: [
+                            ['minute', [1]]
+                        ]
+                    }
                 }, {
-                    type: 'day',
-                    count: 7,
-                    text: '7d'
+                    type: 'minute',
+                    count: 10080,
+                    text: '7d',
+                    dataGrouping: {
+                        units: [
+                            ['minute', [1]]
+                        ]
+                    }
                 }, {
-                    type: 'day',
-                    count: 14,
-                    text: '14d'
+                    type: 'minute',
+                    count: 20160,
+                    text: '14d',
+                    dataGrouping: {
+                        units: [
+                            ['minute', [1]]
+                        ]
+                    }
                 }, {
                     type: 'all',
                     text: 'All'
@@ -1424,11 +1526,6 @@ export default class Trend extends Component {
                     item.zIndex = -1;
                     item.enableMouseTracking = true;
                     trendsBands.push(item);
-                    if (!visibleFlag) {
-                        item.visible = true;
-                        visibleFlag = true;
-                        return;
-                    }
                     item.visible = false;
                 }
             });
@@ -1440,11 +1537,9 @@ export default class Trend extends Component {
                     item.data = result;
                 }
                 if (item.name === 'label line') {
-                    // window.labelObj[name] = [];
                     item.data = resultLabel;
                     item.data.map((data, j) => {
                         if (data[1]) {
-                            // selectedIndex.push(j);
                             if (!data.events) {
                                 data.events = {};
                             }
@@ -1473,7 +1568,7 @@ export default class Trend extends Component {
             if (self.refs.loadingTip) {
                 self.refs.loadingTip.style.display = 'none';
             }
-            self.setState({
+            let paramsOptions = {
                 title: name,
                 series: trends,
                 trendSeries: trendsTrends,
@@ -1484,8 +1579,11 @@ export default class Trend extends Component {
                 type: 'stockChart',
                 loading: false,
                 neverReflow: reflowThumb
+            };
+            self.setState(paramsOptions);
+            eventProxy.trigger('loadBand', {
+                name
             });
-            eventProxy.trigger('loadBand');
             self.chart.hideLoading();
             eventProxy.trigger('loadTrend', {
                 list: name
@@ -1529,8 +1627,24 @@ export default class Trend extends Component {
                     }
                 });
             }
-            startTime = e.userMin;
-            endTime = e.userMax;
+            else {
+                option = self.state.options;
+                let hour = Math.round(e.userMax) - Math.round(e.userMin) / 1000 / 60 / 60;
+                let day = hour / 24;
+                let hourIndex = [1, 6, 12].indexOf(hour) || 0;
+                let dayIndex = [1, 3, 7, 14].indexOf(day) || 0;
+                if (hourIndex !== -1) {
+                    option.rangeSelector.selected = hourIndex;
+                }
+                else if (dayIndex !== -1) {
+                    option.rangeSelector.selected = 3 + dayIndex;
+                }
+                else {
+                    option.rangeSelector.selected = undefined;
+                }
+            }
+            startTime = Math.round(e.userMin);
+            endTime = Math.round(e.userMax);
             let url = api.getTrend
                 + self.props.params.name
                 + '/curves?'
@@ -1647,6 +1761,8 @@ export default class Trend extends Component {
                                   chart={this.refs.container}
                                   returnBandStyle={bandStyle => this.returnBandStyle(bandStyle)}
                                   init={this.state.init}
+                                  list={this.props.params.list}
+                                  name={this.props.params.name}
                             >
                             </Band>
                             <Chart ref="container"
