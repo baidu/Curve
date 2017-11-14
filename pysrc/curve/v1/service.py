@@ -300,6 +300,7 @@ class DataService(object):
         Data.query.filter_by(name=self.data_name).delete(synchronize_session=False)
         Point.query.filter_by(data_name=self.data_name).delete(synchronize_session=False)
         Band.query.filter_by(data_name=self.data_name).delete(synchronize_session=False)
+        Thumb.query.filter_by(data_name=self.data_name).delete(synchronize_session=False)
         db.session.commit()
 
 
