@@ -68,6 +68,7 @@ export default class Home extends Component {
                 unFoldMenu: 'none'
             });
         }
+        eventProxy.trigger('loadingTip', 'Redrawing graphics, please wait');
     }
 
     hideSummary() {

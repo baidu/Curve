@@ -374,20 +374,20 @@ export default class Trend extends Component {
             }
         });
 
-        eventProxy.on('loadingTip', () => {
-            let text = 'The trend is loading, please wait';
+        eventProxy.on('loadingTip', tip => {
+            let text = tip || 'The trend is loading, please wait';
             // Add trend loading tips
             if (!self.refs.loadingContainer && self.refs.loadingTip) {
                 self.refs.loadingTip.style.display = 'block';
                 self.loadingTipTime = setInterval(function () {
                     if (num === 1) {
-                        text = 'The trend is loading, please wait' + '.';
+                        text = tip + '.' || 'The trend is loading, please wait' + '.';
                     }
                     else if (num === 2) {
-                        text = 'The trend is loading, please wait' + '..';
+                        text = tip + '..' || 'The trend is loading, please wait' + '..';
                     }
                     else if (num === 3) {
-                        text = 'The trend is loading, please wait' + '...';
+                        text = tip + '...' || 'The trend is loading, please wait' + '...';
                         num = 0;
                     }
                     num++;
