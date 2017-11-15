@@ -157,6 +157,10 @@ class DataDataname(Resource):
                     "length": data.period,
                     "ratio": data.period_ratio
                 },
+                "display": {
+                    "start": data.start_time * 1000,
+                    "end": min(data.start_time + 86400, data.end_time) * 1000
+                },
                 "time": {
                     "start": data.start_time * 1000,
                     "end": data.end_time * 1000

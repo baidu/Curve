@@ -97,7 +97,7 @@ def floor(data, base=None):
     """
     if base is None or base == 0:
         return int(math.floor(data))
-    return int(math.floor(data / base) * base)
+    return int(math.floor(data * 1. / base) * base)
 
 
 def ceil(data, base=None):
@@ -109,4 +109,4 @@ def ceil(data, base=None):
     """
     if base is None or base == 0:
         return int(math.ceil(data))
-    return int(math.ceil(data / base) * base)
+    return int(math.ceil(data * 1. / base) * base)

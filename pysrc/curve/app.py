@@ -19,6 +19,9 @@ from .config import STATIC_PATH
 from .v1 import bp
 from .v1.models import db
 
+import json
+json.encoder.FLOAT_REPR = lambda x: format(x, '.2f')
+
 
 class RegexConverter(BaseConverter):
     def __init__(self, url_map, *items):
