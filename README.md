@@ -12,7 +12,7 @@ Curve is originally developed by Baidu and Tsinghua Netman Lab.
 
 ### Install dependencies and build*
 
-Make sure bash, `python2.7+ with pip` and `nodejs with npm` are already installed. Then run the build script. It will install all the dependenceis and build Curve. 
+Make sure `bash`, `python2.7+ with pip` and `nodejs with npm` are already installed. Then run the build script. It will install all the dependenceis and build Curve. 
 
 ```bash
 ./build.sh
@@ -64,6 +64,13 @@ Some examples of valid CSV
 |---|---|
 |1476460860|2704.65|
 |1476460920|2700.05|
+
+* Timestamp in human-readable format
+
+|20161015000000|2566.35|
+|---|---|
+|20161015000100|2704.65|
+|20161015000200|2700.05|
 
 
 ## Test
