@@ -117,7 +117,8 @@ export default class Sidebar extends Component {
             self.setState({
                 dialogTitle: obj.title,
                 dialogContent: obj.content,
-                dialogName: obj.name
+                dialogName: obj.name,
+                dialogType: obj.type
             });
         });
     }
@@ -133,6 +134,7 @@ export default class Sidebar extends Component {
                 active[item.name] = true;
             }
         });
+        eventProxy.trigger('loadingTip');
         this.setState({
             init: false,
             active: active
@@ -347,7 +349,8 @@ export default class Sidebar extends Component {
         eventProxy.trigger('openDialog', {
             title: 'Delete',
             content: 'Are you sure you want to delete ' + name + '?',
-            name
+            name,
+            type: 'confirm'
         });
     }
 
@@ -407,7 +410,7 @@ export default class Sidebar extends Component {
                     <div className="dialog-body">
                         <div className="dialog-content">{this.state.dialogContent}</div>
                         <div className="dialog-footer">
-                            <button className="confirm operation-btn" ref="dialogConfirm" onClick={self.dialogConfirm.bind(self, self.state.dialogName)}>Delete</button>
+                            <button className="confirm operation-btn" style={{display: !self.state.dialogType || self.state.dialogType === 'confirm' ? 'inline-block' : 'none'}} ref="dialogConfirm" onClick={self.dialogConfirm.bind(self, self.state.dialogName)}>Delete</button>
                             <button className="cancel operation-btn" ref="dialogCancel" onClick={self.dialogCancel.bind(self, self.state.dialogName)}>Cancel</button>
                         </div>
                     </div>
