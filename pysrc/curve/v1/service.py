@@ -26,6 +26,7 @@ from .models import db
 from .models import Point
 from .models import Thumb
 from .utils import enum
+from .utils import ceil
 from .utils import floor
 from .utils import LABEL_ENUM
 
@@ -127,7 +128,7 @@ class DataService(object):
             line = [[point.timestamp, point.value, point.label] for point in points]
             timestamps = {point.timestamp for point in points}
             for timestamp in range(
-                    floor(start_time, self.data.period),
+                    ceil(start_time, self.data.period),
                     floor(end_time, self.data.period), self.data.period
             ):
                 if timestamp not in timestamps:

@@ -20,6 +20,8 @@ from ..models import db
 from ..service import PluginManager
 from ..service import DataService
 from ..utils import LABEL_ENUM
+from ..utils import ceil
+from ..utils import floor
 from ..utils import s2ms
 
 
@@ -141,7 +143,7 @@ class DataDatanameCurves(Resource):
         band_lines = []
         band_names = db.session.query(db.distinct(Band.name)).all()
         period = data_service.get_meta().period
-        period = max(period, (end_time-start_time)/1000)
+        period = max(period, (end_time - start_time) / 1000)
         _, line = plugin('sampling', line, 1000)
         for band_name, in band_names:
             # render bands for colored square
@@ -149,14 +151,22 @@ class DataDatanameCurves(Resource):
             band_items = data_service.get_band(band_name, start_time, end_time)
             tmp = set([])
             for band in band_items:
-                for x in range(band.start_time, band.end_time + period, period):
+                for x in range(
+                        ceil(band.start_time, period) - period / 2,
+                        floor(band.end_time, period) + period / 2,
+                        period):
                     tmp.add(x)
             band_line = []
-            for point in line:
-                if point[0] in tmp:
-                    band_line.append([point[0], y_axis[1]])
+            for timestamp in range(
+                    ceil(start_time, period) - period / 2,
+                    floor(end_time, period) + period / 2,
+                    period):
+                if timestamp in tmp:
+                    band_line.append([timestamp, y_axis[1]])
                 else:
-                    band_line.append([point[0], None])
+                    band_line.append([timestamp, None])
+            band_line[0][0] = ceil(band_line[0][0], period)
+            band_line[-1][0] = floor(band_line[-1][0], period)
             band_lines.append({
                 'name': band_name,
                 'type': 'area',
@@ -175,8 +185,8 @@ class DataDatanameCurves(Resource):
                             'end': band.end_time * 1000
                         },
                         'show': {
-                            'start': (band.start_time - (start_time - end_time) / 2) * 1000,
-                            'end': (band.end_time + (start_time - end_time) / 2) * 1000
+                            'start': (band.start_time - (end_time - start_time) / 2) * 1000,
+                            'end': (band.end_time + (end_time - start_time) / 2) * 1000
                         },
                     },
                     'reliability': band.reliability

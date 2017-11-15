@@ -329,6 +329,8 @@ definitions:
         type: string
       time:
         $ref: '#/definitions/TimeSlot'
+      display:
+        $ref: '#/definitions/TimeSlot'
       period:
         required:
           - length

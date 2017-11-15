@@ -55,7 +55,7 @@ class DatasTestCase(IcurveTestCase):
         data = datas[data_name]
         self.assertEqual(data['name'], data_name)
         self.assertEqual(data['uri'], '/v1/data/%s' % data_name)
-        self.assertAlmostEqual(data['labelRatio'], 0.090909, 4)
+        self.assertAlmostEqual(data['labelRatio'], 0.09, 4)
         self.assertEqual(data['period']['length'], 60)
         self.assertAlmostEqual(data['period']['ratio'], 0.9000, 4)
         self.assertEqual(data['time']['start'], 1503849600000)
