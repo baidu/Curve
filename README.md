@@ -8,6 +8,8 @@ Curve is designed to support plugin, so one can equip Curve with customized and 
 Curve is originally developed by Baidu and Tsinghua Netman Lab.
 
 
+<img src="https://raw.githubusercontent.com/baidu/Curve/master/readme/screenshot.png">
+
 ## Getting Started
 
 ### Install dependencies and build*
