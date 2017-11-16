@@ -225,16 +225,6 @@ export default class Trend extends Component {
                     break;
                 }
             }
-            // get real index of startTime and endTime
-            for (let i = 0; i < points.length; i++) {
-                if (points[i].x === startTime) {
-                    startIndex = i;
-                }
-                if (points[i].x === endTime) {
-                    endIndex = i;
-                }
-            }
-            endIndex--;
             let url = api.menuOpera
                 + name
                 + '?startTime=' + startTime
@@ -243,7 +233,6 @@ export default class Trend extends Component {
             // get current trend graph max and min
             let min = Math.round(chart.xAxis[0].min);
             let max = Math.round(chart.xAxis[0].max);
-
             axiosInstance.put(url).then(function (response) {
                 // update window.labelObj
                 window.labelObj[name].splice(currentIndex, 1);
@@ -327,23 +316,19 @@ export default class Trend extends Component {
             if (!series) {
                 return;
             }
-            series.points.map((item, index) => {
-                if (item.y) {
-                    selectedIndex.push(index);
-                }
-            });
-            let num = 0;
             let tempEndTime;
             let tempStartTime;
-            for (let i = 0; i < selectedIndex.length; i++) {
-                if (selectedIndex[i] + 1 === selectedIndex[i + 1]) {
-                    num++;
+            for (let i = 0; i < series.points.length - 1; i++) {
+                if (!series.points[i].y && series.points[i + 1].y) {
+                    tempStartTime = series.points[i + 1].x;
                 }
-                else {
-                    tempEndTime = series.points[selectedIndex[i]].x;
-                    tempStartTime = series.points[selectedIndex[i - num]].x;
-                    num = 0;
+                if (series.points[i].y && !series.points[i + 1].y) {
+                    tempEndTime = series.points[i].x;
+                }
+                if (tempStartTime && tempEndTime) {
                     window.labelObj[name].push([tempStartTime, tempEndTime]);
+                    tempStartTime = undefined;
+                    tempEndTime = undefined;
                 }
             }
         });
@@ -658,8 +643,8 @@ export default class Trend extends Component {
         }
         list.map((item, index) => {
             if (item.name === name) {
-                start = item.time.start;
-                end = item.time.end;
+                start = item.display.start;
+                end = item.display.end;
                 return;
             }
         });
