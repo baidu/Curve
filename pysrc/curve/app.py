@@ -34,7 +34,7 @@ def create_app():
     init app
     :return: flask app
     """
-    app = flask.Flask(__name__, static_folder=STATIC_PATH)
+    app = flask.Flask(__name__, static_folder=STATIC_PATH, static_url_path='')
     app.url_map.converters['regex'] = RegexConverter
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + SQLITE_PATH
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
@@ -44,12 +44,29 @@ def create_app():
     app.register_blueprint(bp, url_prefix='/v1')
     CORS(app)
 
-    @app.route('/<regex("$"):url>')
+    @app.route('/swagger-ui')
+    def swagger_index(url=None):
+        """
+        redirect to index
+        :return:
+        """
+        return flask.redirect('swagger-ui/index.html')
+
+    @app.route('/swagger-ui/')
+    def swagger_index2(url=None):
+        """
+        redirect to index
+        :return:
+        """
+        return flask.redirect('swagger-ui')
+
+    @app.route('/')
     def index(url=None):
         """
         redirect to index
         :return:
         """
-        return flask.redirect(INDEX_PAGE)
+        flask.head
+        return app.send_static_file('index.html')
 
     return app

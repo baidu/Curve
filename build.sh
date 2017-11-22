@@ -28,8 +28,7 @@ swagger_py_codegen --ui --spec -s doc/web_api.yaml pysrc -p curve
 [ -e ${BIN_DIR}/curve/web/swagger-ui ] && rm -rf ${BIN_DIR}/curve/web/swagger-ui
 mv ${BIN_DIR}/curve/static/swagger-ui ${BIN_DIR}/curve/web/
 [ -e ${BIN_DIR}/curve/web/v1 ] && rm -rf ${BIN_DIR}/curve/web/v1
-mv ${BIN_DIR}/curve/static/v1 ${BIN_DIR}/curve/web/
-sed -i -e "s%/static/v1/swagger.json%/web/v1/swagger.json%g" ${BIN_DIR}/curve/web/swagger-ui/index.html
+mv ${BIN_DIR}/curve/static/v1 ${BIN_DIR}/curve/web/static/
 rm -rf ${BIN_DIR}/curve/static
 pip install -r ${BIN_DIR}/requirements.txt
 pip install uwsgi
