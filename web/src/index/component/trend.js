@@ -1129,7 +1129,7 @@ export default class Trend extends Component {
                     marker: {
                         states: {
                             hover: {
-                                enabled: false
+                                enabled: true
                             }
                         }
                     },
@@ -1155,7 +1155,7 @@ export default class Trend extends Component {
                     marker: {
                         states: {
                             hover: {
-                                enabled: false
+                                enabled: true
                             }
                         }
                     },
