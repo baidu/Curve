@@ -869,7 +869,7 @@ export default class Trend extends Component {
                 }
             }
             else {
-                if (this.series.name === 'label line' && this.series.color === 'red') {
+                if (this.series.name === 'label line') {
                     let menuList = '';
                     if (self.state.menuList.length) {
                         menuList += '<ul class="selection">';
@@ -1099,12 +1099,14 @@ export default class Trend extends Component {
                     week: '%Y<br/>%m-%d',
                     month: '%Y-%m',
                     year: '%Y'
-                }
+                },
+                categories: []
             },
             yAxis: {
                 max: max,
                 min: min,
-                opposite: false
+                opposite: false,
+                startOnTick: false
             },
             legend: {
                 enabled: false,
@@ -1127,7 +1129,7 @@ export default class Trend extends Component {
                     marker: {
                         states: {
                             hover: {
-                                enabled: true
+                                enabled: false
                             }
                         }
                     },
@@ -1136,7 +1138,8 @@ export default class Trend extends Component {
                     },
                     tooltip: {
                         hideDelay: 5000
-                    }
+                    },
+                    turboThreshold: 3000
                 },
                 area: {
                     point: {
@@ -1148,11 +1151,11 @@ export default class Trend extends Component {
                 },
                 series: {
                     stickyTracking: false,
-                    turboThreshold: 1000000,
+                    turboThreshold: 3000,
                     marker: {
                         states: {
                             hover: {
-                                enabled: true
+                                enabled: false
                             }
                         }
                     },
@@ -1268,12 +1271,12 @@ export default class Trend extends Component {
             let trends = data.data.trends;
             let trendsBands = [];
             let trendsTrends = [];
-            // Process trend graphs
-            let result = [];
-            // Handle the label line
-            let resultLabel = [];
-            let visibleFlag = false;
             let name = self.props.params.name;
+            let result = [];
+            let label = [];
+            let startX;
+            let endX;
+            let zones = [];
             trends.map((item, i) => {
                 if (item.type === 'arearange') {
                     item.lineWidth = 0;
@@ -1289,20 +1292,48 @@ export default class Trend extends Component {
                         item.zIndex = 99;
                         item.lineWidth = 2;
                         item.color = '#388FF7';
+                        result = item.data;
                     }
                     if (item.name === 'label line') {
-                        item.color = 'red';
                         item.showInLegend = false;
                         item.lineWidth = 2;
                         item.zIndex = 100;
                         item.enableMouseTracking = true;
+                        item.zoneAxis = 'x';
+                        for (let i = 0; i < item.data.length - 1; i++) {
+                            if (!item.data[i][1] && item.data[i + 1][1]) {
+                                startX = i + 1;
+                            }
+                            if (item.data[i][1] && !item.data[i + 1][1]) {
+                                endX = i;
+                            }
+                            if (startX && endX) {
+                                label.push([startX, endX]);
+                                startX = undefined;
+                                endX = undefined;
+                            }
+                        }
+                        for (let i = 0; i < label.length; i++) {
+                            zones.push({
+                                color: '#388FF7',
+                                value: result[label[i][0]][0]
+                            });
+                            zones.push({
+                                color: 'red',
+                                value: result[label[i][1]][0]
+                            });
+                        }
+                        zones.push({
+                            color: '#388FF7'
+                        });
+                        item.zones = zones;
                     }
                     trendsTrends.push(item);
                 }
                 if (item.type === 'area') {
                     item.lineWidth = 0;
                     item.fillOpacity = 0.3;
-                    item.zIndex = -1;
+                    item.zIndex = 0;
                     item.enableMouseTracking = true;
                     trendsBands.push(item);
                     item.visible = false;

@@ -31,6 +31,7 @@ export default class Sidebar extends Component {
             // Control the left side of the data list to select the style
             active: {}
         };
+        this.dataListClick = this.dataListClick.bind(this);
     }
 
     componentDidMount() {
@@ -81,6 +82,7 @@ export default class Sidebar extends Component {
             axiosInstance.delete(url).then(function (response) {
                 self.refs.overlayBlack.style.display = 'none';
                 self.refs.dialog.style.display = 'none';
+                eventProxy.trigger('deleteLegend', name);
                 const data = response.data;
                 let dataList = self.state.dataList;
                 let currentIndex;
@@ -128,17 +130,23 @@ export default class Sidebar extends Component {
         const self = this;
         let list = self.state.dataList;
         let active = {};
-        list.map((item, index) => {
-            active[item.name] = false;
-            if (item.name === name) {
-                active[item.name] = true;
-            }
-        });
-        eventProxy.trigger('loadingTip');
-        this.setState({
-            init: false,
-            active: active
-        });
+        let target;
+        if (typeof name === 'string') {
+            list.map((item, index) => {
+                active[item.name] = false;
+                if (item.name === name) {
+                    active[item.name] = true;
+                }
+            });
+            eventProxy.trigger('loadingTip');
+            this.setState({
+                init: false,
+                active: active
+            });
+        }
+        else {
+            target = name.target;
+        }
     }
 
     /**
@@ -287,7 +295,7 @@ export default class Sidebar extends Component {
             isShow = self.state.isShow[item.name] ? 'block' : 'none';
             return (
                 <li key={i}
-                    onClick={this.dataListClick.bind(this, item.name)}
+                    onClick={this.dataListClick.bind(item.name)}
                     title={item.name}
                     className={className}
                 >
