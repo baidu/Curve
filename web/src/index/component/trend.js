@@ -927,9 +927,10 @@ export default class Trend extends Component {
                     load: loadFunction,
                     selection: selectionFunction
                 },
-                animation: {
-                    duration: 0
-                }
+                // animation: {
+                //     duration: 0
+                // }
+                animation: false
             },
             title: {
                 text: '',
@@ -1170,7 +1171,8 @@ export default class Trend extends Component {
                         events: {
                             mouseOver: mouseOverFunction
                         }
-                    }
+                    },
+                    animation: false
                 }
             }
         };
