@@ -31,6 +31,7 @@ export default class Sidebar extends Component {
             // Control the left side of the data list to select the style
             active: {}
         };
+        this.dataListClick = this.dataListClick.bind(this);
     }
 
     componentDidMount() {
@@ -81,6 +82,7 @@ export default class Sidebar extends Component {
             axiosInstance.delete(url).then(function (response) {
                 self.refs.overlayBlack.style.display = 'none';
                 self.refs.dialog.style.display = 'none';
+                eventProxy.trigger('deleteLegend', name);
                 const data = response.data;
                 let dataList = self.state.dataList;
                 let currentIndex;
@@ -117,7 +119,8 @@ export default class Sidebar extends Component {
             self.setState({
                 dialogTitle: obj.title,
                 dialogContent: obj.content,
-                dialogName: obj.name
+                dialogName: obj.name,
+                dialogType: obj.type
             });
         });
     }
@@ -127,16 +130,23 @@ export default class Sidebar extends Component {
         const self = this;
         let list = self.state.dataList;
         let active = {};
-        list.map((item, index) => {
-            active[item.name] = false;
-            if (item.name === name) {
-                active[item.name] = true;
-            }
-        });
-        this.setState({
-            init: false,
-            active: active
-        });
+        let target;
+        if (typeof name === 'string') {
+            list.map((item, index) => {
+                active[item.name] = false;
+                if (item.name === name) {
+                    active[item.name] = true;
+                }
+            });
+            eventProxy.trigger('loadingTip');
+            this.setState({
+                init: false,
+                active: active
+            });
+        }
+        else {
+            target = name.target;
+        }
     }
 
     /**
@@ -285,7 +295,7 @@ export default class Sidebar extends Component {
             isShow = self.state.isShow[item.name] ? 'block' : 'none';
             return (
                 <li key={i}
-                    onClick={this.dataListClick.bind(this, item.name)}
+                    onClick={this.dataListClick.bind(item.name)}
                     title={item.name}
                     className={className}
                 >
@@ -347,7 +357,8 @@ export default class Sidebar extends Component {
         eventProxy.trigger('openDialog', {
             title: 'Delete',
             content: 'Are you sure you want to delete ' + name + '?',
-            name
+            name,
+            type: 'confirm'
         });
     }
 
@@ -407,7 +418,7 @@ export default class Sidebar extends Component {
                     <div className="dialog-body">
                         <div className="dialog-content">{this.state.dialogContent}</div>
                         <div className="dialog-footer">
-                            <button className="confirm operation-btn" ref="dialogConfirm" onClick={self.dialogConfirm.bind(self, self.state.dialogName)}>Delete</button>
+                            <button className="confirm operation-btn" style={{display: !self.state.dialogType || self.state.dialogType === 'confirm' ? 'inline-block' : 'none'}} ref="dialogConfirm" onClick={self.dialogConfirm.bind(self, self.state.dialogName)}>Delete</button>
                             <button className="cancel operation-btn" ref="dialogCancel" onClick={self.dialogCancel.bind(self, self.state.dialogName)}>Cancel</button>
                         </div>
                     </div>

@@ -39,6 +39,14 @@ export default class Band extends Component {
                 chart
             });
         });
+        eventProxy.on('deleteLegend', name => {
+            let legend = !self.isEmpty(self.state.legend[name]) ? self.state.legend[name] : {0: 'show'};
+            delete self.state.legend[name];
+            cookie.save('bandStatus', self.state.legend);
+            self.setState({
+                legend: self.state.legend
+            });
+        });
     }
 
     initBand() {
@@ -195,6 +203,7 @@ export default class Band extends Component {
                     chart.series.map((item, i) => {
                         if (item.name === self.props.bandSeries[index].name) {
                             color = item.color;
+                            return;
                         }
                     });
                     style = {

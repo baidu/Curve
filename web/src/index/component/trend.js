@@ -225,16 +225,6 @@ export default class Trend extends Component {
                     break;
                 }
             }
-            // get real index of startTime and endTime
-            for (let i = 0; i < points.length; i++) {
-                if (points[i].x === startTime) {
-                    startIndex = i;
-                }
-                if (points[i].x === endTime) {
-                    endIndex = i;
-                }
-            }
-            endIndex--;
             let url = api.menuOpera
                 + name
                 + '?startTime=' + startTime
@@ -243,70 +233,10 @@ export default class Trend extends Component {
             // get current trend graph max and min
             let min = Math.round(chart.xAxis[0].min);
             let max = Math.round(chart.xAxis[0].max);
-
             axiosInstance.put(url).then(function (response) {
-                // update selectedIndex
-                if (!window.selectedIndex[name]) {
-                    window.selectedIndex[name] = [];
-                }
-                let cancelIndex = [];
-                for (let i = startIndex; i <= endIndex; i++) {
-                    cancelIndex.push(i);
-                }
-                let finalResult = [];
-                for (let j = 0; j < window.selectedIndex[name].length; j++) {
-                    if (cancelIndex.indexOf(window.selectedIndex[name][j]) === -1) {
-                        finalResult.push(window.selectedIndex[name][j]);
-                    }
-                }
-                window.selectedIndex[name] = finalResult;
                 // update window.labelObj
                 window.labelObj[name].splice(currentIndex, 1);
-                let result = [];
-                // remove old label line
-                let removeIndex = 0;
-                let originIndex = 0;
-                self.chart.series.map((item, index) => {
-                    if (item.name === 'base line') {
-                        originIndex = index;
-                        return;
-                    }
-                });
-                self.chart.series.map((item, index) => {
-                    if (item.name === 'label line') {
-                        removeIndex = index;
-                        return;
-                    }
-                });
-                self.chart.series[removeIndex].remove();
-                // get result data
-                for (let i = 0; i < self.chart.series[originIndex].points.length; i++) {
-                    if (window.selectedIndex[name].indexOf(i) !== -1) {
-                        result.push([self.chart.series[originIndex].points[i].x, self.chart.series[originIndex].points[i].y]);
-                    }
-                    else {
-                        result.push([self.chart.series[originIndex].points[i].x, null]);
-                    }
-                }
-                // redraw trend
-                self.chart.addSeries({
-                    name: 'label line',
-                    data: result,
-                    type: 'line',
-                    lineWidth: 2,
-                    color: 'red',
-                    zIndex: 101,
-                    showInLegend: false,
-                    enableMouseTracking: true,
-                    marker: {
-                        states: {
-                            hover: {
-                                enabled: true
-                            }
-                        }
-                    }
-                }, false);
-                self.chart.redraw();
+                self.redrawTrend(self.min, self.max);
             });
         });
         // Operation tooltip
@@ -331,6 +261,15 @@ export default class Trend extends Component {
                 + 'startTime=' + startTime
                 + '&endTime=' + endTime
                 + '&bandName=' + bandName;
+            if (startTime > endTime) {
+                eventProxy.trigger('openDialog', {
+                    title: 'Note',
+                    content: 'Error: startTime > endTime.',
+                    name: '',
+                    type: 'alert'
+                });
+                return;
+            }
             self.getTrendData(url, undefined, undefined, false);
         });
 
@@ -377,45 +316,20 @@ export default class Trend extends Component {
             if (!series) {
                 return;
             }
-            series.points.map((item, index) => {
-                if (item.y) {
-                    selectedIndex.push(index);
-                }
-            });
-            let num = 0;
             let tempEndTime;
             let tempStartTime;
-            for (let i = 0; i < selectedIndex.length; i++) {
-                if (selectedIndex[i] + 1 === selectedIndex[i + 1]) {
-                    num++;
+            for (let i = 0; i < series.points.length - 1; i++) {
+                if (!series.points[i].y && series.points[i + 1].y) {
+                    tempStartTime = series.points[i + 1].x;
                 }
-                else {
-                    tempEndTime = series.points[selectedIndex[i]].x;
-                    tempStartTime = series.points[selectedIndex[i - num]].x;
-                    num = 0;
+                if (series.points[i].y && !series.points[i + 1].y) {
+                    tempEndTime = series.points[i].x;
+                }
+                if (tempStartTime && tempEndTime) {
                     window.labelObj[name].push([tempStartTime, tempEndTime]);
+                    tempStartTime = undefined;
+                    tempEndTime = undefined;
                 }
-            }
-
-            if (!window.selectedIndex[name]) {
-                window.selectedIndex[name] = [];
-            }
-            window.selectedIndex[name] = selectedIndex;
-
-            if (selectedIndex.length < window.selectedIndex[name].length) {
-                for (let m = 0; m < selectedIndex.length; m++) {
-                    if (window.selectedIndex[name].indexOf(selectedIndex[m]) === -1) {
-                        window.selectedIndex[name].push(selectedIndex[m]);
-                    }
-                }
-            }
-            else {
-                for (let n = 0; n < window.selectedIndex[name].length; n++) {
-                    if (selectedIndex.indexOf(window.selectedIndex[name][n]) === -1) {
-                        selectedIndex.push(window.selectedIndex[name][n]);
-                    }
-                }
-                window.selectedIndex[name] = selectedIndex;
             }
         });
 
@@ -445,29 +359,27 @@ export default class Trend extends Component {
             }
         });
 
-        eventProxy.on('loadingTip', () => {
-            let text = 'The trend is loading, please wait';
-            if (self.state.loading) {
-                // Add trend loading tips
-                if (!self.refs.loadingContainer && self.refs.loadingTip) {
-                    self.refs.loadingTip.style.display = 'block';
-                    self.loadingTipTime = setInterval(function () {
-                        if (num === 1) {
-                            text = 'The trend is loading, please wait' + '.';
-                        }
-                        else if (num === 2) {
-                            text = 'The trend is loading, please wait' + '..';
-                        }
-                        else if (num === 3) {
-                            text = 'The trend is loading, please wait' + '...';
-                            num = 0;
-                        }
-                        num++;
-                        if (self.refs.loadingTip) {
-                            self.refs.loadingTip.innerHTML = text;
-                        }
-                    }, 800);
-                }
+        eventProxy.on('loadingTip', tip => {
+            let text = tip || 'The trend is loading, please wait';
+            // Add trend loading tips
+            if (!self.refs.loadingContainer && self.refs.loadingTip) {
+                self.refs.loadingTip.style.display = 'block';
+                self.loadingTipTime = setInterval(function () {
+                    if (num === 1) {
+                        text = tip + '.' || 'The trend is loading, please wait' + '.';
+                    }
+                    else if (num === 2) {
+                        text = tip + '..' || 'The trend is loading, please wait' + '..';
+                    }
+                    else if (num === 3) {
+                        text = tip + '...' || 'The trend is loading, please wait' + '...';
+                        num = 0;
+                    }
+                    num++;
+                    if (self.refs.loadingTip) {
+                        self.refs.loadingTip.innerHTML = text;
+                    }
+                }, 800);
             }
         });
 
@@ -592,10 +504,6 @@ export default class Trend extends Component {
             }
         });
 
-        if (isDealSelectedIndex !== false) {
-            selectedIndex = self.dealSelectedIndex(me, originIndex1, selectedIndex);
-        }
-
         let startTime;
         let endTime;
         if (selectedIndex.length) {
@@ -611,57 +519,6 @@ export default class Trend extends Component {
         }
         window.labelObj[name].push([startTime, endTime]);
 
-        let finalAbnormalSelectedIndex = selectedIndex;
-        for (let n = 0; n < self.abnormalSelectedIndex.length; n++) {
-            if (selectedIndex.indexOf(self.abnormalSelectedIndex[n]) === -1) {
-                finalAbnormalSelectedIndex.push(self.abnormalSelectedIndex[n]);
-            }
-        }
-
-        self.abnormalSelectedIndex = finalAbnormalSelectedIndex;
-
-        self.abnormalSelectedIndex.sort(function (a, b) {
-            return a - b;
-        });
-
-        if (!window.selectedIndex[name]) {
-            window.selectedIndex[name] = [];
-        }
-        // To merge the subscripts of selected data points
-        let finalSelectedIndex = [];
-        finalSelectedIndex = self.abnormalSelectedIndex;
-        for (let m = 0; m < window.selectedIndex[name].length; m++) {
-            if (self.abnormalSelectedIndex.indexOf(window.selectedIndex[name][m]) === -1) {
-                finalSelectedIndex.push(window.selectedIndex[name][m]);
-            }
-        }
-
-        window.selectedIndex[name] = finalSelectedIndex;
-
-        window.selectedIndex[name].sort(function (a, b) {
-            return a - b;
-        });
-
-        let result = [];
-        let removeIndex = 0;
-        for (let i = 0; i < me.series.length; i++) {
-            if (me.series[i].color === 'red') {
-                removeIndex = i;
-                break;
-            }
-        }
-
-        for (let i = 0; i < me.series[originIndex1].points.length; i++) {
-            if (window.selectedIndex[name].indexOf(i) !== -1) {
-                result.push([me.series[originIndex1].points[i].x, me.series[originIndex1].points[i].y]);
-            }
-            else {
-                result.push([me.series[originIndex1].points[i].x, null]);
-            }
-        }
-
-        me.series[removeIndex].remove();
-
         let label = 1;
         window.startTime = startTime;
         window.endTime = endTime;
@@ -671,26 +528,7 @@ export default class Trend extends Component {
             + '&endTime=' + endTime
             + '&label=' + label;
         axiosInstance.put(url).then(function (response) {
-            // add label line
-            me.addSeries({
-                name: 'label line',
-                data: result,
-                type: 'line',
-                lineWidth: 2,
-                color: 'red',
-                zIndex: 101,
-                showInLegend: false,
-                enableMouseTracking: true,
-                marker: {
-                    states: {
-                        hover: {
-                            enabled: true
-                        }
-                    }
-                }
-            }, false);
-            me.redraw();
-            self.abnormalSelectedIndex = [];
+            self.redrawTrend(self.min, self.max);
         });
     }
 
@@ -705,7 +543,6 @@ export default class Trend extends Component {
         for (let i = 0; i < me.series.length; i++) {
             if (me.series[i].name === 'base line') {
                 originIndex = i;
-                break;
             }
         }
 
@@ -717,8 +554,6 @@ export default class Trend extends Component {
                 }
             }
         });
-        unselectedIndex = self.dealSelectedIndex(me, originIndex, unselectedIndex);
-
 
         let startTime;
         let endTime;
@@ -773,51 +608,6 @@ export default class Trend extends Component {
             }
         }
 
-        if (!window.selectedIndex[name]) {
-            window.selectedIndex[name] = [];
-        }
-
-        for (let i = 0; i < window.selectedIndex[name].length; i++) {
-            if (unselectedIndex.indexOf(window.selectedIndex[name][i]) !== -1) {
-                window.selectedIndex[name][i] = undefined;
-            }
-        }
-
-        let resultIndex = [];
-        for (let i = 0; i < window.selectedIndex[name].length; i++) {
-            if (window.selectedIndex[name][i] !== undefined) {
-                resultIndex.push(window.selectedIndex[name][i]);
-            }
-        }
-
-        resultIndex.sort(function (a, b) {
-            return a - b;
-        });
-
-        window.selectedIndex[name] = resultIndex;
-
-        window.selectedIndex[name].sort(function (a, b) {
-            return a - b;
-        });
-
-        let result = [];
-        for (let i = 0; i < me.series[originIndex].points.length; i++) {
-            if (resultIndex.indexOf(i) !== -1) {
-                result.push([me.series[originIndex].points[i].x, me.series[originIndex].points[i].y]);
-            }
-            else {
-                result.push([me.series[originIndex].points[i].x, null]);
-            }
-        }
-        let removeIndex = 0;
-        for (let i = 0; i < me.series.length; i++) {
-            if (me.series[i].color === 'red') {
-                removeIndex = i;
-                break;
-            }
-        }
-        me.series[removeIndex].remove();
-
         let label = 0;
         window.startTime = startTime;
         window.endTime = endTime;
@@ -827,19 +617,7 @@ export default class Trend extends Component {
             + '&endTime=' + endTime
             + '&label=' + label;
         axiosInstance.put(url).then(function (response) {
-            me.addSeries({
-                name: 'label line',
-                data: result,
-                type: 'line',
-                lineWidth: 2,
-                color: 'red',
-                zIndex: 101,
-                showInLegend: false,
-                marker: {
-                    enabled: false
-                }
-            }, false);
-            me.redraw();
+            self.redrawTrend(self.min, self.max);
         });
 
         key.currentKey = null;
@@ -865,8 +643,8 @@ export default class Trend extends Component {
         }
         list.map((item, index) => {
             if (item.name === name) {
-                start = item.time.start;
-                end = item.time.end;
+                start = item.display.start;
+                end = item.display.end;
                 return;
             }
         });
@@ -1091,7 +869,7 @@ export default class Trend extends Component {
                 }
             }
             else {
-                if (this.series.name === 'label line' && this.series.color === 'red') {
+                if (this.series.name === 'label line') {
                     let menuList = '';
                     if (self.state.menuList.length) {
                         menuList += '<ul class="selection">';
@@ -1104,6 +882,11 @@ export default class Trend extends Component {
                                 + '</li>';
                         }
                         menuList += '</ul>';
+                        // menuList += this.point.index;
+                        // menuList += ' ';
+                        // menuList += this.x;
+                        // menuList += ' ';
+                        // menuList += this.y;
                         return menuList;
                     }
                     else {
@@ -1111,6 +894,9 @@ export default class Trend extends Component {
                     }
                 }
                 else {
+                    // if (this.series.name === 'base line') {
+                    //     return this.point.index + ' ' + this.x + ' ' + this.y;
+                    // }
                     return false;
                 }
             }
@@ -1141,9 +927,10 @@ export default class Trend extends Component {
                     load: loadFunction,
                     selection: selectionFunction
                 },
-                animation: {
-                    duration: 0
-                }
+                // animation: {
+                //     duration: 0
+                // }
+                animation: false
             },
             title: {
                 text: '',
@@ -1313,12 +1100,14 @@ export default class Trend extends Component {
                     week: '%Y<br/>%m-%d',
                     month: '%Y-%m',
                     year: '%Y'
-                }
+                },
+                categories: []
             },
             yAxis: {
                 max: max,
                 min: min,
-                opposite: false
+                opposite: false,
+                startOnTick: false
             },
             legend: {
                 enabled: false,
@@ -1350,18 +1139,20 @@ export default class Trend extends Component {
                     },
                     tooltip: {
                         hideDelay: 5000
-                    }
+                    },
+                    turboThreshold: 3000
                 },
                 area: {
                     point: {
                         events: {}
                     },
                     animation: false,
-                    trackByArea: true
+                    trackByArea: true,
+                    connectNulls: false
                 },
                 series: {
                     stickyTracking: false,
-                    turboThreshold: 100000,
+                    turboThreshold: 3000,
                     marker: {
                         states: {
                             hover: {
@@ -1380,7 +1171,8 @@ export default class Trend extends Component {
                         events: {
                             mouseOver: mouseOverFunction
                         }
-                    }
+                    },
+                    animation: false
                 }
             }
         };
@@ -1481,12 +1273,12 @@ export default class Trend extends Component {
             let trends = data.data.trends;
             let trendsBands = [];
             let trendsTrends = [];
-            // Process trend graphs
-            let result = [];
-            // Handle the label line
-            let resultLabel = [];
-            let visibleFlag = false;
             let name = self.props.params.name;
+            let result = [];
+            let label = [];
+            let startX;
+            let endX;
+            let zones = [];
             trends.map((item, i) => {
                 if (item.type === 'arearange') {
                     item.lineWidth = 0;
@@ -1499,60 +1291,54 @@ export default class Trend extends Component {
                 }
                 if (item.type === 'line' || !item.type) {
                     if (item.name === 'base line') {
-                        item.zIndex = 100;
+                        item.zIndex = 99;
                         item.lineWidth = 2;
                         item.color = '#388FF7';
-                        item.data.map(data => {
-                            result.push([data[0], data[1]]);
-                            result.push([data[0], data[1]]);
-                        });
+                        result = item.data;
                     }
                     if (item.name === 'label line') {
-                        item.color = 'red';
                         item.showInLegend = false;
                         item.lineWidth = 2;
-                        item.zIndex = 101;
+                        item.zIndex = 100;
                         item.enableMouseTracking = true;
-                        item.data.map(data => {
-                            resultLabel.push([data[0], data[1]]);
-                            resultLabel.push([data[0], data[1]]);
+                        item.zoneAxis = 'x';
+                        for (let i = 0; i < item.data.length - 1; i++) {
+                            if (!item.data[i][1] && item.data[i + 1][1]) {
+                                startX = i + 1;
+                            }
+                            if (item.data[i][1] && !item.data[i + 1][1]) {
+                                endX = i;
+                            }
+                            if (startX && endX) {
+                                label.push([startX, endX]);
+                                startX = undefined;
+                                endX = undefined;
+                            }
+                        }
+                        for (let i = 0; i < label.length; i++) {
+                            zones.push({
+                                color: '#388FF7',
+                                value: result[label[i][0]][0]
+                            });
+                            zones.push({
+                                color: 'red',
+                                value: result[label[i][1]][0]
+                            });
+                        }
+                        zones.push({
+                            color: '#388FF7'
                         });
+                        item.zones = zones;
                     }
                     trendsTrends.push(item);
                 }
                 if (item.type === 'area') {
                     item.lineWidth = 0;
                     item.fillOpacity = 0.3;
-                    item.zIndex = -1;
+                    item.zIndex = 0;
                     item.enableMouseTracking = true;
                     trendsBands.push(item);
                     item.visible = false;
-                }
-            });
-            let selectedIndex = [];
-            let tempStartTime;
-            let tempEndTime;
-            trends.map((item, i) => {
-                if (item.name === 'base line') {
-                    item.data = result;
-                }
-                if (item.name === 'label line') {
-                    item.data = resultLabel;
-                    item.data.map((data, j) => {
-                        if (data[1]) {
-                            if (!data.events) {
-                                data.events = {};
-                            }
-                            data.marker = {
-                                symbol: 'circle'
-                            };
-                        }
-                        else {
-                            if (!data.events) {
-                                data.events = {};
-                            }
-                        }
-                    });
                 }
             });
             options.yAxis.min = data.data.yAxis[0];
