@@ -6,7 +6,7 @@
 import './trend.less';
 
 import React, {Component} from 'react';
-import {Icon} from 'antd';
+import {hashHistory} from 'react-router';
 import {axiosInstance} from '../../tools/axiosInstance';
 import eventProxy from '../../tools/eventProxy';
 import Chart from '../../common/baseComponent/chart';
@@ -73,14 +73,13 @@ export default class Trend extends Component {
         // The maximum value the x-axis can set when zooming in
         this.enlargeExtremesMax = undefined;
         // The minimum value that the x-axis can set when reducing the operation
-        this. enlargeExtremesMin = undefined;
+        this.enlargeExtremesMin = undefined;
     }
 
     componentDidMount() {
         const self = this;
         self.renderTrend();
         self.getOperaMenuData();
-        let name = self.props.params.name;
         let num = 1;
         $('body').on('keydown', function (e) {
             e.preventDefault();
@@ -202,19 +201,8 @@ export default class Trend extends Component {
             let action = $(this).attr('data-action');
             let startTime = 0;
             let endTime = 0;
-            let chart = window.chartTrend;
             let currentX = window.currentX;
-            let series;
-            let startIndex;
-            let endIndex;
             let name = self.props.params.name;
-            chart.series.map((item, index) => {
-                if (item.name === 'label line') {
-                    series = item;
-                    return;
-                }
-            });
-            let points = series.points;
             let currentIndex = 0;
             // get real startTime and endTime
             for (let i = 0; i < window.labelObj[name].length; i++) {
@@ -231,8 +219,6 @@ export default class Trend extends Component {
                 + '&endTime=' + endTime
                 + '&action=' + action;
             // get current trend graph max and min
-            let min = Math.round(chart.xAxis[0].min);
-            let max = Math.round(chart.xAxis[0].max);
             axiosInstance.put(url).then(function (response) {
                 // update window.labelObj
                 window.labelObj[name].splice(currentIndex, 1);
@@ -273,23 +259,24 @@ export default class Trend extends Component {
             self.getTrendData(url, undefined, undefined, false);
         });
 
+        let TREND_LOADING = 'The trend is loading, please wait';
         // loading trend graph
         self.loadingTime = setInterval(function () {
             let text = '';
             if (num === 1) {
-                text = 'The trend is loading, please wait' + '.';
+                text = '.';
             }
             else if (num === 2) {
-                text = 'The trend is loading, please wait' + '..';
+                text = '..';
             }
             else if (num === 3) {
-                text = 'The trend is loading, please wait' + '...';
+                text = '...';
                 num = 0;
             }
             num++;
             if (self.props.params.list && self.props.params.list.length && self.state.loading) {
                 if (self.refs.loadingContainer) {
-                    self.refs.loadingContainer.innerHTML = text;
+                    self.refs.loadingContainer.innerHTML = TREND_LOADING + text;
                 }
             }
         }, 800);
@@ -304,20 +291,19 @@ export default class Trend extends Component {
         // Gets the subscript of the selected point
         // Get the selected interval
         eventProxy.on('loadedChart', chart => {
-            let series;
+            let series = {};
             let name = self.props.params.name;
             window.labelObj[name] = [];
-            chart.series.map((item, index) => {
+            chart.series.forEach(item => {
                 if (item.name === 'label line') {
                     series = item;
                 }
             });
-            let selectedIndex = [];
             if (!series) {
                 return;
             }
-            let tempEndTime;
-            let tempStartTime;
+            let tempEndTime = 0;
+            let tempStartTime = 0;
             for (let i = 0; i < series.points.length - 1; i++) {
                 if (!series.points[i].y && series.points[i + 1].y) {
                     tempStartTime = series.points[i + 1].x;
@@ -334,20 +320,53 @@ export default class Trend extends Component {
         });
 
         eventProxy.on('loadTrend', obj => {
-            let text = 'The trend is loading, please wait';
+            let text = '';
             if (obj.list.length && self.state.loading) {
                 // Add trend loading tips
                 if (!self.refs.loadingContainer && self.refs.loadingTip) {
                     self.refs.loadingTip.style.display = 'block';
                     self.loadingTrendTipTime = setInterval(function () {
                         if (num === 1) {
-                            text = 'The trend is loading, please wait' + '.';
+                            text = '.';
                         }
                         else if (num === 2) {
-                            text = 'The trend is loading, please wait' + '..';
+                            text = '..';
                         }
                         else if (num === 3) {
-                            text = 'The trend is loading, please wait' + '...';
+                            text = '...';
+                            num = 0;
+                        }
+                        num++;
+                        if (self.refs.loadingTip) {
+                            self.refs.loadingTip.innerHTML = TREND_LOADING + text;
+                        }
+                    }, 800);
+                }
+            }
+        });
+
+        eventProxy.on('loadingTip', (tip, hasNoData) => {
+            let originText = tip ? tip : TREND_LOADING;
+            // Add trend loading tips
+            let num = 1;
+            if (!self.refs.loadingContainer && self.refs.loadingTip) {
+                self.refs.loadingTip.style.display = 'block';
+                if (hasNoData) {
+                    if (self.refs.loadingTip) {
+                        self.refs.loadingTip.innerHTML = originText;
+                    }
+                }
+                else {
+                    let text = '';
+                    self.loadingTipTime = setInterval(function () {
+                        if (num === 1) {
+                            text = originText + '.';
+                        }
+                        else if (num === 2) {
+                            text = originText + '..';
+                        }
+                        else if (num === 3) {
+                            text = originText + '...';
                             num = 0;
                         }
                         num++;
@@ -359,32 +378,8 @@ export default class Trend extends Component {
             }
         });
 
-        eventProxy.on('loadingTip', tip => {
-            let text = tip || 'The trend is loading, please wait';
-            // Add trend loading tips
-            if (!self.refs.loadingContainer && self.refs.loadingTip) {
-                self.refs.loadingTip.style.display = 'block';
-                self.loadingTipTime = setInterval(function () {
-                    if (num === 1) {
-                        text = tip + '.' || 'The trend is loading, please wait' + '.';
-                    }
-                    else if (num === 2) {
-                        text = tip + '..' || 'The trend is loading, please wait' + '..';
-                    }
-                    else if (num === 3) {
-                        text = tip + '...' || 'The trend is loading, please wait' + '...';
-                        num = 0;
-                    }
-                    num++;
-                    if (self.refs.loadingTip) {
-                        self.refs.loadingTip.innerHTML = text;
-                    }
-                }, 800);
-            }
-        });
-
         eventProxy.on('bandVisible', legend => {
-            self.state.bandSeries.map((item, index) => {
+            this.state.bandSeries.forEach((item, index) => {
                 if (!legend[index]) {
                     item.visible = false;
                 }
@@ -392,24 +387,23 @@ export default class Trend extends Component {
                     item.visible = true;
                 }
             });
-            self.setState({
-                bandSeries: self.state.bandSeries
+            this.setState({
+                bandSeries: this.state.bandSeries
             });
         });
     }
 
     // redraw trend
     redrawTrend(min, max) {
-        const self = this;
         let start = min;
         let end = max;
-        let name = self.props.params.name;
+        let name = this.props.params.name;
         let url = api.getTrend
             + name
             + '/curves?'
             + 'startTime=' + start
             + '&endTime=' + end;
-        self.getTrendData(url, undefined, undefined, false);
+        this.getTrendData(url, undefined, undefined, false);
     }
 
     shouldComponentUpdate(nextProps) {
@@ -430,7 +424,7 @@ export default class Trend extends Component {
     // After the drag operation, the subscript of the selected data point is obtained
     getSelectedIndex(e, series) {
         let selectedIndex = [];
-        series.data.map((item, index) => {
+        series.data.forEach((item, index) => {
             if (item[0] >= e.xAxis[0].min && item[0] <= e.xAxis[0].max) {
                 selectedIndex.push(index);
             }
@@ -496,7 +490,7 @@ export default class Trend extends Component {
         }
         let selectedIndex = [];
         let points = me.series[originIndex1].points;
-        points.map((item, index) => {
+        points.forEach((item, index) => {
             if (item.x >= Math.round(start) && item.x <= Math.round(end)) {
                 if (item.y) {
                     selectedIndex.push(index);
@@ -547,7 +541,7 @@ export default class Trend extends Component {
         }
 
         let points = me.series[originIndex].points;
-        points.map((item, index) => {
+        points.forEach((item, index) => {
             if (item.x >= Math.round(start) && item.x <= Math.round(end)) {
                 if (item.y) {
                     unselectedIndex.push(index);
@@ -555,8 +549,8 @@ export default class Trend extends Component {
             }
         });
 
-        let startTime;
-        let endTime;
+        let startTime = 0;
+        let endTime = 0;
 
         if (unselectedIndex.length) {
             startTime = points[unselectedIndex[0]].x;
@@ -641,7 +635,7 @@ export default class Trend extends Component {
         if (!list || !list.length) {
             return;
         }
-        list.map((item, index) => {
+        list.forEach(item => {
             if (item.name === name) {
                 start = item.display.start;
                 end = item.display.end;
@@ -671,7 +665,7 @@ export default class Trend extends Component {
         let loadFunction = function () {
             let chart = this;
             if (chart.series.length) {
-                chart.series.map((item, i) => {
+                chart.series.forEach((item, i) => {
                     if (item.name === 'base line') {
                         self.allSeriesPoints = chart.series[i].points;
                         self.abnormalSelectedPoints = [];
@@ -881,7 +875,7 @@ export default class Trend extends Component {
                                 + self.state.menuList[i].name
                                 + '</li>';
                         }
-                        menuList += '</ul>';
+                        // menuList += '</ul>';
                         // menuList += this.point.index;
                         // menuList += ' ';
                         // menuList += this.x;
@@ -890,6 +884,12 @@ export default class Trend extends Component {
                         return menuList;
                     }
                     else {
+                        // menuList += this.point.index;
+                        // menuList += ' ';
+                        // menuList += this.x;
+                        // menuList += ' ';
+                        // menuList += this.y;
+                        // return menuList;
                         return false;
                     }
                 }
@@ -1200,14 +1200,12 @@ export default class Trend extends Component {
 
     // Rendering trend graphs, including trend graphs and thumbnails
     renderTrend(props) {
-        const self = this;
-        let options = self.getConfig(props);
+        let options = this.getConfig(props);
         if (!options) {
             return;
         }
-        self.getTrendData(options.url, options.options, undefined, false);
-        self.getThumbTrendData(options.thumbUrl, options.options);
-        return;
+        this.getTrendData(options.url, options.options, undefined, false);
+        this.getThumbTrendData(options.thumbUrl, options.options);
     }
 
     // Get the operation menu for the label line
@@ -1243,15 +1241,14 @@ export default class Trend extends Component {
 
     // Get the width of the big trend graph
     getTrendWidth() {
-        const self = this;
         let width = 0;
-        if (self.state.bandMenuStyle) {
+        if (this.state.bandMenuStyle) {
             width = document.body.clientWidth - 150 - 35;
         }
         else {
             width = document.body.clientWidth - 40 - 35;
         }
-        if (self.props.params.menuDisplay === 'block') {
+        if (this.props.params.menuDisplay === 'block') {
             width = width - 200;
         }
         return width;
@@ -1274,12 +1271,8 @@ export default class Trend extends Component {
             let trendsBands = [];
             let trendsTrends = [];
             let name = self.props.params.name;
-            let result = [];
-            let label = [];
-            let startX;
-            let endX;
             let zones = [];
-            trends.map((item, i) => {
+            trends.forEach(item => {
                 if (item.type === 'arearange') {
                     item.lineWidth = 0;
                     item.color = 'rgba(48,225,40, 0.1)';
@@ -1294,7 +1287,6 @@ export default class Trend extends Component {
                         item.zIndex = 99;
                         item.lineWidth = 2;
                         item.color = '#388FF7';
-                        result = item.data;
                     }
                     if (item.name === 'label line') {
                         item.showInLegend = false;
@@ -1304,26 +1296,17 @@ export default class Trend extends Component {
                         item.zoneAxis = 'x';
                         for (let i = 0; i < item.data.length - 1; i++) {
                             if (!item.data[i][1] && item.data[i + 1][1]) {
-                                startX = i + 1;
+                                zones.push({
+                                    color: '#388FF7',
+                                    value: item.data[i + 1][0]
+                                });
                             }
                             if (item.data[i][1] && !item.data[i + 1][1]) {
-                                endX = i;
+                                zones.push({
+                                    color: 'red',
+                                    value: item.data[i][0]
+                                });
                             }
-                            if (startX && endX) {
-                                label.push([startX, endX]);
-                                startX = undefined;
-                                endX = undefined;
-                            }
-                        }
-                        for (let i = 0; i < label.length; i++) {
-                            zones.push({
-                                color: '#388FF7',
-                                value: result[label[i][0]][0]
-                            });
-                            zones.push({
-                                color: 'red',
-                                value: result[label[i][1]][0]
-                            });
                         }
                         zones.push({
                             color: '#388FF7'
@@ -1395,7 +1378,6 @@ export default class Trend extends Component {
         let option;
         let startTime;
         let endTime;
-        let url;
         // Set the extreme value to avoid the big picture redrawing before the request
         self.refs.container.chart.xAxis[0].setExtremes(self.min, self.max);
         if (e.trigger) {
@@ -1406,7 +1388,7 @@ export default class Trend extends Component {
                 option = self.state.options;
                 let selectedButtons = option.rangeSelector.buttons;
                 let currentSelectedText  = e.rangeSelectorButton.text;
-                selectedButtons.map((item, index) => {
+                selectedButtons.forEach((item, index) => {
                     if (item.text === currentSelectedText) {
                         option.rangeSelector.selected = index;
                         return;
@@ -1456,7 +1438,7 @@ export default class Trend extends Component {
         if (!list || !list.length) {
             return;
         }
-        list.map(item => {
+        list.forEach(item => {
             if (item.name === name) {
                 summary = item;
                 return;
@@ -1510,8 +1492,7 @@ export default class Trend extends Component {
     }
 
     returnChart(chart) {
-        const self = this;
-        self.chart = chart;
+        this.chart = chart;
     }
 
     returnBandStyle(bandStyle) {
@@ -1522,18 +1503,17 @@ export default class Trend extends Component {
     }
 
     render() {
-        const self = this;
         let text = 'The trend is loading, please wait';
-        if (self.props.params.list.length) {
-            if (self.state.loading) {
+        if (this.props.params.list.length) {
+            if (this.state.loading) {
                 return (
                     <div className="loading-trend" ref="loadingContainer">The trend is loading, please wait</div>
                 );
             }
             else {
-                let options = self.state.options;
+                let options = this.state.options;
                 if (options.chart) {
-                    options.chart.width = self.getTrendWidth();
+                    options.chart.width = this.getTrendWidth();
                 }
                 return (
                     <div>
@@ -1552,11 +1532,11 @@ export default class Trend extends Component {
                             >
                             </Band>
                             <Chart ref="container"
-                                   container={self.state.container}
+                                   container={this.state.container}
                                    config={options}
-                                   type={self.state.type}
+                                   type={this.state.type}
                                    returnChart = {chart => this.returnChart(chart)}
-                                   neverReflow={self.state.neverReflow}
+                                   neverReflow={this.state.neverReflow}
                             />
                             <div ref="loadingTip" className="loading-tip">{text}</div>
                         </div>

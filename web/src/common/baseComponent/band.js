@@ -40,28 +40,22 @@ export default class Band extends Component {
             });
         });
         eventProxy.on('deleteLegend', name => {
-            let legend = !self.isEmpty(self.state.legend[name]) ? self.state.legend[name] : {0: 'show'};
-            delete self.state.legend[name];
-            cookie.save('bandStatus', self.state.legend);
-            self.setState({
-                legend: self.state.legend
+            delete this.state.legend[name];
+            cookie.save('bandStatus', this.state.legend);
+            this.setState({
+                legend: this.state.legend
             });
         });
     }
 
     initBand() {
-        const self = this;
-        let bandSeries = self.props.bandSeries;
-        let name = self.props.name;
-        let legend = cookie.load('bandStatus') || self.state.legend || {};
-        let list = self.props.list;
-        list.map((item, index) => {
-            if (!self.isEmpty(legend[item.name])) {
-
-            }
-            else {
+        let bandSeries = this.props.bandSeries;
+        let legend = cookie.load('bandStatus') || this.state.legend || {};
+        let list = this.props.list;
+        list.forEach(item => {
+            if (this.isEmpty(legend[item.name])) {
                 legend[item.name] = {};
-                bandSeries.map((series, index) => {
+                bandSeries.forEach((series, index) => {
                     if (!index) {
                         legend[item.name][index] = 'show';
                     }
@@ -72,14 +66,13 @@ export default class Band extends Component {
             }
         });
         cookie.save('bandStatus', legend);
-        self.setState({
+        this.setState({
             legend
         });
     }
 
     // Determine whether the object is empty
     isEmpty(obj) {
-        const self = this;
         for (let key in obj) {
             return false;
         }
@@ -88,10 +81,9 @@ export default class Band extends Component {
 
     // Expand or collapse the right sidebar
     toggleBandMenu() {
-        const self = this;
         let isShow;
         let isSmallShow;
-        if (self.state.bandMenuStyle) {
+        if (this.state.bandMenuStyle) {
             isShow = false;
             isSmallShow = true;
         }
@@ -100,11 +92,11 @@ export default class Band extends Component {
             isSmallShow = false;
         }
 
-        self.setState({
+        this.setState({
             bandMenuStyle: isShow,
             smallBandMenuStyle: isSmallShow
         });
-        self.props.returnBandStyle({
+        this.props.returnBandStyle({
             bandMenuStyle: isShow,
             smallBandMenuStyle: isSmallShow
         });
@@ -115,24 +107,23 @@ export default class Band extends Component {
     }
 
     // Switch band display
-    toggleBand(index, name) {
-        const self = this;
-        let legend = self.state.legend;
-        let chart = self.state.chart;
+    toggleBand(name) {
+        let legend = this.state.legend;
+        let chart = this.state.chart;
         let series = {};
-        let bandSeries = self.props.bandSeries;
-        let dataName = self.props.name;
-        chart.series.map((item, index) => {
+        let bandSeries = this.props.bandSeries;
+        let dataName = this.props.name;
+        chart.series.forEach((item, index) => {
             if (item.name === name) {
                 series = chart.series[index];
             }
         });
-        bandSeries.map((item, index) => {
+        bandSeries.forEach((item, index) => {
             legend[dataName][index] = '';
         });
         if (series.visible) {
             series.hide();
-            bandSeries.map((item, i) => {
+            bandSeries.forEach((item, i) => {
                 if (item.name === name) {
                     if (legend[dataName][i] === 'show') {
                         legend[dataName][i] = '';
@@ -145,7 +136,7 @@ export default class Band extends Component {
         }
         else {
             series.show();
-            bandSeries.map((item, i) => {
+            bandSeries.forEach((item, i) => {
                 if (item.name === name) {
                     if (legend[dataName][i] === '') {
                         legend[dataName][i] = 'show';
@@ -155,7 +146,7 @@ export default class Band extends Component {
                     }
                 }
             });
-            chart.series.map((item, index) => {
+            chart.series.forEach((item, index) => {
                 if (item.userOptions.type === 'area') {
                     chart.series[index].hide();
                 }
@@ -166,7 +157,7 @@ export default class Band extends Component {
             });
         }
         cookie.save('bandStatus', legend);
-        self.setState({
+        this.setState({
             legend: legend
         });
 
@@ -174,19 +165,13 @@ export default class Band extends Component {
 
     // Render the band
     renderBand() {
-        const self = this;
-        let html = '';
-        let classes = 'legend';
-        let style = {};
-        let color = '';
-        let className = '';
-        let chart = self.state.chart;
-        let dataName = self.props.name;
-        let legend = cookie.load('bandStatus') || self.state.legend || {};
+        let chart = this.state.chart;
+        let dataName = this.props.name;
+        let legend = cookie.load('bandStatus') || this.state.legend || {};
         if (chart) {
-            if (self.props.bandSeries && self.props.bandSeries.length) {
-                html = self.props.bandSeries.map((item, index) => {
-                    classes = 'legend ';
+            if (this.props.bandSeries && this.props.bandSeries.length) {
+                return this.props.bandSeries.map((item, index) => {
+                    let classes = 'legend ';
                     if (!legend[dataName]) {
                         legend[dataName] = {};
                     }
@@ -198,15 +183,16 @@ export default class Band extends Component {
                             legend[dataName][index] = '';
                         }
                     }
-                    className = legend[dataName][index];
+                    let className = legend[dataName][index];
                     classes += className ? className : '';
-                    chart.series.map((item, i) => {
-                        if (item.name === self.props.bandSeries[index].name) {
+                    let color = '';
+                    chart.series.forEach(item => {
+                        if (item.name === this.props.bandSeries[index].name) {
                             color = item.color;
                             return;
                         }
                     });
-                    style = {
+                    let style = {
                         background: !className
                         || className.length === 0 ? 'rgba(204,204,204, 0.3)' : color ? color : '#000',
                         opacity: 0.6
@@ -218,23 +204,20 @@ export default class Band extends Component {
                         };
                     }
                     return (
-                        <label className={classes} key={index} onClick={self.toggleBand.bind(self, index, item.name)}>
+                        <label className={classes} key={index} onClick={this.toggleBand.bind(this, item.name)}>
                             <span className="symbol" style={style}></span>
                             {item.name}
                         </label>
                     );
                 });
             }
-            return html;
         }
     }
 
     // Render the reference line
     renderReferenceLine() {
-        const self = this;
-        let html = '';
-        if (self.props.trendSeries && self.props.trendSeries.length) {
-            html = self.props.trendSeries.map((item, index) => {
+        if (this.props.trendSeries && this.props.trendSeries.length) {
+            return this.props.trendSeries.map((item, index) => {
                 if (item.type !== 'area') {
                     if (['base line', 'label line'].indexOf(item.name) === -1) {
                         return (
@@ -247,7 +230,6 @@ export default class Band extends Component {
                 }
             });
         }
-        return html;
     }
 
     render() {

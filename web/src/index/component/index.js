@@ -11,7 +11,6 @@ import Sidebar from './sidebar';
 import Trend from './trend';
 import eventProxy from '../../tools/eventProxy';
 import guidePage from '../../common/image/guide-page.png';
-import $ from 'jquery';
 
 const {Sider, Content} = Layout;
 
@@ -34,13 +33,12 @@ export default class Home extends Component {
     }
 
     componentDidMount() {
-        const self = this;
         eventProxy.on('loadTrend', obj => {
-            self.refs.hotKey.style.display = 'block';
+            this.refs.hotKey.style.display = 'block';
             if (typeof obj.list === 'string') {
                 return;
             }
-            self.setState({
+            this.setState({
                 list: obj.list
             });
         });
@@ -85,13 +83,11 @@ export default class Home extends Component {
     }
 
     showGuidance() {
-        const self = this;
-        self.refs.guidance.style.display = 'block';
+        this.refs.guidance.style.display = 'block';
     }
 
     hideGuidance() {
-        const self = this;
-        self.refs.guidance.style.display = 'none';
+        this.refs.guidance.style.display = 'none';
     }
 
     render() {
