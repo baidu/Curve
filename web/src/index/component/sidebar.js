@@ -83,7 +83,7 @@ export default class Sidebar extends Component {
                 self.refs.overlayBlack.style.display = 'none';
                 self.refs.dialog.style.display = 'none';
                 eventProxy.trigger('deleteLegend', name);
-                let dataList = this.state.dataList;
+                let dataList = self.state.dataList;
                 let nextName = '';
                 if (dataList.length > 1) {
                     for (let i = 0; i < dataList.length; i++) {

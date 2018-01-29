@@ -298,22 +298,21 @@ export default class Trend extends Component {
                     series = item;
                 }
             });
-            if (!series) {
-                return;
-            }
-            let tempEndTime = 0;
-            let tempStartTime = 0;
-            for (let i = 0; i < series.points.length - 1; i++) {
-                if (!series.points[i].y && series.points[i + 1].y) {
-                    tempStartTime = series.points[i + 1].x;
-                }
-                if (series.points[i].y && !series.points[i + 1].y) {
-                    tempEndTime = series.points[i].x;
-                }
-                if (tempStartTime && tempEndTime) {
-                    window.labelObj[name].push([tempStartTime, tempEndTime]);
-                    tempStartTime = undefined;
-                    tempEndTime = undefined;
+            if (series.points) {
+                let tempEndTime = 0;
+                let tempStartTime = 0;
+                for (let i = 0; i < series.points.length - 1; i++) {
+                    if (!series.points[i].y && series.points[i + 1].y) {
+                        tempStartTime = series.points[i + 1].x;
+                    }
+                    if (series.points[i].y && !series.points[i + 1].y) {
+                        tempEndTime = series.points[i].x;
+                    }
+                    if (tempStartTime && tempEndTime) {
+                        window.labelObj[name].push([tempStartTime, tempEndTime]);
+                        tempStartTime = undefined;
+                        tempEndTime = undefined;
+                    }
                 }
             }
         });
@@ -1126,6 +1125,7 @@ export default class Trend extends Component {
             },
             plotOptions: {
                 line: {
+                    // boostThreshold: 200,
                     marker: {
                         states: {
                             hover: {
@@ -1263,6 +1263,14 @@ export default class Trend extends Component {
         if (chart) {
             chart.showLoading('Loading data, please wait...');
         }
+        let listUrl = api.getDataList;
+        axiosInstance.get(listUrl).then(function (response) {
+            const data = response.data;
+            let name = data.data && data.data.length ? data.data[0].name : '';
+            self.setState({
+                list: data.data
+            });
+        });
         axiosInstance.get(url).then(function (response) {
             const data = response.data;
             let bands = data.data.bands;
@@ -1429,10 +1437,10 @@ export default class Trend extends Component {
         }
     }
 
-    renderSummary() {
+    renderSummary(dataList) {
         const self = this;
         let name = self.props.params.name;
-        let list = self.props.params.list;
+        let list = dataList && dataList.length ? dataList : self.props.params.list;
         let summary;
         if (!list || !list.length) {
             return;
@@ -1514,11 +1522,12 @@ export default class Trend extends Component {
                 if (options.chart) {
                     options.chart.width = this.getTrendWidth();
                 }
+                let list = this.state.list;
                 return (
                     <div>
                         <div className="trend">
                             <h3 className="summary">
-                                {this.renderSummary()}
+                                {this.renderSummary(list)}
                             </h3>
                             <Band series={this.state.series}
                                   trendSeries={this.state.trendSeries}
