@@ -1287,6 +1287,9 @@ export default class Trend extends Component {
                     item.zIndex = 1;
                     item.enableMouseTracking = false;
                     item.showInLegend = true;
+                    item.dataGrouping = {
+                        enabled: false
+                    };
                     trendsTrends.push(item);
                 }
                 if (item.type === 'line' || !item.type) {
@@ -1294,6 +1297,9 @@ export default class Trend extends Component {
                         item.zIndex = 99;
                         item.lineWidth = 2;
                         item.color = '#388FF7';
+                        item.dataGrouping = {
+                            enabled: false
+                        };
                     }
                     if (item.name === 'label line') {
                         item.showInLegend = false;
@@ -1319,6 +1325,9 @@ export default class Trend extends Component {
                             color: '#388FF7'
                         });
                         item.zones = zones;
+                        item.dataGrouping = {
+                            enabled: false
+                        };
                     }
                     trendsTrends.push(item);
                 }
@@ -1327,8 +1336,11 @@ export default class Trend extends Component {
                     item.fillOpacity = 0.3;
                     item.zIndex = 0;
                     item.enableMouseTracking = true;
-                    trendsBands.push(item);
+                    item.dataGrouping = {
+                        enabled: false
+                    };
                     item.visible = false;
+                    trendsBands.push(item);
                 }
             });
             options.yAxis.min = data.data.yAxis[0];
