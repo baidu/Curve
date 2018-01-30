@@ -708,11 +708,11 @@ export default class Trend extends Component {
             if (!points.length) {
                 return;
             }
+            let tooltip = '';
             for (let i = 0; i < points.length; i ++) {
                 let name = points[i].series.name;
                 let type = points[i].series.userOptions.type;
                 if (type === 'area') {
-                    let tooltip = '';
                     let current;
                     let total;
                     let bandName = name;
@@ -860,19 +860,10 @@ export default class Trend extends Component {
                             }
                         }
                     }
-                    if (tooltip.length) {
-                        return tooltip;
-                    }
-                    else {
-                        return false;
-                    }
                 }
                 else {
-                    if (name === 'base line') {
-                        continue;
-                    }
-                    if (name === 'label line') {
-                        let menuList = '';
+                    let menuList = '';
+                    if (name === 'label line' && points[i].color === 'red') {
                         if (self.state.menuList.length) {
                             menuList += '<ul class="selection">';
                             for (let i = 0; i < self.state.menuList.length; i++) {
@@ -884,24 +875,19 @@ export default class Trend extends Component {
                                     + '</li>';
                             }
                             menuList += '</ul>';
-                            // menuList += points[i].key;
-                            // menuList += ' ';
-                            // menuList += points[i].x;
-                            // menuList += ' ';
-                            // menuList += points[i].y;
-                            return menuList;
                         }
                         else {
-                            // menuList += 'label line' + points[i].key;
-                            // menuList += ' ';
-                            // menuList += points[i].x;
-                            // menuList += ' ';
-                            // menuList += points[i].y;
-                            // return menuList;
-                            return false;
+                            menuList = '';
                         }
+                        tooltip = menuList;
                     }
                 }
+            }
+            if (tooltip.length) {
+                return tooltip;
+            }
+            else {
+                return false;
             }
         };
         let mouseOverFunction = function (e) {
