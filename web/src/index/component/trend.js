@@ -883,7 +883,7 @@ export default class Trend extends Component {
                                     + self.state.menuList[i].name
                                     + '</li>';
                             }
-                            // menuList += '</ul>';
+                            menuList += '</ul>';
                             // menuList += points[i].key;
                             // menuList += ' ';
                             // menuList += points[i].x;
