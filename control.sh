@@ -14,7 +14,11 @@ readonly G_WEB_DIR="${G_ROOT_DIR}/web"
 readonly G_API_DIR="${G_ROOT_DIR}/api"
 readonly G_VENV_DIR="${G_ROOT_DIR}/venv"
 
-readonly G_GIT_VERSION=`git rev-parse HEAD`
+G_GIT_VERSION=''
+if [ -e .git ]; then
+    G_GIT_VERSION=`git rev-parse HEAD`
+fi
+
 PS1='$'
 
 cutoff() {
@@ -28,9 +32,11 @@ help() {
 }
 
 version() {
-    cutoff
-    echo "local Curve version: ${G_GIT_VERSION}"
-    cutoff
+    if [ ${G_GIT_VERSION}x != 'x' ]; then
+        cutoff
+        echo "local Curve version: ${G_GIT_VERSION}"
+        cutoff
+    fi
 }
 
 check_web() {
@@ -40,7 +46,7 @@ check_web() {
     if [ -e ${BUILD_VERSION_FILE} ]; then
         BUILD_VERSION=`cat ${BUILD_VERSION_FILE}`
     fi
-    readonly DEPLOY_PATH="${G_API_DIR}/Curve/web"
+    readonly DEPLOY_PATH="${G_API_DIR}/curve/web"
     readonly DEPLOY_VERSION_FILE="${DEPLOY_PATH}/version"
     DEPLOY_VERSION=''
     if [ -e ${DEPLOY_VERSION_FILE} ]; then
@@ -85,6 +91,7 @@ check_venv() {
         pip install virtualenv
         virtualenv --no-site-packages ${G_VENV_DIR}
     fi
+    source ${G_VENV_DIR}/bin/activate
     pip install -r ${G_API_DIR}/requirements.txt
     echo ${G_GIT_VERSION} > ${VENV_VERSION_FILE}
     echo "venv deployed."
@@ -92,7 +99,7 @@ check_venv() {
 }
 
 check_api() {
-    readonly SWAGGER_UI_DIR="${G_API_DIR}/Curve/web/swagger-ui"
+    readonly SWAGGER_UI_DIR="${G_API_DIR}/curve/web/swagger-ui"
     readonly SWAGGER_UI_VERSION_FILE="${SWAGGER_UI_DIR}/version"
     SWAGGER_UI_VERSION=''
     if [ -e ${SWAGGER_UI_VERSION_FILE} ]; then
@@ -135,6 +142,7 @@ check_uwsgi() {
 
     cutoff
     echo "install uwsgi..."
+    source ${G_VENV_DIR}/bin/activate
     cd ${G_ROOT_DIR}
     pip download uwsgi==2.0.15
     tar -zxf uwsgi-2.0.15.tar.gz
