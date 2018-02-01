@@ -41,8 +41,13 @@ def str2time(time_str):
     :param time_str: printable
     :return: unix timestamp
     """
+    # throw decimal part
+    split_index = time_str.find('.')
+    if time_str.find('.') != -1:
+        time_str = time_str[:split_index]
     if len(time_str) == 14:  # YYYYMMDDhhmmss 20030405167800
         return int(time.mktime(time.strptime(time_str, DEFAULT_TIMEFORMAT)))
+    # timestamp
     return int(time_str)
 
 

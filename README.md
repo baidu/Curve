@@ -8,7 +8,7 @@ Curve is designed to support plugin, so one can equip Curve with customized and 
 Curve is originally developed by Baidu and Tsinghua NetMan Lab.
 
 
-<img src="https://raw.githubusercontent.com/baidu/Curve/master/readme/screenshot.png">
+<img src="https://raw.githubusercontent.com/baidu/Curve/master/doc/pic/index.png">
 
 ## Getting Started
 
@@ -27,7 +27,7 @@ Simply use control.sh to start or stop Curve.
 ./control.sh start
 ./control.sh stop
 ```
-Server will blind 8080 by default, you can change it in `./pysrc/uwsgi.ini`.
+Server will blind 8080 by default, you can change it in `./api/uwsgi.ini`.
 
 *If you pull updates from github, make sure to rebuild first*
 
@@ -78,10 +78,10 @@ Some examples of valid CSV
 ## Test
 
 ```bash
-cd ${BIN_DIR} && pytest
+cd api && pytest
 ```
 
 ## Plugin dir
 
-```pysrc/curve/v1/plugins```
+```api/curve/v1/plugins```
 

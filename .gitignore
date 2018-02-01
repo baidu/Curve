@@ -14,11 +14,11 @@ test.csv
 *.pid
 *.db
 *.db-journal
-/pysrc/curve/web/
-/pysrc/curve/v1/routes.py
-/pysrc/curve/v1/schemas.py
-/pysrc/curve/v1/validators.py
-/pysrc/curve/static/
+/api/curve/web/
+/api/curve/v1/routes.py
+/api/curve/v1/schemas.py
+/api/curve/v1/validators.py
+/api/curve/static/
 
 
 # Byte-compiled / optimized / DLL files
