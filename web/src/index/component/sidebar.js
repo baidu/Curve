@@ -5,6 +5,7 @@
 import './sidebar.less';
 
 import React, {Component} from 'react';
+import {message} from 'antd';
 import {Link, hashHistory} from 'react-router';
 import {Button, Icon} from 'antd';
 import {axiosInstance} from '../../tools/axiosInstance';
@@ -41,10 +42,10 @@ export default class Sidebar extends Component {
         this.renderList();
         // Hide the boot page
         eventProxy.on('hideSummary', obj => {
-            for (let key in self.state.isShow) {
+            for (let key in this.state.isShow) {
                 isShow[key] = false;
             }
-            self.setState({
+            this.setState({
                 isShow
             });
         });
@@ -71,9 +72,8 @@ export default class Sidebar extends Component {
         });
         // refresh the left side of the data list
         eventProxy.on('refreshDataList', dataList => {
-            let list = self.state.dataList.concat(dataList);
-            self.setState({
-                dataList: list
+            this.setState({
+                dataList: this.state.dataList.concat(dataList)
             });
         });
         // confirm delete data
@@ -83,14 +83,11 @@ export default class Sidebar extends Component {
                 self.refs.overlayBlack.style.display = 'none';
                 self.refs.dialog.style.display = 'none';
                 eventProxy.trigger('deleteLegend', name);
-                const data = response.data;
                 let dataList = self.state.dataList;
-                let currentIndex;
-                let nextName;
+                let nextName = '';
                 if (dataList.length > 1) {
                     for (let i = 0; i < dataList.length; i++) {
                         if (dataList[i].name === name) {
-                            currentIndex = i;
                             nextName = dataList[i + 1] ? dataList[i + 1].name : dataList[0].name;
                             dataList.splice(i, 1);
                             break;
@@ -114,9 +111,9 @@ export default class Sidebar extends Component {
 
         // open dialog
         eventProxy.on('openDialog', obj => {
-            self.refs.overlayBlack.style.display = 'block';
-            self.refs.dialog.style.display = 'block';
-            self.setState({
+            this.refs.overlayBlack.style.display = 'block';
+            this.refs.dialog.style.display = 'block';
+            this.setState({
                 dialogTitle: obj.title,
                 dialogContent: obj.content,
                 dialogName: obj.name,
@@ -127,12 +124,10 @@ export default class Sidebar extends Component {
 
     // Click on the left navigation data operation
     dataListClick(name) {
-        const self = this;
-        let list = self.state.dataList;
+        let list = this.state.dataList;
         let active = {};
-        let target;
         if (typeof name === 'string') {
-            list.map((item, index) => {
+            list.forEach(item => {
                 active[item.name] = false;
                 if (item.name === name) {
                     active[item.name] = true;
@@ -143,9 +138,6 @@ export default class Sidebar extends Component {
                 init: false,
                 active: active
             });
-        }
-        else {
-            target = name.target;
         }
     }
 
@@ -162,16 +154,34 @@ export default class Sidebar extends Component {
             if (self.props.params.name !== name && self.props.params.name !== undefined) {
                 url = '/home/' + self.props.params.name;
             }
-            if (data.data.length) {
-                eventProxy.trigger('loadingTip');
-            }
-            hashHistory.push(url);
-            self.setState({
-                dataList: data.data,
-                name: name
+            let nameList = data.data.map(item => {
+                return item.name;
             });
-            self.props.returnSummary(name, data.data);
+            if (data.data.length) {
+                // The correct name exists
+                if (nameList.indexOf(self.props.params.name) !== -1) {
+                    eventProxy.trigger('loadingTip');
+                    self.redirect(url, data, name);
+                }
+                // If the current name is not in the data list, the default jumps to the first one
+                else {
+                    message.warning('No ' + self.props.params.name + ' Data', 2, function () {
+                        url = '/home/' + name;
+                        self.redirect(url, data, name);
+                    });
+                }
+            }
         });
+    }
+
+    // redirect page
+    redirect(url, data, name) {
+        hashHistory.push(url);
+        this.setState({
+            dataList: data.data,
+            name
+        });
+        this.props.returnSummary(name, data.data);
     }
 
     // get the position of the summary
@@ -187,11 +197,10 @@ export default class Sidebar extends Component {
     // Show or hide summary
     toggleSummary(e, name) {
         e.stopPropagation();
-        const self = this;
-        let top = self.getItemPosition(e).top;
+        let top = this.getItemPosition(e).top;
         let isShow = {};
-        let dataList = self.state.dataList;
-        dataList.map((item, index) => {
+        let dataList = this.state.dataList;
+        dataList.forEach(item => {
             if (!isShow[item.name]) {
                 isShow[item.name] = false;
             }
@@ -206,11 +215,11 @@ export default class Sidebar extends Component {
             else {
                 isShow[item.name] = false;
             }
-            if (self.state.isShow[item.name] === true) {
+            if (this.state.isShow[item.name] === true) {
                 isShow[item.name] = false;
             }
         });
-        self.setState({
+        this.setState({
             isShow,
             top,
             toggle: true
@@ -222,24 +231,21 @@ export default class Sidebar extends Component {
                 break;
             }
         }
-        if (self.props.overlay) {
+        if (this.props.overlay) {
             if (showFlag) {
-                self.props.overlay.style.display = 'block';
+                this.props.overlay.style.display = 'block';
             }
             else {
-                self.props.overlay.style.display = 'none';
+                this.props.overlay.style.display = 'none';
             }
         }
     }
 
     // Render the summary
     renderDataList() {
-        const self = this;
-        let dataList;
-        let html;
-        dataList = self.state.dataList.length === 0 ? self.props.list : self.state.dataList;
+        let dataList = this.state.dataList.length === 0 ? this.props.list : this.state.dataList;
         let isShow;
-        html = dataList.map((item, i) => {
+        return dataList.map((item, i) => {
             let start = moment(item.time.start).format('YYYYMMDD');
             let end = moment(item.time.end).format('YYYYMMDD');
             let ratio;
@@ -269,11 +275,11 @@ export default class Sidebar extends Component {
                     + '00%';
             }
             let className = '';
-            if (self.state.init && i === 0) {
+            if (this.state.init && i === 0) {
                 className = 'active';
             }
             else {
-                if (self.state.active[item.name]) {
+                if (this.state.active[item.name]) {
                     className = 'active';
                 }
                 else {
@@ -281,10 +287,10 @@ export default class Sidebar extends Component {
                 }
             }
             if (dataList.length) {
-                if (self.props.params.name !== dataList[0].name) {
+                if (this.props.params.name !== dataList[0].name) {
                     className = '';
                 }
-                if (self.props.params.name === item.name) {
+                if (this.props.params.name === item.name) {
                     className = 'active';
                 }
                 else {
@@ -292,7 +298,7 @@ export default class Sidebar extends Component {
                 }
             }
             let link = '/home/' + item.name;
-            isShow = self.state.isShow[item.name] ? 'block' : 'none';
+            isShow = this.state.isShow[item.name] ? 'block' : 'none';
             return (
                 <li key={i}
                     onClick={this.dataListClick.bind(item.name)}
@@ -315,7 +321,7 @@ export default class Sidebar extends Component {
                         <i></i>
                     </div>
                     <div className="summary-content"
-                         style={{display: isShow, top: self.state.top + 'px'}}
+                         style={{display: isShow, top: this.state.top + 'px'}}
                     >
                         <h4 className="summary-content-head">{item.name}</h4>
                         <div className="summary-content-body">
@@ -334,12 +340,12 @@ export default class Sidebar extends Component {
                         </div>
                         <div className="summary-content-footer">
                             <Button className="opera-button"
-                                    onClick={self.exportData.bind(self, item.name)}
+                                    onClick={this.exportData.bind(this, item.name)}
                             >
                                 Export
                             </Button>
                             <Button className="opera-button"
-                                    onClick={self.deleteData.bind(self, item.name)}
+                                    onClick={this.deleteData.bind(this, item.name)}
                             >
                                 Delete
                             </Button>
@@ -348,12 +354,10 @@ export default class Sidebar extends Component {
                 </li>
             );
         });
-        return html;
     }
 
     // delete data
     deleteData(name) {
-        const self = this;
         eventProxy.trigger('openDialog', {
             title: 'Delete',
             content: 'Are you sure you want to delete ' + name + '?',
@@ -364,34 +368,27 @@ export default class Sidebar extends Component {
 
     // export data
     exportData(name) {
-        const self = this;
-        let url = api.exportData + name;
-        window.open(url);
+        window.open(api.exportData + name);
     }
 
     returnDataList(dataList) {
-        const self = this;
-        let list = self.state.dataList.length === 0 ? self.props.list.concat(dataList) : self.state.dataList.concat(dataList);
-        self.setState({
+        let list = this.state.dataList.length === 0 ? this.props.list.concat(dataList) : this.state.dataList.concat(dataList);
+        this.setState({
             dataList: list
         });
         return list;
     }
 
     dialogConfirm(name) {
-        const self = this;
         eventProxy.trigger('confirmDialog', name);
     }
 
     dialogCancel(){
-        const self = this;
-        self.refs.overlayBlack.style.display = 'none';
-        self.refs.dialog.style.display = 'none';
+        this.refs.overlayBlack.style.display = 'none';
+        this.refs.dialog.style.display = 'none';
     }
 
     render() {
-        let link = 'list';
-        let self = this;
         return (
             <div>
                 <div style={{position: 'relative', zIndex: '1'}}>
@@ -413,13 +410,18 @@ export default class Sidebar extends Component {
                 <div className="dialog" ref="dialog" style={{display: 'none'}}>
                     <div className="dialog-header">
                         <div className="dialog-title">{this.state.dialogTitle}</div>
-                        <Icon type="close" className="dialog-close" onClick={self.dialogCancel.bind(self, self.state.dialogName)}></Icon>
+                        <Icon type="close" className="dialog-close" onClick={this.dialogCancel.bind(this, this.state.dialogName)}></Icon>
                     </div>
                     <div className="dialog-body">
                         <div className="dialog-content">{this.state.dialogContent}</div>
                         <div className="dialog-footer">
-                            <button className="confirm operation-btn" style={{display: !self.state.dialogType || self.state.dialogType === 'confirm' ? 'inline-block' : 'none'}} ref="dialogConfirm" onClick={self.dialogConfirm.bind(self, self.state.dialogName)}>Delete</button>
-                            <button className="cancel operation-btn" ref="dialogCancel" onClick={self.dialogCancel.bind(self, self.state.dialogName)}>Cancel</button>
+                            <button className="confirm operation-btn"
+                                    style={{display: !this.state.dialogType || this.state.dialogType === 'confirm' ? 'inline-block' : 'none'}}
+                                    ref="dialogConfirm"
+                                    onClick={this.dialogConfirm.bind(this, this.state.dialogName)}>Delete</button>
+                            <button className="cancel operation-btn"
+                                    ref="dialogCancel"
+                                    onClick={this.dialogCancel.bind(this, this.state.dialogName)}>Cancel</button>
                         </div>
                     </div>
                 </div>

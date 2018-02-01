@@ -59,7 +59,8 @@ export default class UploadData extends Component {
                 html = '<div class="loading-process">'
                     // + '<div class="loading-text">' + Math.round(step.percent) + '</div>'
                     + '<div class="loading-container">'
-                    + '<div class="loading" style="width:' + 0 + 'px' + '"></div>'
+                    + '<div class="loading" style="width: 0px'
+                    + '"></div>'
                     + '</div>'
                     + '<p>Uploading and pre-processing, please wait<span class="loading-dot"></span></p>'
                     + '</div>';
