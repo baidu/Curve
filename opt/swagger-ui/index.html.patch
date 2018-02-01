@@ -1,0 +1,4 @@
+38c38
+<         url = "/static/v1/swagger.json";
+---
+>         url = "/web/static/v1/swagger.json";

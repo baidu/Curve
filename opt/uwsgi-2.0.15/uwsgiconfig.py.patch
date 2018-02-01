@@ -1,0 +1,4 @@
+977c977
+<                     k_minor = k_all[2]
+---
+>                     k_minor = re.match(r'^\d+', k_all[2]).group()
