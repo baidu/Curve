@@ -1,4 +1,5 @@
 Flask-SQLAlchemy==2.2
 Flask-RESTful==0.3.6
 Flask-Cors==3.0.3
+flask-compress==1.4.0
 jsonschema==2.6.0

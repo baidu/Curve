@@ -11,6 +11,7 @@ from __future__ import absolute_import
 
 import flask
 from flask_cors import CORS
+from flask.ext.compress import Compress
 from werkzeug.routing import BaseConverter
 
 from .config import INDEX_PAGE
@@ -43,6 +44,7 @@ def create_app():
         db.create_all()
     app.register_blueprint(bp, url_prefix='/v1')
     CORS(app)
+    Compress(app)
 
     @app.route('/<regex("$"):url>')
     def index(url=None):
