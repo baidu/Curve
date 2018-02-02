@@ -12,15 +12,8 @@ Curve is originally developed by Baidu and Tsinghua NetMan Lab.
 
 ## Getting Started
 
-### Install dependencies and build*
-
-Make sure `bash`, `python2.7+ with pip` and `nodejs with npm` are already installed. Then run the build script. It will install all the dependenceis and build Curve. 
-
-```bash
-./build.sh
-```
-
 ### Run and stop
+
 Simply use control.sh to start or stop Curve.
 
 ```bash
@@ -29,8 +22,35 @@ Simply use control.sh to start or stop Curve.
 ```
 Server will blind 8080 by default, you can change it in `./api/uwsgi.ini`.
 
-*If you pull updates from github, make sure to rebuild first*
+> Because of the compilation, the first start will take a while.
+> If you pull updates from github, Rebuild will be triggered during start or reload.
 
+### Recommend environments
+
+#### For PC
+
+Darwin(Mac OSX) or Linux(Ubuntu, CentOS, Arch, etc.) is Recommended
+
+* Dependency:
+    * Python 2.7.3+/3.1.2+, if python is not owned by current user, virtualenv is required
+    * Node.js 4.7.0+
+    * gcc, pip and npm path is correctly set
+
+> Control Scripts for Windows is under development
+
+#### For VPS like EC2
+
+**Minimal**
+
+* Server: 1 CPU, 512MB RAM, 5GB Storage
+* System: Ubuntu10.04LTS or CentOS5.5
+
+> Swap is required during build
+
+**Recommend**
+
+* Server: 1 CPU, 1GB RAM, 10GB Storage
+* System: Ubuntu16.04LTS or CentOS7
 
 ### Data format
 
@@ -74,14 +94,15 @@ Some examples of valid CSV
 |20161015000100|2704.65|
 |20161015000200|2700.05|
 
+## For developers
 
-## Test
+### Backend Unit Test
 
 ```bash
 cd api && pytest
 ```
 
-## Plugin dir
+### Plugin dir
 
 ```api/curve/v1/plugins```
 

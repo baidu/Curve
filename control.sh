@@ -1,10 +1,16 @@
 #!/bin/bash
-# for Darwin and Linux
 
-# python2.7.3+ is required
-# pip is required
-# nodejs is required
-# npm is required
+# System:
+#   1. Darwin or Linux
+# Python:
+#   1. version: 2.7.3+/3.1.2+ is recommended
+#   2. other:
+#       * python should belong to current user, otherwise virtualenv is required
+#       * pip is required
+# Node.js:
+#   1. version: 4.7.0+ is recommended
+#   2. other:
+#       * npm is required
 
 set -u
 set -e
@@ -166,8 +172,8 @@ start() {
     check_venv
     check_api
     check_uwsgi
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'fgrep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'fgrep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
     fi
     echo "start Curve..."
     source ${G_VENV_DIR}/bin/activate
@@ -201,8 +207,8 @@ reload() {
         fi
     fi
     echo "clean Curve..."
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'fgrep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'fgrep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
     fi
     echo "start Curve..."
     source ${G_VENV_DIR}/bin/activate
@@ -213,8 +219,8 @@ reload() {
 
 terminate() {
     echo "terminate Curve..."
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'fgrep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'fgrep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
         echo "Curve terminated."
     fi
     echo "Curve is not running."
