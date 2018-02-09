@@ -156,6 +156,7 @@ check_uwsgi() {
     tar -zcf uwsgi-2.0.15.tar.gz uwsgi-2.0.15
     rm -rf uwsgi-2.0.15
     pip install uwsgi-2.0.15.tar.gz
+    rm uwsgi-2.0.15.tar.gz
     echo "uwsgi installed."
     cutoff
 }

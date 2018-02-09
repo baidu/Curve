@@ -171,9 +171,27 @@ class DataDataname(Resource):
 
     def __parse_point(self, data_name, line):
         if len(line) > 2:
-            return Point(data_name, str2time(line[0]), float(line[1]), parse_label(line[2]))
+            return Point(data_name, str2time(line[0]), self.__parese_value(line[1]), self.__parse_label(line[2]))
         elif len(line) > 1:
-            return Point(data_name, str2time(line[0]), float(line[1]), LABEL_ENUM.normal)
+            return Point(data_name, str2time(line[0]), self.__parese_value(line[1]), LABEL_ENUM.normal)
+
+    def __parse_label(self, label):
+        """
+        parse label
+        :param label_raw: label str
+        :return: LABEL_ENUM
+        """
+        if label == '':
+            return LABEL_ENUM.normal
+        label = int(label)
+        if label not in {LABEL_ENUM.normal, LABEL_ENUM.abnormal}:
+            raise Exception('label %s not valid.' % label)
+        return label
+
+    def __parese_value(self, value):
+        if value == '':
+            return None
+        return float(value)
 
     def put(self, dataName):
         """
