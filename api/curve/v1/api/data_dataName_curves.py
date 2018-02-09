@@ -148,6 +148,7 @@ class DataDatanameCurves(Resource):
         for band_name, in band_names:
             # render bands for colored square
             band_name = urllib.unquote(band_name.encode('utf-8'))
+            band_count = data_service.count_bands(band_name)
             band_items = data_service.get_band(band_name, start_time, end_time)
             tmp = set([])
             for band in band_items:
@@ -178,7 +179,7 @@ class DataDatanameCurves(Resource):
             for band_no, band in enumerate(band_items):
                 band_items[band_no] = {
                     'bandNo': band.index,
-                    'bandCount': len(band_items),
+                    'bandCount': band_count,
                     'currentTime': {
                         'duration': {
                             'start': band.start_time * 1000,
