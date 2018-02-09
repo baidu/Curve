@@ -277,9 +277,9 @@ class DataService(object):
         band_name = urllib.quote(band_name)
         query = Band.query.filter_by(data_name=self.data_name, name=band_name)
         if start_time is not None:
-            query.filter(Band.end_time < start_time)
+            query = query.filter(Band.end_time > start_time)
         if end_time is not None:
-            query.filter(Band.start_time > end_time)
+            query = query.filter(Band.start_time < end_time)
         order = Band.start_time
         bands = query.order_by(order).all()
 
