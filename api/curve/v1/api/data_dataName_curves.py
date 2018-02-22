@@ -134,7 +134,7 @@ class DataDatanameCurves(Resource):
             ref_lines.append({
                 'name': ref_name,
                 'type': ref_type,
-                'data': ref
+                'data': s2ms(ref)
             })
         return ref_lines, y_axis
 

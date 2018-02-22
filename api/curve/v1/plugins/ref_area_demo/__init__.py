@@ -27,9 +27,9 @@ def reference(api, line):
         area = []
         for timestamp, value in line:
             if value is not None:
-                area.append((timestamp, value * 0.9, value * 1.1))
+                area.append((timestamp + api.WEEK, value * 0.9, value * 1.1))
             else:
-                area.append((timestamp, None, None))
-        result.append(area)
+                area.append((timestamp + api.WEEK, None, None))
+        result = area
 
     return 'Week on Week 10% diff', result
