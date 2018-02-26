@@ -165,10 +165,16 @@ export default class Sidebar extends Component {
                 }
                 // If the current name is not in the data list, the default jumps to the first one
                 else {
-                    message.warning('No ' + self.props.params.name + ' Data', 2, function () {
-                        url = '/home/' + name;
+                    let showName = self.props.params.name;
+                    if (showName) {
+                        message.warning('No ' + showName + ' Data', 2, function () {
+                            url = '/home/' + name;
+                            self.redirect(url, data, name);
+                        });
+                    }
+                    else {
                         self.redirect(url, data, name);
-                    });
+                    }
                 }
             }
         });
