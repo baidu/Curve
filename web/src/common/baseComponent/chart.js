@@ -4,17 +4,16 @@
 */
 
 import React, {Component, PropTypes} from 'react';
+import Highcharts from 'highcharts/highstock';
 import {NoDataToDisplay} from 'react-highcharts-no-data-to-display';
-import HighchartsMore from 'highcharts/highcharts-more';
+import highchartsMore from 'highcharts/highcharts-more';
 import eventProxy from '../../tools/eventProxy';
 
-let Highcharts = require('highcharts/highstock');
-let Boost = require('highcharts/modules/boost');
-Boost(Highcharts);
-
+highchartsMore(Highcharts);
 let ReactHighcharts = require('react-highcharts/ReactHighstock');
 NoDataToDisplay(ReactHighcharts.Highcharts);
-HighchartsMore(ReactHighcharts.Highcharts);
+let Boost = require('highcharts/modules/boost');
+Boost(Highcharts);
 
 Highcharts.setOptions({
     global: {

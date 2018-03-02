@@ -21,6 +21,7 @@ const api = require('../../common/api').default.api;
 
 window.selectedIndex = {};
 window.labelObj = {};
+window.alreadyLoad = {};
 window.thumbExtremes = {};
 
 let key = {
@@ -28,7 +29,7 @@ let key = {
     currentKey: null,
     mouseKey: null
 };
-let boostThreshold = 5000;
+let boostThreshold = 500000;
 
 export default class Trend extends Component {
     constructor(props) {
@@ -617,8 +618,8 @@ export default class Trend extends Component {
         }
         list.forEach(item => {
             if (item.name === name) {
-                start = item.display.start;
-                end = item.display.end;
+                start = item.time.start;
+                end = item.time.end;
                 return;
             }
         });
@@ -775,7 +776,8 @@ export default class Trend extends Component {
             },
             boost: {
                 enabled: true,
-                useAlpha: false
+                useAlpha: false,
+                allowForce: false
             },
             title: {
                 text: '',
@@ -998,6 +1000,7 @@ export default class Trend extends Component {
                 series: {
                     stickyTracking: false,
                     boostThreshold: boostThreshold,
+                    threshold: 100000,
                     marker: {
                         states: {
                             hover: {
@@ -1145,6 +1148,10 @@ export default class Trend extends Component {
             options.yAxis.max = data.data.yAxis[1];
             options.series = trends;
             options.chart.width = self.getTrendWidth();
+
+            // trends.splice(3)
+            // trends.splice(1, 1)
+
             clearInterval(self.loadingTime);
             clearInterval(self.loadingTipTime);
             clearInterval(self.loadingTrendTipTime);
@@ -1228,18 +1235,8 @@ export default class Trend extends Component {
                     option.rangeSelector.selected = undefined;
                 }
             }
-            let originIndex = 0;
-            let series = self.chart.series;
-            for (let i = 0; i < series.length; i++) {
-                if (series[i].name === 'base line') {
-                    originIndex = i;
-                    break;
-                }
-            }
-            let points = series[originIndex].xData;
-            let time = self.getTime(e.dataMin, e.dataMax, points);
-            startTime = time.startTime;
-            endTime = time.endTime;
+            startTime = Math.round(e.userMin);
+            endTime = Math.round(e.userMax);
             self.min = startTime;
             self.max = endTime;
             let url = api.getTrend
@@ -1247,61 +1244,14 @@ export default class Trend extends Component {
                 + '/curves?'
                 + 'startTime=' + startTime
                 + '&endTime=' + endTime;
-            self.refs.container.chart.xAxis[0].setExtremes(e.userMin, e.userMax);
-            if (self.chart) {
-                self.chart.showLoading('Loading data, please wait...');
-            }
-            axiosInstance.get(url).then(function (response) {
-                const data = response.data;
-                // remove base line and label line
-                for (let i = 0 ; i < self.chart.series.length; i ++) {
-                    self.chart.series[i].remove();
-                    i = -1;
-                }
-                let name = self.props.params.name;
-                // add base line and label line
-                data.data.trends.forEach(item => {
-                    if (item.type === 'arearange') {
-                        self.optionAreaRange(item);
-                    }
-                    if (item.type === 'line' || !item.type) {
-                        if (item.name === 'base line') {
-                            self.optionBaseLine(item);
-                        }
-                        if (item.name === 'label line') {
-                            self.optionLabelLine(item);
-                        }
-                    }
-                    if (item.type === 'area') {
-                        self.optionArea(item);
-                        // band visible
-                        let legend = cookie.load('bandStatus');
-                        let currentLegend;
-                        for (let trendName in legend) {
-                            if (trendName === name) {
-                                currentLegend = legend[trendName];
-                                for (let show in currentLegend) {
-                                    if (currentLegend[show] === 'show') {
-                                        item.visible = true;
-                                    }
-                                    else {
-                                        item.visible = false;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    self.chart.addSeries(item);
-                });
-                self.chart.hideLoading();
-            });
+            self.refs.container.chart.xAxis[0].setExtremes(self.min, self.max);
         }
     }
 
     optionAreaRange(item) {
+        let self = this;
         item.lineWidth = 0;
-        item.color = 'rgba(48,225,40, 0.1)';
-        item.fillOpacity = 0.1;
+        item.color = 'rgb(240,255,240)';
         item.zIndex = 1;
         item.enableMouseTracking = false;
         item.showInLegend = true;
