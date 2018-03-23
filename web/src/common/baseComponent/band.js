@@ -26,7 +26,17 @@ export default class Band extends Component {
         const self = this;
         self.initBand();
         eventProxy.on('loadBand', obj => {
-            let legend = !self.isEmpty(self.state.legend[obj.name]) ? self.state.legend[obj.name] : {0: 'show'};
+            let trendsBands = obj.trendsBands;
+            let initLegend = {};
+            trendsBands.forEach((item, index) => {
+                if (!index) {
+                    initLegend[item.name] = 'show';
+                }
+                else {
+                    initLegend[item.name] = '';
+                }
+            });
+            let legend = !self.isEmpty(self.state.legend[obj.name]) ? self.state.legend[obj.name] : initLegend;
             self.state.legend[obj.name] = legend;
             cookie.save('bandStatus', self.state.legend);
             self.setState({
@@ -49,18 +59,19 @@ export default class Band extends Component {
     }
 
     initBand() {
+        let self = this;
         let bandSeries = this.props.bandSeries;
         let legend = cookie.load('bandStatus') || this.state.legend || {};
         let list = this.props.list;
         list.forEach(item => {
-            if (this.isEmpty(legend[item.name])) {
+            if (self.isEmpty(legend[item.name])) {
                 legend[item.name] = {};
                 bandSeries.forEach((series, index) => {
                     if (!index) {
-                        legend[item.name][index] = 'show';
+                        legend[item.name][series.name] = 'show';
                     }
                     else {
-                        legend[item.name][index] = '';
+                        legend[item.name][series.name] = '';
                     }
                 });
             }
@@ -119,17 +130,17 @@ export default class Band extends Component {
             }
         });
         bandSeries.forEach((item, index) => {
-            legend[dataName][index] = '';
+            legend[dataName][item.name] = '';
         });
         if (series.visible) {
             series.hide();
             bandSeries.forEach((item, i) => {
                 if (item.name === name) {
-                    if (legend[dataName][i] === 'show') {
-                        legend[dataName][i] = '';
+                    if (legend[dataName][item.name] === 'show') {
+                        legend[dataName][item.name] = '';
                     }
                     else {
-                        legend[dataName][i] = '';
+                        legend[dataName][item.name] = '';
                     }
                 }
             });
@@ -138,11 +149,11 @@ export default class Band extends Component {
             series.show();
             bandSeries.forEach((item, i) => {
                 if (item.name === name) {
-                    if (legend[dataName][i] === '') {
-                        legend[dataName][i] = 'show';
+                    if (legend[dataName][item.name] === '') {
+                        legend[dataName][item.name] = 'show';
                     }
                     else {
-                        legend[dataName][i] = '';
+                        legend[dataName][item.name] = '';
                     }
                 }
             });
@@ -175,15 +186,15 @@ export default class Band extends Component {
                     if (!legend[dataName]) {
                         legend[dataName] = {};
                     }
-                    if (legend[dataName][index] === undefined) {
+                    if (legend[dataName][item.name] === undefined) {
                         if (!index) {
-                            legend[dataName][index] = 'show';
+                            legend[dataName][item.name] = 'show';
                         }
                         else {
-                            legend[dataName][index] = '';
+                            legend[dataName][item.name] = '';
                         }
                     }
-                    let className = legend[dataName][index];
+                    let className = legend[dataName][item.name];
                     classes += className ? className : '';
                     let color = '';
                     chart.series.forEach(item => {

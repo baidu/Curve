@@ -8,17 +8,12 @@ import Highcharts from 'highcharts/highstock';
 import {NoDataToDisplay} from 'react-highcharts-no-data-to-display';
 import highchartsMore from 'highcharts/highcharts-more';
 import eventProxy from '../../tools/eventProxy';
-// import Boost  from 'highcharts/modules/boost';
 
 highchartsMore(Highcharts);
 let ReactHighcharts = require('react-highcharts/ReactHighstock');
 NoDataToDisplay(ReactHighcharts.Highcharts);
-// let Boost =  require('highcharts/modules/boost');
-// Boost(ReactHighcharts.Highcharts);
-
-// import HighchartsMore from 'highcharts/highcharts-more';
-// var RHighcharts = require('react-highcharts/ReactHighstock');
-// HighchartsMore(RHighcharts.Highcharts);
+let Boost = require('highcharts/modules/boost');
+Boost(Highcharts);
 
 Highcharts.setOptions({
     global: {
@@ -47,6 +42,7 @@ export default class Chart extends Component {
         config = Object.assign({}, defaultConfig, config);
         let chartConfig = config.chart;
         let chartType = this.props.type || 'chart';
+
         this.chart = new Highcharts[chartType]({
             ...config,
             chart: {
@@ -54,6 +50,7 @@ export default class Chart extends Component {
                 renderTo: this.refs.chart
             }
         }, this.props.callback);
+
         eventProxy.trigger('loadedChart', this.chart);
         if (!this.props.neverReflow) {
             this.chart && this.chart.options && this.chart.reflow();
