@@ -4,45 +4,48 @@
     ~~~~
     ref: web_api.yaml
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
 from __future__ import absolute_import, print_function
 
 import csv
-import time
-import urllib
 import json
+import re
 
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+import numpy as np
+from flask import (
+    request,
+    current_app,
+    g
+)
 
-from flask import request
-from flask import g
-
-from ..exception import DataNotFoundException
-from ..models import Band
-from ..models import Data
-from ..models import db
-from ..models import Point
-from ..models import Thumb
-from ..schemas import base_path
-from ..service import DataService
-from ..service import PluginManager
-from ..utils import floor
-from ..utils import LABEL_ENUM
-from ..utils import parse_label
-from ..utils import str2time
-from ..utils import time2str
-from .base_api import Resource
+from .resource import Resource
+from v1 import utils
+from v1.models import (
+    Raw,
+    DataAbstract,
+    Thumb
+)
+from v1.services import (
+    DataService,
+    Plugin
+)
+from v1.utils import (
+    StringIO,
+    E_LABEL,
+    E_TIME_FORMATTER
+)
+import config
 
 
 class DataDataname(Resource):
     """
     ref: web_api.yaml
     """
+    csv_header = ['timestamp', 'value', 'label']
+    normal_mark = {str(E_LABEL.normal)}
+    unknown_mark = {None, '', str(E_LABEL.unknown)}
 
     def get(self, dataName):
         """
@@ -50,21 +53,22 @@ class DataDataname(Resource):
         :param dataName:
         :return:
         """
-        data_name = dataName
-        if isinstance(data_name, unicode):
-            data_name.encode('utf-8')
-        try:
-            string_io = StringIO()
-            data_service = DataService(data_name)
-            data = data_service.get_data()
-            if data_service.get_meta().readable_timestamp:
-                for key, point in enumerate(data):
-                    data[key][0] = time2str(data[key][0])
-            csv.writer(string_io).writerows([['timestamp', 'value', 'label']] + data)
+        data_name = utils.encode_if_unicode(dataName)
+        data_service = DataService(data_name)
+        if not data_service.exists():
+            return self.render(msg='%s not found' % data_name, status=404)
+        if not data_service.auth_read():
+            return self.render(msg='%s: data access forbidden' % data_name, status=403)
+        data_abstract = data_service.get_abstract()
+        data_raw = data_service.get_raw()
+        time_format = getattr(utils, data_abstract.time_formatter)
+        data_raw = [raw.view(time_format) for raw in data_raw]
+        string_io = StringIO()
+        writer = csv.writer(string_io)
+        writer.writerow(self.csv_header)
+        writer.writerows(data_raw)
 
-            return self.render_file('%s.csv' % data_name, string_io.getvalue())
-        except DataNotFoundException:
-            return self.render(msg='%s not found' % data_name), 404, None
+        return self.render_file('%s.csv' % data_name, string_io.getvalue())
 
     def post(self, dataName):
         """
@@ -72,108 +76,81 @@ class DataDataname(Resource):
         :param dataName:
         :return:
         """
-        data_name = dataName
-        if isinstance(data_name, unicode):
-            data_name.encode('utf-8')
-        if DataService.exists(data_name):
-            return self.render(msg='%s is exists' % data_name), 422, None
-        for upload_file in request.files.values():
-            line_no = 0
-            points = []
-            try:
-                reader = csv.reader(upload_file)
-                readable_timestamp = False
+        data_name = utils.encode_if_unicode(dataName)
+        data_service = DataService(data_name)
+        if data_service.exists():
+            return self.render(msg='%s is exists' % data_name, status=422)
+        if len(request.files) < 1:
+            return self.render(msg='expect file input', status=422)
+        upload_file = request.files.values()[0]
+        try:
+            points, time_formatter = self._parse_file(upload_file)  # parse data in csv
+        except Exception as e:
+            return self.render(msg=e.message, status=422)
+        if len(points) < 2:
+            return self.render(msg='at least 2 point', status=422)
+        timestamps = np.asarray(sorted(points.keys()))
+        periods = np.diff(timestamps)
+        period = int(np.median(periods))
+        start_time = utils.ifloor(timestamps.min(), period)
+        end_time = utils.ifloor(timestamps.max(), period) + period
+        data_raw = []  # drop those points not divisible by period
+        data_raw_list = []
+        for timestamp in range(start_time, end_time, period):
+            if timestamp in points:
+                point = points[timestamp]
+                data_raw.append(
+                    Raw(timestamp=point[0], value=point[1], label=point[2]))
+                data_raw_list.append((point[0], point[1], None))
+            else:
+                data_raw.append(Raw(timestamp=timestamp))
+                data_raw_list.append((timestamp, None, None))
+        plugin = Plugin(data_service)
+        _, (axis_min, axis_max) = plugin('y_axis', data_raw_list)  # cal y_axis for data
+        data_abstract = DataAbstract(  # save abstract for data
+            start_time=start_time,
+            end_time=end_time,
+            y_axis_min=axis_min,
+            y_axis_max=axis_max,
+            period=period,
+            period_ratio=len(periods[periods == period]) * 1. / len(periods),
+            label_ratio=sum([1 for point in data_raw if point.label]) * 1. / len(data_raw),
+            time_formatter=time_formatter.__name__
+        )
+        data_service.abstract = data_abstract
+        _, thumb = plugin('sampling', data_raw_list, config.SAMPLE_PIXELS)  # init thumb for data
+        thumb = Thumb(thumb=json.dumps([(point[0] * 1000, point[1]) for point in thumb]))
+        refs = plugin('reference', data_raw_list)  # init ref for data
+        bands = plugin('init_band', data_raw_list)  # init band
+        data_service.set(data_abstract, data_raw, thumb, refs, bands)
+        return self.render(
+            data=data_service.get_abstract().view(),
+            status=201,
+            header={'Location': '/v1/data/%s' % data_name}
+        )
+
+    def _parse_file(self, upload_file):
+        points = {}
+        reader = csv.reader(upload_file)
+        formatter = None
+        for line in reader:
+            if formatter is None:
+                formatter = self._find_time_format(line[0])
+            if formatter is not None:
                 try:
-                    line = reader.next()
-                    points.append(self.__parse_point(data_name, line))
-                    if len(line[0]) == 14:
-                        readable_timestamp = True
-                except ValueError:
-                    pass
-                for line in reader:
-                    line_no += 1
-                    points.append(self.__parse_point(data_name, line))
-                    if len(line[0]) == 14:
-                        readable_timestamp = True
-            except Exception as e:
-                return self.render(msg='line %d: %s' % (line_no, e.message)), 422, {}
-            if len(points) < 2:
-                return self.render(msg='at least 2 point'), 422, {}
-            for point in points:
-                db.session.add(point)
-            timestamps = sorted([point.timestamp for point in points])
-            periods = sorted([
-                timestamps[x + 1] - timestamps[x]
-                for x in range(len(timestamps) - 1)
-            ])
-            period = periods[len(periods) / 2]
-            period_ratio = sum([1 for x in periods if x == period]) * 1. / len(periods)
-            start_time = min(timestamps)
-            end_time = max(timestamps) + period
-            data = Data(
-                data_name,
-                start_time=start_time,
-                end_time=end_time,
-                period=period,
-                period_ratio=period_ratio,
-                label_ratio=sum([1 for point in points if point.label]) * 1. / len(points),
-                create_time=int(time.time()),
-                update_time=int(time.time()),
-                readable_timestamp=readable_timestamp
-            )
-            db.session.add(data)
-            # band
-            data_service = DataService(data_name, data, points)
-            plugin = PluginManager(data_service)
-            for band_name, bands in plugin('init_band'):
-                # TODO: sqlite3 with chinese field
-                band_name = urllib.quote(band_name)
-                bands = [
-                    Band(data_name, band_name, band_start, band_end, 0.5, band_no + 1)
-                    for band_no, (band_start, band_end) in enumerate(bands)
-                ]
-                for band in bands:
-                    db.session.add(band)
-            # thumb
-            line = [[point.timestamp, point.value] for point in points]
-            timestamps = {point.timestamp for point in points}
-            for timestamp in range(floor(start_time, period), floor(end_time, period), period):
-                if timestamp not in timestamps:
-                    line.append([timestamp, None])
-            _, thumb = plugin('sampling', sorted(line), 1000)
-            thumb = Thumb(data_name, json.dumps(thumb))
-            db.session.add(thumb)
-            db.session.commit()
-            data = DataService(data_name).data
-
-            return self.render(data={
-                "id": data.id,
-                "name": data.name,
-                "uri": '/v1/data/%s' % data.name,
-                "createTime": data.create_time * 1000,
-                "updateTime": data.update_time * 1000,
-                "labelRatio": data.label_ratio,
-                "period": {
-                    "length": data.period,
-                    "ratio": data.period_ratio
-                },
-                "display": {
-                    "start": data.start_time * 1000,
-                    "end": min(data.start_time + 86400, data.end_time) * 1000
-                },
-                "time": {
-                    "start": data.start_time * 1000,
-                    "end": data.end_time * 1000
-                }
-            }), 201, {'Location': '%s/data/%s' % (base_path, data_name)}
-
-        return self.render(msg='expect file input'), 422, None
-
-    def __parse_point(self, data_name, line):
-        if len(line) > 2:
-            return Point(data_name, str2time(line[0]), float(line[1]), parse_label(line[2]))
-        elif len(line) > 1:
-            return Point(data_name, str2time(line[0]), float(line[1]), LABEL_ENUM.normal)
+                    timestamp = formatter.str2time(line[0])
+                    value = None
+                    if len(line) > 1:
+                        value = self._parse_value(line[1])
+                    label = None
+                    if len(line) > 2:
+                        label = self._parse_label(line[2])
+                    points[timestamp] = (timestamp, value, label)
+                except ValueError as e:
+                    msg = 'line %d: %s' % (reader.line_num, e.message)
+                    current_app.logger.error(msg)
+                    raise Exception(msg)
+        return points, formatter
 
     def put(self, dataName):
         """
@@ -181,11 +158,13 @@ class DataDataname(Resource):
         :param dataName:
         :return:
         """
-        data_name = dataName
-        if isinstance(data_name, unicode):
-            data_name.encode('utf-8')
+        data_name = utils.encode_if_unicode(dataName)
         data_service = DataService(data_name)
-        plugin = PluginManager(data_service)
+        if not data_service.exists():
+            return self.render(msg='%s not found' % data_name, status=404)
+        if not data_service.auth_edit():
+            return self.render(msg='%s: data access forbidden' % data_name, status=403)
+        plugin = Plugin(data_service)
 
         start_time = g.args['startTime'] / 1000
         end_time = g.args['endTime'] / 1000
@@ -193,7 +172,7 @@ class DataDataname(Resource):
 
         res = plugin(action, start_time, end_time)
 
-        return self.render(data=res), 200, None
+        return self.render(data=res)
 
     def delete(self, dataName):
         """
@@ -201,11 +180,44 @@ class DataDataname(Resource):
         :param dataName:
         :return:
         """
-        data_name = dataName
-        if isinstance(data_name, unicode):
-            data_name.encode('utf-8')
-        try:
-            DataService(data_name).delete()
-            return self.render(), 200, None
-        except DataNotFoundException:
-            return self.render(msg='%s not found' % data_name), 404, None
+        data_name = utils.encode_if_unicode(dataName)
+        data_service = DataService(data_name)
+        if not data_service.exists():
+            return self.render(msg='%s not found' % data_name, status=404)
+        if not data_service.auth_edit():
+            return self.render(msg='%s: data access forbidden' % data_name, status=403)
+        data_service.delete()
+        return self.render()
+
+    @staticmethod
+    def _find_time_format(time_str):
+        # for format XXXXXXXXXXX.0
+        split_index = time_str.find('.')
+        if split_index != -1:
+            time_str = time_str[:split_index]
+        if re.match(r'^\d+$', time_str):
+            # TODO: find different between YYYYmmddHHMMSS and UNIX_ms
+            if len(time_str) > 11:
+                # YYYYmmddHHMMSS
+                return E_TIME_FORMATTER.short
+            else:
+                # UNIX_s
+                return E_TIME_FORMATTER.unix
+        elif re.match(r'%d{4}-%d{2}-%d{2}\s%d{2}:%d{2}:%d{2}', time_str):
+            # YYYY-mm-dd HH:MM:SS
+            return E_TIME_FORMATTER.rfc
+        return None
+
+    @staticmethod
+    def _parse_value(value):
+        if value == '':
+            return None
+        return float(value)
+
+    @staticmethod
+    def _parse_label(label):
+        if label in DataDataname.unknown_mark:
+            return None
+        if label not in DataDataname.normal_mark:
+            return E_LABEL.abnormal
+        return E_LABEL.normal

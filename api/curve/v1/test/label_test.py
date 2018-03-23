@@ -4,17 +4,12 @@
     ~~~~
     label operation test
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
 import uuid
 
-from .base import IcurveTestCase
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from .base import IcurveTestCase, StringIO
 
 
 class LabelTestCase(IcurveTestCase):
@@ -51,3 +46,5 @@ class LabelTestCase(IcurveTestCase):
                  (data_name, '1503849720000', '1503849960000')
         )
         self.assertJsonResponse(response, 200, message=message)
+        # teardown
+        self.client.delete(path='/v1/data/%s' % data_name)

@@ -17,7 +17,7 @@ paths:
     get:
       summary: get operation list
       tags:
-        - menu
+        - Menu
       responses:
         '200':
           description: OK
@@ -27,8 +27,8 @@ paths:
     get:
       summary: get data list
       tags:
-        - data
-      description:
+        - Data
+      description: ''
       parameters:
         - name: pattern
           in: query
@@ -38,11 +38,17 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/DataListResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
   '/data/{dataName}':
     post:
       summary: upload data
       tags:
-        - data
+        - Data
       consumes:
         - multipart/form-data
       parameters:
@@ -57,6 +63,12 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/DataMetaResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
         '422':
           description: Unprocessable Entity
           schema:
@@ -64,7 +76,7 @@ paths:
     get:
       summary: download data
       tags:
-        - data
+        - Data
       parameters:
         - $ref: '#/parameters/dataName'
       produces:
@@ -74,6 +86,16 @@ paths:
           description: OK
           schema:
             type: file
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CommonResponse'
         '404':
           description: Not Found
           schema:
@@ -81,7 +103,7 @@ paths:
     put:
       summary: data operation
       tags:
-        - menu
+        - Menu
       description: ''
       parameters:
         - $ref: '#/parameters/dataName'
@@ -91,6 +113,16 @@ paths:
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
           schema:
             $ref: '#/definitions/CommonResponse'
         '404':
@@ -104,13 +136,23 @@ paths:
     delete:
       summary: delete data
       tags:
-        - data
+        - Data
       description: ''
       parameters:
         - $ref: '#/parameters/dataName'
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
           schema:
             $ref: '#/definitions/CommonResponse'
         '404':
@@ -125,8 +167,7 @@ paths:
     get:
       summary: get raw, ref, label data and bands in given period
       tags:
-        - trend
-        - label
+        - Trend
       description: ''
       parameters:
         - $ref: '#/parameters/dataName'
@@ -140,6 +181,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/TrendResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CommonResponse'
         '404':
           description: Not Found
           schema:
@@ -148,7 +199,7 @@ paths:
     get:
       summary: get sample data for thumb
       tags:
-        - trend
+        - Trend
       parameters:
         - $ref: '#/parameters/dataName'
       responses:
@@ -156,6 +207,16 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/ThumbResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CommonResponse'
         '404':
           description: Not Found
           schema:
@@ -164,7 +225,7 @@ paths:
     put:
       summary: mark normal or abnormal
       tags:
-        - label
+        - Label
       parameters:
         - $ref: '#/parameters/dataName'
         - $ref: '#/parameters/startTime'
@@ -173,6 +234,16 @@ paths:
       responses:
         '200':
           description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
           schema:
             $ref: '#/definitions/CommonResponse'
         '404':
@@ -187,37 +258,43 @@ paths:
     get:
       summary: get band
       tags:
-        - band
+        - Band
+        - NotImplemented
       description: ''
       parameters:
         - $ref: '#/parameters/dataName'
         - $ref: '#/parameters/bandName'
-        - name: startTime
-          description: ms
-          in: query
-          type: integer
-          format: int64
-          default: 0
-        - name: endTime
-          description: ms
-          in: query
-          type: integer
-          format: int64
-          default: 0
+        - $ref: '#/parameters/startTime'
+        - $ref: '#/parameters/endTime'
         - $ref: '#/parameters/bandOrder'
       responses:
         '200':
           description: OK
           schema:
             $ref: '#/definitions/BandResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CommonResponse'
         '404':
           description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '501':
+          description: Not Implemented
           schema:
             $ref: '#/definitions/CommonResponse'
     delete:
       summary: delete band
       tags:
-        - band
+        - Band
+        - NotImplemented
       description: ''
       parameters:
         - $ref: '#/parameters/dataName'
@@ -227,11 +304,119 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/CommonResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CommonResponse'
         '404':
           description: Not Found
           schema:
             $ref: '#/definitions/CommonResponse'
-
+        '501':
+          description: Not Implemented
+          schema:
+            $ref: '#/definitions/CommonResponse'
+  '/data/{dataName}/privilege':
+    put:
+      summary: edit privilege of data
+      tags:
+        - Auth
+      description: only owner can change privilege of data
+      parameters:
+        - $ref: '#/parameters/dataName'
+        - name: public_read
+          description: public for everyone to read and download or not
+          in: query
+          type: boolean
+        - name: public_edit
+          description: public for everyone to label or not
+          in: query
+          type: boolean
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: login uri
+              type: string
+        '403':
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/CommonResponse'
+        '404':
+          description: Not Found
+          schema:
+            $ref: '#/definitions/CommonResponse'
+  '/login/redirect':
+    get:
+      summary: redirect to login
+      tags:
+        - Auth
+      description: ''
+      responses:
+        '200':
+          description: OK, Redirect to oauth uri, msg is destination
+          schema:
+            $ref: '#/definitions/RedirectResponse'
+  '/login/redirect/github':
+    get:
+      summary: redirect to oauth
+      tags:
+        - Auth
+      description: ''
+      responses:
+        '302':
+          description: Move temporarily, Unauthorized
+          headers:
+            Location:
+              description: oauth login uri
+              type: string
+  '/login/callback/github':
+    get:
+      summary: oauth callback
+      tags:
+        - Auth
+      parameters:
+        - name: code
+          description: a temporary code in github callback
+          in: query
+          type: string
+        - name: state
+          description: An unguessable random string. It is used to protect against cross-site request forgery attacks.
+          required: false
+          in: query
+          type: string
+      description: ''
+      responses:
+        '302':
+          description: Move temporarily
+          headers:
+            Location:
+              description: oauth login callback
+              type: string
+  '/logout':
+    get:
+      summary: logout
+      tags:
+        - Auth
+      description: ''
+      responses:
+        '302':
+          description: Move temporarily, index
+          headers:
+            Location:
+              description: oauth login uri
+              type: string
 parameters:
   dataName:
     name: dataName
@@ -349,6 +534,12 @@ definitions:
         $ref: '#/definitions/Time'
       updateTime:
         $ref: '#/definitions/Time'
+      owner:
+        type: string
+      public_read:
+        type: boolean
+      public_edit:
+        type: boolean
   Trend:
     required:
       - name
@@ -392,7 +583,6 @@ definitions:
         - bandNo
         - bandCount
         - currentTime
-        - reliability
       properties:
         bandNo:
           type: integer
@@ -430,6 +620,14 @@ definitions:
         type: string
       traceId:
         type: string
+  RedirectResponse:
+    required:
+      - data
+    allOf:
+      - $ref: '#/definitions/CommonResponse'
+      - properties:
+          data:
+            type: string
   MenuResponse:
     required:
       - data

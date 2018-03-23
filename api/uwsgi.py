@@ -4,7 +4,7 @@
     ~~~~
     A label tool for Time-series data
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apachea, see LICENSE for more details.
 """
 from curve import create_app

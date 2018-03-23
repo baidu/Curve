@@ -9,11 +9,12 @@
 """
 from __future__ import absolute_import, print_function
 
+import flask
+
 from .resource import Resource
-from v1.services.plugin import Plugin
 
 
-class Menus(Resource):
+class Logout(Resource):
     """
     ref: web_api.yaml
     """
@@ -21,12 +22,6 @@ class Menus(Resource):
     def get(self):
         """
         ref: web_api.yaml
-        :return:
         """
-        actions = []
-        for menu in Plugin.get_menus():
-            actions.append({
-                "action": menu[0],
-                "name": menu[1]
-            })
-        return self.render(data=actions)
+        flask.session.pop('uid', None)
+        return self.redirect('/')

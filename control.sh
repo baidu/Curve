@@ -15,6 +15,7 @@
 set -u
 set -e
 
+cd "$(dirname "$0")"
 readonly G_ROOT_DIR=`pwd`
 readonly G_WEB_DIR="${G_ROOT_DIR}/web"
 readonly G_API_DIR="${G_ROOT_DIR}/api"
@@ -24,6 +25,8 @@ G_GIT_VERSION=''
 if [ -e .git ]; then
     G_GIT_VERSION=`git rev-parse HEAD`
 fi
+G_CONDA=''
+
 
 PS1='$'
 
@@ -79,7 +82,7 @@ check_web() {
     cutoff
 }
 
-check_venv() {
+check_py() {
     readonly VENV_VERSION_FILE="${G_VENV_DIR}/version"
     VENV_VERSION=''
     if [ -e ${VENV_VERSION_FILE} ]; then
@@ -100,6 +103,7 @@ check_venv() {
     source ${G_VENV_DIR}/bin/activate
     pip install -r ${G_API_DIR}/requirements.txt
     echo ${G_GIT_VERSION} > ${VENV_VERSION_FILE}
+    deactivate
     echo "venv deployed."
     cutoff
 }
@@ -118,10 +122,11 @@ check_api() {
 
     cutoff
     echo "deploy api..."
+    cd ${G_ROOT_DIR}
     source ${G_VENV_DIR}/bin/activate
     pip install swagger-py-codegen==0.2.9
-    cd ${G_ROOT_DIR}
     swagger_py_codegen --ui --spec -s doc/web_api.yaml api -p curve
+    deactivate
     if [ -e ${G_API_DIR}/curve/web/swagger-ui ]; then
         rm -rf ${G_API_DIR}/curve/web/swagger-ui
     fi
@@ -142,7 +147,7 @@ check_uwsgi() {
     mkdir -p ${G_API_DIR}/log
     # cause of nonstandard version number
     # sometimes uwsgi can't install in specific Linux distributions
-    if [ -e "${G_VENV_DIR}/bin/uwsgi" ]; then
+    if [ -e "${G_VENV_DIR}/bin/curve_uwsgi" ]; then
         return
     fi
 
@@ -157,28 +162,35 @@ check_uwsgi() {
     rm -rf uwsgi-2.0.15
     pip install uwsgi-2.0.15.tar.gz
     echo "uwsgi installed."
+    rm uwsgi-2.0.15.tar.gz
+    mv ${G_VENV_DIR}/bin/uwsgi ${G_VENV_DIR}/bin/curve_uwsgi
+    echo "uwsgi renamed."
     cutoff
+}
+
+check() {
+    check_web
+    check_py
+    check_api
+    check_uwsgi
 }
 
 start() {
     if [ -e ${G_API_DIR}/uwsgi.pid ]; then
         PID=`cat ${G_API_DIR}/uwsgi.pid`
-        if [ `ps -ef | fgrep uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
+        if [ `ps -ef | fgrep curve_uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
             echo "Curve is running."
             return
         fi
     fi
-    check_web
-    check_venv
-    check_api
-    check_uwsgi
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    check
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
     fi
     echo "start Curve..."
     source ${G_VENV_DIR}/bin/activate
     cd ${G_API_DIR}
-    uwsgi uwsgi.ini
+    ${G_VENV_DIR}/bin/curve_uwsgi uwsgi.ini
     echo "Curve started."
 }
 
@@ -186,47 +198,48 @@ stop() {
     echo "stop Curve..."
     cd ${G_API_DIR}
     source ${G_VENV_DIR}/bin/activate
-    [ -e uwsgi.pid ] && uwsgi --stop uwsgi.pid
+    [ -e uwsgi.pid ] && ${G_VENV_DIR}/bin/curve_uwsgi --stop uwsgi.pid
     echo "Curve stopped."
 }
 
 reload() {
-    check_web
-    check_venv
-    check_api
-    check_uwsgi
+    check
     if [ -e ${G_API_DIR}/uwsgi.pid ]; then
         PID=`cat ${G_API_DIR}/uwsgi.pid`
-        if [ `ps -ef | fgrep uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
+        if [ `ps -ef | fgrep curve_uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
             echo "reload Curve..."
             source ${G_VENV_DIR}/bin/activate
             cd ${G_API_DIR}
-            uwsgi --reload uwsgi.pid
+            ${G_VENV_DIR}/bin/curve_uwsgi --reload uwsgi.pid
             echo "Curve reloaded."
             return
         fi
     fi
     echo "clean Curve..."
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
     fi
     echo "start Curve..."
     source ${G_VENV_DIR}/bin/activate
     cd ${G_API_DIR}
-    uwsgi uwsgi.ini
+    ${G_VENV_DIR}/bin/curve_uwsgi uwsgi.ini
     echo "Curve reloaded."
 }
 
 terminate() {
     echo "terminate Curve..."
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
         echo "Curve terminated."
     fi
     echo "Curve is not running."
 }
 
 case "${1}" in
+check)
+    version
+    check
+    ;;
 start)
     version
     start

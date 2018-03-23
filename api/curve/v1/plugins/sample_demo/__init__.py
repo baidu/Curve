@@ -6,63 +6,73 @@
 
     :entity: sampling()
     :invoked: trend/ref/label rendering
-    :exclusive: true
+    :distinct: true
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
-import math
+
+import numpy as np
 
 
-def sampling(api, line, amount):
+def sampling(api, line, target_amount):
     """
-    :param api: api for plugins
-    :param line: [(timestamp, value...)]
-    :param amount: amount of points after sampling
-    :return: [(timestamp, value...)]
+
+    :param api: plugin api object, select is not implement during init.
+    :param line: tuple-like ((timestamp, value)), the timestamp and value is const
+    :param target_amount: amount of points after sampling
+    :return: (plugin_name, [[timestamp, value]]), tuple is not recommended
     """
-    if amount < 1 or len(line) < amount:
-        return 'sample demo', line
-    period = api.get_meta().period
-    start_time = line[0][0]
-    end_time = line[-1][0] + period
-    sample_period = __floor((end_time - start_time + .0) / amount, period)
-    tmp_value = {
-        timestamp: []
-        for timestamp in range(
-            start_time / sample_period * sample_period,
-            end_time,
-            sample_period
-        )
-    }
-    for point in line:
-        tmp_value[point[0] / sample_period * sample_period].append(point[1:])
-    result = []
-    is_line = True
-    if len(line[0]) > 2:
-        is_line = False
-    for timestamp in sorted(tmp_value.keys()):
-        # lower
-        value = [x[0] for x in tmp_value[timestamp] if x[0] is not None]
-        if len(value) > 0:
-            value = float(sum(value)/len(value))
-        else:
-            value = None
-        if is_line:
-            result.append([timestamp, value])
-            continue
-        # upper
-        upper = [x[1] for x in tmp_value[timestamp] if len(x) > 1 and x[1] is not None]
-        if len(upper) > 0:
-            upper = float(sum(upper)/len(upper))
-        else:
-            upper = None
-        result.append([timestamp, value, upper])
-
-    return 'sample demo', result
+    # Assume timestamp, value, range is not nullable
+    if len(line) > target_amount and len(line) > 2:
+        period = api.get_abstract().period  # timestamp is marked as the start time of a period
+        start_time = line[0][0]
+        end_time = line[-1][0]
+        amount = (end_time - start_time) / period  # point amount without sampling
+        aggr_period = iceil(amount, target_amount) / target_amount * period
+        start_time = ifloor(line[0][0], aggr_period)
+        tmp = {timestamp: [] for timestamp in range(start_time, end_time + period, aggr_period)}
+        for point in line:
+            tmp[ifloor(point[0], aggr_period)].append(point)
+        line = [
+            [timestamp, mean(points, lambda x: x[1]), mean(points, lambda x: x[2])]
+            for timestamp, points in sorted(tmp.items())
+        ]
+    return 'default', line
 
 
-def __floor(data, base=None):
+def num_filter(x):
+    return isinstance(x, (int, float, long))
+
+
+def mean(data, key=None):
+    if key is not None:
+        data = [key(point) for point in data]
+    data = filter(num_filter, data)
+    if len(data) < 1:
+        return None
+    return np.mean(data)
+
+
+def ifloor(data, base=None):
+    """
+    floor of int
+    :param data:
+    :param base:
+    :return:
+    """
     if base is None or base == 0:
-        return int(math.floor(data))
-    return int(math.floor(data / base) * base)
+        return data
+    return data - data % base
+
+
+def iceil(data, base=None):
+    """
+    ceil of int
+    :param data:
+    :param base:
+    :return:
+    """
+    if base is None or base == 0:
+        return data
+    return data + -data % base

@@ -9,17 +9,14 @@
 """
 from __future__ import absolute_import, print_function
 
-from flask import g
+import flask
 
 from .resource import Resource
 from v1 import utils
 from v1.services import DataService
 
 
-class DataDatanameLabel(Resource):
-    """
-    ref: web_api.yaml
-    """
+class DataDatanamePrivilege(Resource):
 
     def put(self, dataName):
         """
@@ -31,12 +28,19 @@ class DataDatanameLabel(Resource):
         data_service = DataService(data_name)
         if not data_service.exists():
             return self.render(msg='%s not found' % data_name, status=404)
-        if not data_service.auth_edit():
+        if not data_service.auth_manage():
             return self.render(msg='%s: data access forbidden' % data_name, status=403)
-        start_time = g.args['startTime'] / 1000
-        end_time = g.args['endTime'] / 1000
-        label = g.args['label']
-
-        data_service.set_label(start_time, end_time, label)
+        data_abstract = data_service.get_abstract()
+        if 'public_read' in flask.g.args:
+            public_read = flask.g.args['public_read']
+            if not public_read:
+                data_abstract.public_edit = False
+            data_abstract.public_read = public_read
+        if 'public_edit' in flask.g.args:
+            public_edit = flask.g.args['public_edit']
+            if public_edit:
+                data_abstract.public_read = True
+            data_abstract.public_edit = public_edit
+        data_service.update_privilege(data_abstract.public_read, data_abstract.public_edit)
 
         return self.render()

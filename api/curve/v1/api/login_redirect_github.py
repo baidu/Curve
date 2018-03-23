@@ -9,11 +9,13 @@
 """
 from __future__ import absolute_import, print_function
 
+from flask import current_app
+import flask_github
+
 from .resource import Resource
-from v1.services.plugin import Plugin
 
 
-class Menus(Resource):
+class LoginRedirectGithub(Resource):
     """
     ref: web_api.yaml
     """
@@ -21,12 +23,6 @@ class Menus(Resource):
     def get(self):
         """
         ref: web_api.yaml
-        :return:
         """
-        actions = []
-        for menu in Plugin.get_menus():
-            actions.append({
-                "action": menu[0],
-                "name": menu[1]
-            })
-        return self.render(data=actions)
+        resp = flask_github.GitHub(current_app).authorize()
+        return self.redirect(resp.headers['Location'])

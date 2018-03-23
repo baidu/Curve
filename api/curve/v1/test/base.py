@@ -4,13 +4,14 @@
     ~~~~
     base class for testing
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
 import unittest
+import json
 
-from curve import create_app
-from flask import json
+from app import create_app
+from v1.utils import StringIO
 
 
 class IcurveTestCase(unittest.TestCase):
@@ -24,6 +25,7 @@ class IcurveTestCase(unittest.TestCase):
         self.app = create_app()
         self.assertIsNotNone(self.app)
         self.app.config['TESTING'] = True
+        self.app.config['OAUTH'] = {}
         self.client = self.app.test_client()
         self.assertIsNotNone(self.client)
 
@@ -61,7 +63,10 @@ class IcurveTestCase(unittest.TestCase):
         self.assertIn('traceId', response)
         self.assertIn('server', response)
         if data is not None:
-            self.assertEqual(json.dumps(response['data']), json.dumps(data))
+            self.assertEqual(
+                json.dumps(response['data'], sort_keys=True),
+                json.dumps(data, sort_keys=True)
+            )
         if 'data' in response:
             return response['data']
         return {}

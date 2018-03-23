@@ -19,7 +19,7 @@ test.csv
 /api/curve/v1/schemas.py
 /api/curve/v1/validators.py
 /api/curve/static/
-
+.pytest_cache
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -75,6 +75,7 @@ coverage.xml
 
 # Django stuff:
 *.log
+*.log.*
 local_settings.py
 
 # Flask stuff:
