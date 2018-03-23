@@ -1,0 +1,291 @@
+/**
+ * @file List style file
+ * @author cuiyuan
+ */
+.mftable-list {
+    padding: 20px;
+}
+.mftable-list .head {
+    position: relative;
+    z-index: 1;
+    height: 36px;
+    line-height: 36px;
+    background: #fcfdff;
+    font-size: 12px;
+    border: 1px solid #eaf0f8;
+    border-left: 0;
+    border-right: 0;
+}
+.mftable-list .head div {
+    display: inline-block;
+}
+.mftable-list .head .head-item {
+    padding: 0 10px;
+}
+.mftable-list .body .data-line,
+.mftable-list .head .data-line {
+    position: relative;
+}
+.mftable-list .body .data-line div,
+.mftable-list .head .data-line div {
+    display: inline-block;
+    position: relative;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+.mftable-list .search-box {
+    position: relative;
+    float: left;
+}
+.mftable-list .search-box .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    margin-top: -8px;
+    color: #ccc;
+}
+.mftable-list .search-input {
+    width: 298px;
+    height: 24px;
+    line-height: 24px;
+    padding-left: 28px;
+    background: #fcfdff;
+    border: 1px solid #eaf0f8;
+    border-radius: 1px;
+}
+.mftable-list .operation {
+    float: right;
+}
+.mftable-list .clearfix:after {
+    content: "";
+    display: block;
+    height: 0;
+    visibility: hidden;
+    clear: both;
+}
+.mftable-list .operation button {
+    margin-left: 10px;
+    padding: 3px 6px 5px 6px;
+    background: #ccc;
+    border-radius: 1px;
+    border: 0;
+    color: #fff;
+    font-size: 12px;
+}
+.mftable-list .operation button:hover {
+    cursor: pointer;
+}
+.mftable-list .operation button.active {
+    background: #388ff7;
+}
+.mftable-list .operation-box {
+    margin-bottom: 10px;
+}
+.mftable-list .data-line {
+    padding-right: 10px;
+    height: 36px;
+    line-height: 36px;
+    font-size: 12px;
+    border-bottom: 1px solid #eaf0f8;
+}
+.mftable-list .data-line:nth-child(2n) {
+    background: #fcfdff;
+}
+.mftable-list .data-line:nth-child(2n + 1) {
+    background: #fff;
+}
+.mftable-list .action {
+    margin-right: 18px;
+    color: #388ff7;
+}
+.mftable-list .action:hover {
+    cursor: pointer;
+}
+.mftable-list .input-label {
+    position: absolute;
+    z-index: 0;
+    top: 5px;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    background: transparent;
+    border: 1px solid #e1e3e8;
+    border-radius: 1px;
+    cursor: pointer;
+}
+.mftable-list .input-label:after {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 7px;
+    height: 4px;
+    opacity: .2;
+    content: "";
+    background: transparent;
+    border: 2px solid #fff;
+    border-top: none;
+    border-right: none;
+    -webkit-transform: rotate(-45deg);
+       -moz-transform: rotate(-45deg);
+         -o-transform: rotate(-45deg);
+        -ms-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+}
+.mftable-list .check-box {
+    position: relative;
+    top: -3px;
+    height: 12px;
+    width: 12px;
+}
+.mftable-list .check-box input[type="checkbox"] {
+    position: absolute;
+    left: 0;
+    top: 3px;
+    z-index: 1;
+    opacity: 0;
+}
+.mftable-list .check-box input[type="checkbox"]:hover {
+    cursor: pointer;
+}
+.mftable-list .check-box .input-label.checked {
+    background: #388ff7;
+    border: 0;
+    width: 10px;
+    height: 10px;
+}
+.mftable-list .check-box .input-label.checked:after {
+    opacity: 1;
+}
+.mftable-list .no-data {
+    height: 36px;
+    line-height: 36px;
+    border-bottom: 1px solid #eaf0f8;
+    font-size: 12px;
+    text-align: center;
+}
+.mftable-list .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    opacity: .3;
+    display: none;
+}
+.mftable-list .overlay.show {
+    display: block;
+}
+.mftable-list .dialog {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    z-index: 3;
+    margin-left: -200px;
+    margin-top: -83px;
+    border-radius: 2px;
+    display: none;
+}
+.mftable-list .dialog.show {
+    display: block;
+}
+.mftable-list .dialog-head {
+    position: relative;
+    width: 400px;
+    height: 36px;
+    line-height: 36px;
+    padding-left: 20px;
+    padding-right: 20px;
+    background: #388ff7;
+    font-size: 14px;
+    color: #fff;
+}
+.mftable-list .dialog-head .close {
+    position: absolute;
+    right: 20px;
+    top: 50%;
+    margin-top: -15px;
+    color: #fff;
+    font-size: 16px;
+    background: transparent;
+    border: 0;
+}
+.mftable-list .dialog-head .close:hover {
+    cursor: pointer;
+}
+.mftable-list .dialog-body {
+    width: 400px;
+    min-height: 110px;
+    padding: 30px 20px;
+    background: #fff;
+}
+.mftable-list .dialog-body .dialog-content {
+    max-height: 200px;
+    overflow: auto;
+    padding: 30px 20px;
+    color: #444;
+    font-size: 12px;
+    text-align: center;
+}
+.mftable-list .dialog-body .dialog-container {
+    word-break: break-all;
+}
+.mftable-list .dialog-body .dialog-container .name-list {
+    display: inline-block;
+}
+.mftable-list .dialog-footer {
+    padding-top: 20px;
+    text-align: center;
+}
+.mftable-list .dialog-footer .operation-btn {
+    height: 24px;
+    min-width: 60px;
+    color: #fff;
+    font-size: 12px;
+    border: 0;
+    border-radius: 1px;
+}
+.mftable-list .dialog-footer .operation-btn:hover {
+    cursor: pointer;
+}
+.mftable-list .dialog-footer .confirm {
+    margin-right: 20px;
+    background: #f36754;
+}
+.mftable-list .dialog-footer .cancel {
+    background: #388ff7;
+}
+.mftable-list .loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    opacity: .69;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    display: none;
+}
+.mftable-list .loading-container {
+    position: absolute;
+    top: 35%;
+    left: 50%;
+    z-index: 3;
+    width: 200px;
+    height: 80px;
+    margin-left: -100px;
+    margin-top: -40px;
+    background: #fff url(../../common/image/loading.gif) no-repeat center center;
+    box-shadow: 1px 1px 6px 0 rgba(39, 95, 161, .3);
+    border-radius: 2px;
+    display: none;
+    background-size: 75% !important;
+}
+.mftable-list .loading-container.show,
+.mftable-list .loading.show {
+    display: block;
+}
+.mftable-list .list-item .check-box .input-label {
+    text-align: center;
+}
