@@ -72,3 +72,16 @@ class Resource(restful.Resource):
         response.headers['Content-Type'] = 'text/plain'
 
         return response
+
+    @staticmethod
+    def render_json_str(content):
+        """
+        render plain response
+        :param content:
+        :return: response in response type
+        """
+        content = content
+        response = make_response(content)
+        response.headers['Content-Type'] = 'application/json'
+
+        return response

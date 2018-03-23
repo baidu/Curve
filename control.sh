@@ -21,9 +21,9 @@ readonly G_WEB_DIR="${G_ROOT_DIR}/web"
 readonly G_API_DIR="${G_ROOT_DIR}/api"
 readonly G_VENV_DIR="${G_ROOT_DIR}/venv"
 
-G_GIT_VERSION=''
+G_VERSION='none'
 if [ -e .git ]; then
-    G_GIT_VERSION=`git rev-parse HEAD`
+    G_VERSION=`git rev-parse HEAD`
 fi
 G_CONDA=''
 
@@ -41,9 +41,9 @@ help() {
 }
 
 version() {
-    if [ ${G_GIT_VERSION}x != 'x' ]; then
+    if [ ${G_VERSION}x != 'x' ]; then
         cutoff
-        echo "local Curve version: ${G_GIT_VERSION}"
+        echo "local Curve version: ${G_VERSION}"
         cutoff
     fi
 }
@@ -62,17 +62,17 @@ check_web() {
         DEPLOY_VERSION=`cat ${DEPLOY_VERSION_FILE}`
     fi
 
-    if [ ${G_GIT_VERSION}x != 'x' -a ${G_GIT_VERSION}x == ${DEPLOY_VERSION}x ]; then
+    if [ ${G_VERSION}x != 'x' -a ${G_VERSION}x == ${DEPLOY_VERSION}x ]; then
         return
     fi
 
     cutoff
     echo "build web..."
-    if [ ${G_GIT_VERSION}x == 'x' -o ${G_GIT_VERSION}x != ${BUILD_VERSION}x ]; then
+    if [ ${G_VERSION}x == 'x' -o ${G_VERSION}x != ${BUILD_VERSION}x ]; then
         cd ${G_WEB_DIR}
         npm install
         npm run build
-        echo ${G_GIT_VERSION} > ${BUILD_VERSION_FILE}
+        echo ${G_VERSION} > ${BUILD_VERSION_FILE}
     fi
     if [ -e ${DEPLOY_PATH} ]; then
         rm -rf ${DEPLOY_PATH}
@@ -89,20 +89,20 @@ check_py() {
         VENV_VERSION=`cat ${VENV_VERSION_FILE}`
     fi
 
-    if [ ${G_GIT_VERSION}x != 'x' -a ${G_GIT_VERSION}x == ${VENV_VERSION}x ]; then
+    if [ ${G_VERSION}x != 'x' -a ${G_VERSION}x == ${VENV_VERSION}x ]; then
         return
     fi
 
     cutoff
     echo "deploy venv..."
     if [ ! -e "${G_ROOT_DIR}/venv" ]; then
-        pip install --upgrade pip
-        pip install virtualenv
+        # pip install --upgrade pip
+        # pip install virtualenv
         virtualenv --no-site-packages ${G_VENV_DIR}
     fi
     source ${G_VENV_DIR}/bin/activate
     pip install -r ${G_API_DIR}/requirements.txt
-    echo ${G_GIT_VERSION} > ${VENV_VERSION_FILE}
+    echo ${G_VERSION} > ${VENV_VERSION_FILE}
     deactivate
     echo "venv deployed."
     cutoff
@@ -116,7 +116,7 @@ check_api() {
         SWAGGER_UI_VERSION=`cat ${SWAGGER_UI_VERSION_FILE}`
     fi
 
-    if [ ${G_GIT_VERSION}x != 'x' -a ${G_GIT_VERSION}x == ${SWAGGER_UI_VERSION}x ]; then
+    if [ ${G_VERSION}x != 'x' -a ${G_VERSION}x == ${SWAGGER_UI_VERSION}x ]; then
         return
     fi
 
@@ -138,7 +138,7 @@ check_api() {
     rm -rf ${G_API_DIR}/curve/static
 
     patch ${G_API_DIR}/curve/web/swagger-ui/index.html ${G_ROOT_DIR}/opt/swagger-ui/index.html.patch
-    echo ${G_GIT_VERSION} > ${SWAGGER_UI_VERSION_FILE}
+    echo ${G_VERSION} > ${SWAGGER_UI_VERSION_FILE}
     echo "api deployed."
     cutoff
 }

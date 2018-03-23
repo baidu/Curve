@@ -119,7 +119,16 @@ class DataDataname(Resource):
         )
         data_service.abstract = data_abstract
         _, thumb = plugin('sampling', data_raw_list, config.SAMPLE_PIXELS)  # init thumb for data
-        thumb = Thumb(thumb=json.dumps([(point[0] * 1000, point[1]) for point in thumb]))
+        thumb = Thumb(thumb=json.dumps({
+            'msg': 'OK',
+            'server': request.host,
+            'traceId': '',
+            'data': {
+                'data': [(point[0] * 1000, point[1]) for point in thumb],
+                'name': data_name,
+                'type': 'line'
+            }
+        }, ensure_ascii=False))
         refs = plugin('reference', data_raw_list)  # init ref for data
         bands = plugin('init_band', data_raw_list)  # init band
         data_service.set(data_abstract, data_raw, thumb, refs, bands)

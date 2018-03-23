@@ -33,5 +33,4 @@ class Datas(Resource):
         datas = filter(lambda x: x.owner == user, datas) + \
             filter(lambda x: x.owner != user and x.public_read, datas) + \
             filter(lambda x: x.owner != user and not x.public_read, datas)
-
         return self.render(data=[data.view() for data in datas])

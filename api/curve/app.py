@@ -17,17 +17,15 @@ import string
 import flask
 import flask_compress
 import flask_cors
-import flask_sqlalchemy
 import werkzeug.routing
 
+from db import db
 import config
 import log
 import v1 as api
 
 
 json.encoder.FLOAT_REPR = lambda x: format(x, '.4f')
-
-db = flask_sqlalchemy.SQLAlchemy()
 
 
 def create_app():
@@ -72,7 +70,6 @@ def create_app():
                     prefix = auth_file[:auth_file.find('_')]
                     app.config['OAUTH'][prefix] = json.load(fp)
     api.init_oauth(app)
-
     app.register_blueprint(api.bp, url_prefix='/v1')
 
     @app.route('/<regex("$"):url>')

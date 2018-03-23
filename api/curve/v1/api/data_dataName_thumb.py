@@ -30,8 +30,4 @@ class DataDatanameThumb(Resource):
         data_service = DataService(data_name)
         thumb = data_service.get_thumb()
 
-        return self.render(data={
-            'name': data_name,
-            'type': 'line',
-            'data': thumb.view()
-        })
+        return self.render_json_str(thumb.view())

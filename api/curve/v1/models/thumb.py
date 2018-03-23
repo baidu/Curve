@@ -30,4 +30,4 @@ class Thumb(db.Model):
         render data thumb for view
         :return:
         """
-        return json.loads(self.thumb)
+        return self.thumb
