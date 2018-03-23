@@ -4,7 +4,7 @@
     ~~~~
     menu list test
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
 

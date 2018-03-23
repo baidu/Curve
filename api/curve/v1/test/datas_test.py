@@ -4,17 +4,12 @@
     ~~~~
     data list test
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
 import uuid
 
-from .base import IcurveTestCase
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from .base import IcurveTestCase, StringIO
 
 
 class DatasTestCase(IcurveTestCase):
@@ -55,8 +50,10 @@ class DatasTestCase(IcurveTestCase):
         data = datas[data_name]
         self.assertEqual(data['name'], data_name)
         self.assertEqual(data['uri'], '/v1/data/%s' % data_name)
-        self.assertAlmostEqual(data['labelRatio'], 0.09, 4)
+        self.assertAlmostEqual(data['labelRatio'], 0.0833, 4)
         self.assertEqual(data['period']['length'], 60)
         self.assertAlmostEqual(data['period']['ratio'], 0.9000, 4)
         self.assertEqual(data['time']['start'], 1503849600000)
         self.assertEqual(data['time']['end'], 1503850320000)
+        # teardown
+        self.client.delete(path='/v1/data/%s' % data_name)

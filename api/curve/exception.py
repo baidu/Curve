@@ -2,9 +2,9 @@
 """
     Exception
     ~~~~
-    def of web exceptions
+    def of web exceptions and exception handles
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
 
@@ -19,5 +19,13 @@ class DataNotFoundException(BaseException):
 class UnprocessableException(BaseException):
     """
     request param is unprocessable
+    """
+    pass
+
+
+# TODO: errorhandler
+def init_error_handlers(app):
+    """
+    add error handlers for exceptions above
     """
     pass

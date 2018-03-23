@@ -4,17 +4,12 @@
     ~~~~
     data operation test
 
-    :copyright: (c) 2017 by Baidu, Inc.
+    :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
 import uuid
 
-from .base import IcurveTestCase
-
-try:
-    from StringIO import StringIO
-except ImportError:
-    from io import StringIO
+from .base import IcurveTestCase, StringIO
 
 
 class DataTestCase(IcurveTestCase):
@@ -59,6 +54,8 @@ class DataTestCase(IcurveTestCase):
             None,
             message
         )
+        # teardown
+        self.client.delete(path='/v1/data/%s' % data_name)
 
     # TODO:
     # 1. special data_name
@@ -109,6 +106,8 @@ class DataTestCase(IcurveTestCase):
             self.assertIn(key, resp_headers, message)
             self.assertEqual(value, resp_headers[key], message)
         self.assertEqual(response.data, test_resp)
+        # teardown
+        self.client.delete(path='/v1/data/%s' % data_name)
 
     # TODO: check deleted
     def test_delete_data(self):
