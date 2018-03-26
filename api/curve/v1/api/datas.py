@@ -11,8 +11,8 @@ from __future__ import absolute_import, print_function
 
 from flask import g
 
-from .resource import Resource
 from v1.services import DataService
+from .resource import Resource
 
 
 class Datas(Resource):
@@ -30,7 +30,6 @@ class Datas(Resource):
             pattern = g.args['pattern']
         datas = DataService.list(pattern)
         user = g.user.login
-        datas = filter(lambda x: x.owner == user, datas) + \
-            filter(lambda x: x.owner != user and x.public_read, datas) + \
-            filter(lambda x: x.owner != user and not x.public_read, datas)
+        datas = filter(lambda x: x.owner == user,
+                       datas)  # + filter(lambda x: x.owner != user and x.public_read, datas)
         return self.render(data=[data.view() for data in datas])
