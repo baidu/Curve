@@ -1,0 +1,8 @@
+requests==2.12.4  # don't change the order, latest requests lib has a critical bug
+Flask-SQLAlchemy==2.3.2
+Flask-RESTful==0.3.6
+Flask-Cors==3.0.3
+flask-compress==1.4.0
+jsonschema==2.6.0
+numpy==1.14.2
+GitHub-Flask==3.2.0
