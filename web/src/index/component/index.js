@@ -90,6 +90,22 @@ export default class Home extends Component {
         this.refs.guidance.style.display = 'none';
     }
 
+    showItem(url) {
+        let name = url ? url.split('/')[2] : this.props.params.name;
+        if (name === 'table') {
+            this.setState({
+                table: 'block',
+                trend: 'none'
+            });
+        }
+        else {
+            this.setState({
+                table: 'none',
+                trend: 'block'
+            });
+        }
+    }
+
     render() {
         let params = {
             name: this.props.params.name,
@@ -110,6 +126,8 @@ export default class Home extends Component {
                              list={this.state.list}
                              type={this.state.type}
                              ref="sidebar"
+                             showItem={this.showItem.bind(this)}
+                             showAll={true}
                     >
                     </Sidebar>
                 </Sider>

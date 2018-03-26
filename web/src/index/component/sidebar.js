@@ -149,6 +149,10 @@ export default class Sidebar extends Component {
         let url = api.getDataList;
         axiosInstance.get(url).then(function (response) {
             const data = response.data;
+            if (data.msg === 'redirect' && data.data.length) {
+                window.location.href = data.data;
+                return;
+            }
             let name = data.data && data.data.length ? data.data[0].name : '';
             let url = '/home/' + name;
             if (self.props.params.name !== name && self.props.params.name !== undefined) {
@@ -158,6 +162,11 @@ export default class Sidebar extends Component {
                 return item.name;
             });
             if (data.data.length) {
+                if (window.location.hash.split('/').length === 2 && window.location.hash.split('/')[1].indexOf('table') !== -1) {
+                    url = '/table';
+                    hashHistory.push(url);
+                    return;
+                }
                 // The correct name exists
                 if (nameList.indexOf(self.props.params.name) !== -1) {
                     eventProxy.trigger('loadingTip');
@@ -165,7 +174,7 @@ export default class Sidebar extends Component {
                 }
                 // If the current name is not in the data list, the default jumps to the first one
                 else {
-                    let showName = self.props.params.name;
+                    let showName = self.props.params.name ? self.props.params.name : '';
                     if (showName) {
                         message.warning('No ' + showName + ' Data', 2, function () {
                             url = '/home/' + name;
@@ -394,13 +403,19 @@ export default class Sidebar extends Component {
         this.refs.dialog.style.display = 'none';
     }
 
+    showAll(url) {
+        hashHistory.push(url);
+        this.props.showItem();
+    }
+
     render() {
+        let showAllUrl = '/' + 'table';
         return (
             <div>
                 <div style={{position: 'relative', zIndex: '1'}}>
                     <div className="data-set">
                         <span className="dataset">Data</span>
-                        <span className="show-all">Show All</span>
+                        <span className="show-all" onClick={this.showAll.bind(this, showAllUrl)} style={{display: this.props.showAll ? 'inline-block' : 'none'}}>Show All</span>
                     </div>
                     <UploadData returnDataList={dataList => this.returnDataList(dataList)}
                                 type="sidebar"

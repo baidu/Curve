@@ -1071,6 +1071,10 @@ export default class Trend extends Component {
         const self = this;
         axiosInstance.get(thumbUrl).then(function (response) {
             const data = response.data;
+            if (data.msg === 'redirect' && data.data.length) {
+                hashHistory.push(data.data);
+                return;
+            }
             let result = data.data.data;
             options.navigator.series.data = result;
             self.setState({
@@ -1113,12 +1117,20 @@ export default class Trend extends Component {
         let listUrl = api.getDataList;
         axiosInstance.get(listUrl).then(function (response) {
             const data = response.data;
+            if (data.msg === 'redirect' && data.data.length) {
+                hashHistory.push(data.data);
+                return;
+            }
             self.setState({
                 list: data.data
             });
         });
         axiosInstance.get(url).then(function (response) {
             const data = response.data;
+            if (data.msg === 'redirect' && data.data.length) {
+                hashHistory.push(data.data);
+                return;
+            }
             let bands = data.data.bands;
             let trends = data.data.trends;
             let trendsBands = [];

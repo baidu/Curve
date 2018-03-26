@@ -8,6 +8,10 @@ let apis = {};
 
 let DEV = false;
 let COMMON_SERVER = '';
+// COMMON_SERVER = 'http://cp01-oda1.epc:8081';
+// COMMON_SERVER = 'http://localhost:8080';
+// COMMON_SERVER = 'http://172.24.172.229:8080';
+// COMMON_SERVER = 'http://172.24.172.165:8080';
 
 let apiConfig = {
     serviceView: COMMON_SERVER + '/serviceView/?r=topology/get',
@@ -31,7 +35,9 @@ let apiConfig = {
     // delete data
     deleteData: COMMON_SERVER + '/v1/data/',
     // export data
-    exportData: COMMON_SERVER + '/v1/data/'
+    exportData: COMMON_SERVER + '/v1/data/',
+    // auth data
+    permissions: COMMON_SERVER + '/v1/data/'
 };
 
 if (DEV) {
@@ -42,6 +48,6 @@ if (DEV) {
 }
 
 export default apis = {
-	// API config
+    // API config
     api: apiConfig
 };
