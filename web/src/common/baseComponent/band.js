@@ -26,17 +26,7 @@ export default class Band extends Component {
         const self = this;
         self.initBand();
         eventProxy.on('loadBand', obj => {
-            let trendsBands = obj.trendsBands;
-            let initLegend = {};
-            trendsBands.forEach((item, index) => {
-                if (!index) {
-                    initLegend[item.name] = 'show';
-                }
-                else {
-                    initLegend[item.name] = '';
-                }
-            });
-            let legend = !self.isEmpty(self.state.legend[obj.name]) ? self.state.legend[obj.name] : initLegend;
+            let legend = !self.isEmpty(self.state.legend[obj.name]) ? self.state.legend[obj.name] : {0: 'show'};
             self.state.legend[obj.name] = legend;
             cookie.save('bandStatus', self.state.legend);
             self.setState({
@@ -59,19 +49,18 @@ export default class Band extends Component {
     }
 
     initBand() {
-        let self = this;
         let bandSeries = this.props.bandSeries;
         let legend = cookie.load('bandStatus') || this.state.legend || {};
         let list = this.props.list;
         list.forEach(item => {
-            if (self.isEmpty(legend[item.name])) {
+            if (this.isEmpty(legend[item.name])) {
                 legend[item.name] = {};
                 bandSeries.forEach((series, index) => {
                     if (!index) {
-                        legend[item.name][series.name] = 'show';
+                        legend[item.name][index] = 'show';
                     }
                     else {
-                        legend[item.name][series.name] = '';
+                        legend[item.name][index] = '';
                     }
                 });
             }
@@ -130,17 +119,17 @@ export default class Band extends Component {
             }
         });
         bandSeries.forEach((item, index) => {
-            legend[dataName][item.name] = '';
+            legend[dataName][index] = '';
         });
         if (series.visible) {
             series.hide();
             bandSeries.forEach((item, i) => {
                 if (item.name === name) {
-                    if (legend[dataName][item.name] === 'show') {
-                        legend[dataName][item.name] = '';
+                    if (legend[dataName][i] === 'show') {
+                        legend[dataName][i] = '';
                     }
                     else {
-                        legend[dataName][item.name] = '';
+                        legend[dataName][i] = '';
                     }
                 }
             });
@@ -149,11 +138,11 @@ export default class Band extends Component {
             series.show();
             bandSeries.forEach((item, i) => {
                 if (item.name === name) {
-                    if (legend[dataName][item.name] === '') {
-                        legend[dataName][item.name] = 'show';
+                    if (legend[dataName][i] === '') {
+                        legend[dataName][i] = 'show';
                     }
                     else {
-                        legend[dataName][item.name] = '';
+                        legend[dataName][i] = '';
                     }
                 }
             });
@@ -186,15 +175,15 @@ export default class Band extends Component {
                     if (!legend[dataName]) {
                         legend[dataName] = {};
                     }
-                    if (legend[dataName][item.name] === undefined) {
+                    if (legend[dataName][index] === undefined) {
                         if (!index) {
-                            legend[dataName][item.name] = 'show';
+                            legend[dataName][index] = 'show';
                         }
                         else {
-                            legend[dataName][item.name] = '';
+                            legend[dataName][index] = '';
                         }
                     }
-                    let className = legend[dataName][item.name];
+                    let className = legend[dataName][index];
                     classes += className ? className : '';
                     let color = '';
                     chart.series.forEach(item => {
