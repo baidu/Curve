@@ -47,6 +47,7 @@
     "react-error-overlay": "^1.0.9",
     "react-highcharts": "^12.0.0",
     "react-highcharts-no-data-to-display": "^1.0.2",
+    "react-icons": "^2.2.7",
     "react-image": "^1.0.1",
     "react-moment": "^0.6.9",
     "react-router": "^2.4.1",

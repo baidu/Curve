@@ -105,7 +105,7 @@ export default class UploadData extends Component {
                         num = 0;
                     }
                     num++;
-                }, 500);
+                }, 800);
                 window.timeIds1 = setInterval(function () {
                     let loadingWidth = 398 * step.percent / 100;
                     if (loadingWidth <= 398) {
