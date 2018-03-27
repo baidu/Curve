@@ -66,9 +66,14 @@ def create_app():
     if os.path.isdir(config.OAUTH_DIR):
         for root, _, files in os.walk(config.OAUTH_DIR):
             for auth_file in filter(lambda x: x.endswith('_oauth.json'), files):
-                with open(os.path.join(root, auth_file)) as fp:
-                    prefix = auth_file[:auth_file.find('_')]
-                    app.config['OAUTH'][prefix] = json.load(fp)
+                try:
+                    with open(os.path.join(root, auth_file)) as fp:
+                        prefix = auth_file[:auth_file.find('_')]
+                        oauth_config = json.load(fp)
+                        if oauth_config is not None:
+                            app.config['OAUTH'][prefix] = oauth_config
+                except Exception as e:
+                    app.logger.error(e.message)
     api.init_oauth(app)
     app.register_blueprint(api.bp, url_prefix='/v1')
 

@@ -79,6 +79,7 @@ paths:
         - Data
       parameters:
         - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/dataOwner'
       produces:
         - multipart/form-data
       responses:
@@ -110,6 +111,7 @@ paths:
         - $ref: '#/parameters/startTime'
         - $ref: '#/parameters/endTime'
         - $ref: '#/parameters/action'
+        - $ref: '#/parameters/dataOwner'
       responses:
         '200':
           description: OK
@@ -140,6 +142,7 @@ paths:
       description: ''
       parameters:
         - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/dataOwner'
       responses:
         '200':
           description: OK
@@ -173,9 +176,7 @@ paths:
         - $ref: '#/parameters/dataName'
         - $ref: '#/parameters/startTime'
         - $ref: '#/parameters/endTime'
-        - name: bandName
-          in: query
-          type: string
+        - $ref: '#/parameters/dataOwner'
       responses:
         '200':
           description: OK
@@ -202,6 +203,7 @@ paths:
         - Trend
       parameters:
         - $ref: '#/parameters/dataName'
+        - $ref: '#/parameters/dataOwner'
       responses:
         '200':
           description: OK
@@ -231,6 +233,7 @@ paths:
         - $ref: '#/parameters/startTime'
         - $ref: '#/parameters/endTime'
         - $ref: '#/parameters/label'
+        - $ref: '#/parameters/dataOwner'
       responses:
         '200':
           description: OK
@@ -267,6 +270,7 @@ paths:
         - $ref: '#/parameters/startTime'
         - $ref: '#/parameters/endTime'
         - $ref: '#/parameters/bandOrder'
+        - $ref: '#/parameters/dataOwner'
       responses:
         '200':
           description: OK
@@ -299,6 +303,7 @@ paths:
       parameters:
         - $ref: '#/parameters/dataName'
         - $ref: '#/parameters/bandName'
+        - $ref: '#/parameters/dataOwner'
       responses:
         '200':
           description: OK
@@ -471,6 +476,12 @@ parameters:
       - time
       - reliability
     default: time
+  dataOwner:
+    description: 'Not Implemented'
+    name: owner
+    in: query
+    required: false
+    type: string
 definitions:
   Action:
     properties:

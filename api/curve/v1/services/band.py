@@ -28,20 +28,20 @@ class BandService(object):
         :param kwargs: kwargs in construct
         :return:
         """
-        data_name = None
+        data_id = None
         if len(args) > 0:
-            data_name = args[0]
-        if 'data_name' in kwargs:
-            data_name = kwargs['data_name']
-        if data_name is None:
+            data_id = args[0]
+        if 'data_id' in kwargs:
+            data_id = kwargs['data_id']
+        if data_id is None:
             raise TypeError('__init__ argument data_name not found.')
-        if data_name not in BandService._instance:
+        if data_id not in BandService._instance:
             with BandService._instance_lock:
-                if data_name not in BandService._instance:
+                if data_id not in BandService._instance:
                     obj = super(BandService, cls).__new__(cls)
-                    BandService.__init__(obj, data_name)
-                    BandService._instance[data_name] = obj
-        return BandService._instance[data_name]
+                    BandService.__init__(obj, data_id)
+                    BandService._instance[data_id] = obj
+        return BandService._instance[data_id]
 
     def __init__(self, data_id):
         """

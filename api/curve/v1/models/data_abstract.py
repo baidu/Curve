@@ -23,7 +23,7 @@ class DataAbstract(db.Model):
     __init__ = auto_init
     __repr__ = auto_repr
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String, unique=True)
+    name = db.Column(db.String)
     start_time = db.Column(db.Integer)
     end_time = db.Column(db.Integer)
     y_axis_max = db.Column(db.Float)

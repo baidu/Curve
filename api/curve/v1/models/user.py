@@ -21,8 +21,7 @@ class User(db.Model):
     """
     __init__ = auto_init
     __repr__ = auto_repr
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    uid = db.Column(db.String, unique=True)
+    uid = db.Column(db.String, primary_key=True)
     login = db.Column(db.String)
     name = db.Column(db.String)
     create_time = db.Column(db.String)

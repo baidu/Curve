@@ -106,3 +106,15 @@ cd api && pytest
 
 ```api/curve/v1/plugins```
 
+### GitHub oauth
+
+GitHub Oauth is supported, please put a configuration file into ```api/curve/auth/github_oauth.json``` like this:
+
+```json
+{
+  "id": "your github application Client ID",
+  "secret": "your application Client Secret"
+}
+```
+
+> [Doc:Creating-An-Github-Oauth-App](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/)

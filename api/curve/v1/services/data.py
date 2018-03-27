@@ -17,6 +17,7 @@ from exception import DataNotFoundException
 from v1.models import DataAbstract, Raw
 from v1.models import Point, Thumb, BandItem
 from app import db
+from v1.models.common import current_user
 
 
 class DataService(object):
@@ -38,6 +39,11 @@ class DataService(object):
             data_name = args[0]
         if 'data_name' in kwargs:
             data_name = kwargs['data_name']
+        if 'data_id' in kwargs:
+            data_id = kwargs['data_id']
+            data_abstract = DataAbstract.query.filter_by(id=data_id).first()
+            if data_abstract is not None:
+                data_name = data_abstract.name
         if data_name is None:
             raise TypeError('__init__ argument data_name not found.')
         if data_name not in DataService._instance:
@@ -84,8 +90,10 @@ class DataService(object):
         get abstract of data, with cache
         :return:
         """
+        if self.data_name is None:
+            raise DataNotFoundException
         if self.abstract is None:
-            self.abstract = DataAbstract.query.filter_by(name=self.data_name).first()
+            self.abstract = DataAbstract.query.filter_by(name=self.data_name, owner=current_user()).first()
         if self.abstract is None:
             raise DataNotFoundException
         return self.abstract
