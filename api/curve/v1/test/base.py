@@ -7,11 +7,10 @@
     :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
-import unittest
 import json
+import unittest
 
-from app import create_app
-from v1.utils import StringIO
+StringIO = None
 
 
 class IcurveTestCase(unittest.TestCase):
@@ -22,6 +21,17 @@ class IcurveTestCase(unittest.TestCase):
     tear_down = []
 
     def setUp(self):
+        import sys
+        import os
+        abs_path = os.path.abspath(
+            os.path.join(os.path.realpath(os.path.dirname(__file__)), os.pardir, os.pardir))
+        print(abs_path)
+        if abs_path not in sys.path:
+            sys.path.append(abs_path)
+        from app import create_app
+        global StringIO
+        import v1.utils
+        StringIO = v1.utils.StringIO
         self.app = create_app()
         self.assertIsNotNone(self.app)
         self.app.config['TESTING'] = True

@@ -102,6 +102,7 @@ check_py() {
     fi
     source ${G_VENV_DIR}/bin/activate
     pip install -r ${G_API_DIR}/requirements.txt
+    mv ${G_VENV_DIR}/bin/uwsgi ${G_VENV_DIR}/bin/curve_uwsgi
     echo ${G_VERSION} > ${VENV_VERSION_FILE}
     deactivate
     echo "venv deployed."
@@ -140,31 +141,6 @@ check_api() {
     patch ${G_API_DIR}/curve/web/swagger-ui/index.html ${G_ROOT_DIR}/opt/swagger-ui/index.html.patch
     echo ${G_VERSION} > ${SWAGGER_UI_VERSION_FILE}
     echo "api deployed."
-    cutoff
-}
-
-check_uwsgi() {
-    mkdir -p ${G_API_DIR}/log
-    # cause of nonstandard version number
-    # sometimes uwsgi can't install in specific Linux distributions
-    if [ -e "${G_VENV_DIR}/bin/curve_uwsgi" ]; then
-        return
-    fi
-
-    cutoff
-    echo "install uwsgi..."
-    source ${G_VENV_DIR}/bin/activate
-    cd ${G_ROOT_DIR}
-    pip download uwsgi==2.0.15
-    tar -zxf uwsgi-2.0.15.tar.gz
-    patch uwsgi-2.0.15/uwsgiconfig.py ${G_ROOT_DIR}/opt/uwsgi-2.0.15/uwsgiconfig.py.patch
-    tar -zcf uwsgi-2.0.15.tar.gz uwsgi-2.0.15
-    rm -rf uwsgi-2.0.15
-    pip install uwsgi-2.0.15.tar.gz
-    rm uwsgi-2.0.15.tar.gz
-    echo "uwsgi installed."
-    mv ${G_VENV_DIR}/bin/uwsgi ${G_VENV_DIR}/bin/curve_uwsgi
-    echo "uwsgi renamed."
     cutoff
 }
 
