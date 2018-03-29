@@ -4,6 +4,7 @@
  */
 
 import './index.less';
+import './MFTable.less';
 
 import React, {Component} from 'react';
 import {Layout, Icon, Button} from 'antd';
@@ -34,7 +35,9 @@ export default class Home extends Component {
 
     componentDidMount() {
         eventProxy.on('loadTrend', obj => {
-            this.refs.hotKey.style.display = 'block';
+            if (this && this.refs && this.hotKey) {
+                this.refs.hotKey.style.display = 'block';
+            }
             if (typeof obj.list === 'string') {
                 return;
             }
