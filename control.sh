@@ -102,8 +102,10 @@ check_py() {
     fi
     source ${G_VENV_DIR}/bin/activate
     pip install -r ${G_API_DIR}/requirements.txt
-    if [ -e ${G_VENV_DIR}/bin/uwsgi ]; then
-        mv ${G_VENV_DIR}/bin/uwsgi ${G_VENV_DIR}/bin/curve_uwsgi
+    if [ ! -e ${G_VENV_DIR}/bin/curve_uwsgi ]; then
+        cd ${G_VENV_DIR}/bin
+        ln -s uwsgi curve_uwsgi
+        cd -
     fi
     echo ${G_VERSION} > ${VENV_VERSION_FILE}
     deactivate
