@@ -77,7 +77,7 @@ def encode_if_unicode(s):
     :return:
     """
     if isinstance(s, unicode):
-        s.encode('utf-8')
+        return s.encode('utf-8')
     return s
 
 

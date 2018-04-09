@@ -10,6 +10,7 @@
 import urllib
 from threading import Lock
 
+import re
 from flask import g
 
 from v1 import utils
@@ -59,6 +60,8 @@ class DataService(object):
         init data service
         :param data_name: the unique name of data
         """
+        if re.match(r'[^\w_]', data_name):
+            data_name = urllib.quote(data_name)
         self.data_name = data_name
         self.abstract = None
 
@@ -266,7 +269,7 @@ class DataService(object):
         :return:
         """
         data_id = self.get_id()
-        DataAbstract.query.filter_by(name=self.data_name).delete(synchronize_session=False)
+        DataAbstract.query.filter_by(id=data_id).delete(synchronize_session=False)
         Raw.query.filter_by(data_id=data_id).delete(synchronize_session=False)
         Point.query.filter_by(data_id=data_id).delete(synchronize_session=False)
         Thumb.query.filter_by(data_id=data_id).delete(synchronize_session=False)
