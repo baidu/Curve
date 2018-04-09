@@ -148,10 +148,15 @@ check_api() {
     cutoff
 }
 
+check_path() {
+    mkdir -p ${G_API_DIR}/log
+}
+
 check() {
     check_web
     check_py
     check_api
+    check_path
 }
 
 start() {
