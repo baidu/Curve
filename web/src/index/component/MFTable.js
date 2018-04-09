@@ -102,7 +102,9 @@ export default class MFTable extends Component {
             sideList: [],
             overlayDisplay: 'none',
             dialogTitle: '',
-            dialogContent: ''
+            dialogContent: '',
+            // Customize bullet content
+            dialogContentCustom: ''
         };
         // Delete operations, including single deletions and batch operations
         this.delete = this.delete.bind(this);
@@ -143,6 +145,9 @@ export default class MFTable extends Component {
 
     componentWillUnmount() {
         window.removeEventListener('resize', this.setWindowWidth);
+        this.setState = (state,callback)=>{
+            return;
+        };
     }
 
     /**
@@ -203,7 +208,7 @@ export default class MFTable extends Component {
      * @param  {Object}  item    [Current prompt box configuration object]
      */
     dialogAction(item) {
-        let name = this.state.nameList.join(',');
+        let name = typeof this.state.nameList === 'array' ? this.state.nameList.join(',') : '';
         let url = item.url || '';
         let value = item.value;
         if (value === 'confirm') {
@@ -645,6 +650,9 @@ export default class MFTable extends Component {
             else {
                 this.setDialogDisplay(dialogType, title, nameList, currentItem);
             }
+        }).catch(error => {
+            let response = error.response;
+            this.setDialogDisplay('alert', 'Error Tip', '', undefined, response.msg);
         });
     }
 
@@ -668,12 +676,13 @@ export default class MFTable extends Component {
     /**
      * Set up the display of the current prompt, including the title title, the footer operation, the content content
      *
-     * @param  {string}  type           [The prompt box type, type is confirm: a prompt with a confirmation function; type is alert: a common view of the function]
-     * @param  {string}  title          [Prompt box title]
-     * @param  {string}  nameList       [The list of data names for the current operation]
-     * @param  {Object}  currentItem    [Current data object]
+     * @param  {string}  type                   [The prompt box type, type is confirm: a prompt with a confirmation function; type is alert: a common view of the function]
+     * @param  {string}  title                  [Prompt box title]
+     * @param  {string}  nameList               [The list of data names for the current operation]
+     * @param  {Object}  currentItem            [Current data object]
+     * @param  {string}  dialogContentCustom    [Customize bullet content]
      */
-    setDialogDisplay(type, title, nameList, currentItem) {
+    setDialogDisplay(type, title, nameList, currentItem, dialogContentCustom) {
         let dialogDisplay = {
             confirm: type === 'confirm',
             alert: type === 'alert'
@@ -683,7 +692,8 @@ export default class MFTable extends Component {
             nameList,
             overlay: true,
             currentItem,
-            dialogDisplay
+            dialogDisplay,
+            dialogContentCustom
         });
     }
 
@@ -708,7 +718,7 @@ export default class MFTable extends Component {
      */
     renderContent(item, dialogId) {
         if (this.state.overlay) {
-            let name = this.state.nameList.join(',');
+            let name = typeof this.state.nameList === 'array' ? this.state.nameList.join(',') : '';
             if (item.dialogType === 'confirm' && this.state.dialogDisplay.confirm) {
                 return item.dialogContent.map((currentContent, index) => {
                     let className = 'name-list' + ' ' + dialogId + index;
@@ -721,14 +731,23 @@ export default class MFTable extends Component {
                 });
             }
             else if (item.dialogType === 'alert' && this.state.dialogDisplay.alert) {
-                let currentItem = this.state.currentItem;
-                return item.dialogContent.map((currentContent, index) => {
+                // let currentItem = this.state.currentItem;
+                if (this.state.dialogContentCustom.length) {
                     return (
-                        <div className="dialog-container" key={index}>
-                            {currentContent}
+                        <div className="dialog-container">
+                            {this.state.dialogContentCustom}
                         </div>
                     );
-                });
+                }
+                else {
+                    return item.dialogContent.map((currentContent, index) => {
+                        return (
+                            <div className="dialog-container" key={index}>
+                                {currentContent}
+                            </div>
+                        );
+                    });
+                }
             }
         }
     }
