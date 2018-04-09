@@ -9,6 +9,7 @@
 """
 from __future__ import absolute_import, print_function
 
+from v1 import utils
 from .resource import Resource
 from v1.services import DataService
 
@@ -24,9 +25,7 @@ class DataDatanameThumb(Resource):
         :param dataName:
         :return:
         """
-        data_name = dataName
-        if isinstance(data_name, unicode):
-            data_name = data_name.encode('utf-8')
+        data_name = utils.encode_if_unicode(dataName)
         data_service = DataService(data_name)
         thumb = data_service.get_thumb()
 
