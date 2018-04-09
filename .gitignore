@@ -21,6 +21,7 @@ test.csv
 /api/curve/v1/validators.py
 /api/curve/static/
 .pytest_cache
+*_oauth.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
