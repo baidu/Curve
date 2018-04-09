@@ -141,6 +141,12 @@ export default class Sidebar extends Component {
         }
     }
 
+    componentWillUnmount(){
+        this.setState = (state,callback)=>{
+            return;
+        };
+    }
+
     /**
      * Render the left side of the data list
      */

@@ -64,16 +64,32 @@ export default class UploadData extends Component {
                     + '</div>'
                     + '<p>Uploading and pre-processing, please wait<span class="loading-dot"></span></p>'
                     + '</div>';
-                if (!$('.trend').find('.loading-process').length) {
-                    $('.trend').append(html);
+                if ($('.trend').length) {
+                    if (!$('.trend').find('.loading-process').length) {
+                        $('.trend').append(html);
+                    }
+                }
+                if ($('.mftable-list').length) {
+                    if ($('.mftable-list').find('.loading').css('display') !== 'block') {
+                        $('.mftable-list').find('.loading').show();
+                        $('.mftable-list').find('.loading-container').show();
+                    }
                 }
             },
             onSuccess(result, file) {
                 // console.log('onSuccess', file);
                 let dataList = self.state.dataList.concat(result.data);
-                $('.trend').find('.loading-process .loading').width(398);
                 message.success(self.state.fileName + ' upload successful');
-                $('.trend').find('.loading-process').remove();
+                if ($('.trend').length) {
+                    $('.trend').find('.loading-process .loading').width(398);
+                    $('.trend').find('.loading-process').remove();
+                }
+                if ($('.mftable-list').length) {
+                    if ($('.mftable-list').find('.loading').css('display') === 'block') {
+                        $('.mftable-list').find('.loading').hide();
+                        $('.mftable-list').find('.loading-container').hide();
+                    }
+                }
                 clearInterval(window.timeIds);
                 clearInterval(window.timeIds1);
                 let list = [];
@@ -93,28 +109,30 @@ export default class UploadData extends Component {
             onProgress(step, file, result) {
                 // console.log('onProgress', Math.round(step.percent), file.name);
                 let num = 1;
-                window.timeIds = setInterval(function () {
-                    if (num === 1) {
-                        $('.loading-dot').text('.');
-                    }
-                    else if (num === 2) {
-                        $('.loading-dot').text('..');
-                    }
-                    else if (num === 3) {
-                        $('.loading-dot').text('...');
-                        num = 0;
-                    }
-                    num++;
-                }, 800);
-                window.timeIds1 = setInterval(function () {
-                    let loadingWidth = 398 * step.percent / 100;
-                    if (loadingWidth <= 398) {
-                        $('.trend').find('.loading-process .loading').width(loadingWidth);
-                    }
-                    else {
-                        $('.trend').find('.loading-process .loading').width(398);
-                    }
-                }, 100);
+                if ($('.trend').length) {
+                    window.timeIds = setInterval(function () {
+                        if (num === 1) {
+                            $('.loading-dot').text('.');
+                        }
+                        else if (num === 2) {
+                            $('.loading-dot').text('..');
+                        }
+                        else if (num === 3) {
+                            $('.loading-dot').text('...');
+                            num = 0;
+                        }
+                        num++;
+                    }, 800);
+                    window.timeIds1 = setInterval(function () {
+                        let loadingWidth = 398 * step.percent / 100;
+                        if (loadingWidth <= 398) {
+                            $('.trend').find('.loading-process .loading').width(loadingWidth);
+                        }
+                        else {
+                            $('.trend').find('.loading-process .loading').width(398);
+                        }
+                    }, 100);
+                }
             },
             onError(err) {
                 // console.log('onError', err);
@@ -126,6 +144,12 @@ export default class UploadData extends Component {
                     return false;
                 }
                 message.error(self.state.fileName + ' upload failed...please try again');
+                if ($('.mftable-list').length) {
+                    if ($('.mftable-list').find('.loading').css('display') === 'block') {
+                        $('.mftable-list').find('.loading').hide();
+                        $('.mftable-list').find('.loading-container').hide();
+                    }
+                }
             }
         };
         let className = 'upload-button';
