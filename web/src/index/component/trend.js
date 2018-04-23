@@ -114,7 +114,7 @@ export default class Trend extends Component {
             let action = $(this).attr('data-action');
             let startTime = 0;
             let endTime = 0;
-            let currentX = window.currentX;
+            let currentX = parseInt($(this).attr('data-currentx'), 10);
             let name = self.props.params.name;
             let currentIndex = 0;
             // get real startTime and endTime
@@ -322,7 +322,7 @@ export default class Trend extends Component {
             let startTime;
             let endTime;
             let name = self.props.params.name;
-            if (min <= max) {
+            if (max - min >= 3600000) {
                 step = parseInt((max - min) * 0.25, 10);
             }
             else {
@@ -665,6 +665,8 @@ export default class Trend extends Component {
             + '/curves?'
             + 'startTime=' + start
             + '&endTime=' + end;
+        self.min = start;
+        self.max = end;
         if (bandName) {
             url += '&bandName=' + bandName;
         }
@@ -782,12 +784,12 @@ export default class Trend extends Component {
                 return false;
             }
         };
-        let mouseOverFunction = function (e) {
-            window.currentOperaPoint = e;
-            window.chartTrend = e.target.series.chart;
-            window.currentIndex = e.target.index;
-            window.currentX = e.target.x;
-        };
+        // let mouseOverFunction = function (e) {
+        //     window.currentOperaPoint = e;
+        //     window.chartTrend = e.target.series.chart;
+        //     window.currentIndex = e.target.index;
+        //     window.currentX = e.target.x;
+        // };
         // The configuration parameters required for the trend graph
         let options = {
             lang: {
@@ -860,56 +862,56 @@ export default class Trend extends Component {
             },
             rangeSelector: {
                 buttons: [{
-                    type: 'hour',
-                    count: 1,
+                    type: 'second',
+                    count: 3600,
                     text: '1h'
                 }, {
-                    type: 'hour',
-                    count: 6,
+                    type: 'second',
+                    count: 21600,
                     text: '6h'
                 }, {
-                    type: 'minute',
-                    count: 720,
+                    type: 'second',
+                    count: 43200,
                     text: '12h',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 1440,
+                    type: 'second',
+                    count: 86400,
                     text: '1d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 4320,
+                    type: 'second',
+                    count: 259200,
                     text: '3d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 10080,
+                    type: 'second',
+                    count: 604800,
                     text: '7d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 20160,
+                    type: 'second',
+                    count: 1209600,
                     text: '14d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
@@ -921,9 +923,9 @@ export default class Trend extends Component {
                     x: -5
                 },
                 buttonSpacing: 10,
-                buttonTheme: { // styles for the buttons
+                buttonTheme: {
+                    // styles for the buttons
                     'fill': 'none',
-                    // stroke: 'none',
                     'stroke-width': 1,
                     'r': 1,
                     'style': {
@@ -1050,11 +1052,11 @@ export default class Trend extends Component {
                     },
                     events: {
                     },
-                    point: {
-                        events: {
-                            mouseOver: mouseOverFunction
-                        }
-                    },
+                    // point: {
+                    //     events: {
+                    //         mouseOver: mouseOverFunction
+                    //     }
+                    // },
                     animation: false
                 }
             }
@@ -1207,7 +1209,7 @@ export default class Trend extends Component {
             options.yAxis.min = data.data.yAxis[0];
             options.yAxis.max = data.data.yAxis[1];
             options.series = trends;
-            options.rangeSelector.selected = undefined;
+            // options.rangeSelector.selected = undefined;
             options.chart.width = self.getTrendWidth();
             clearInterval(self.loadingTime);
             clearInterval(self.loadingTipTime);
@@ -1268,7 +1270,6 @@ export default class Trend extends Component {
     }
 
     optionAreaRange(item) {
-        let self = this;
         item.lineWidth = 0;
         item.color = 'rgb(240,255,240)';
         item.zIndex = 1;
@@ -1290,8 +1291,6 @@ export default class Trend extends Component {
     }
 
     optionLabelLine(item) {
-        let self = this;
-        let zones = [];
         item.showInLegend = false;
         item.lineWidth = 2;
         item.zIndex = 100;
@@ -1438,19 +1437,43 @@ export default class Trend extends Component {
             e.target.chart.showLoading('Data is loading, please wait...');
         }
         if (e.trigger) {
+            let extraMin = window.thumbExtremes[self.props.params.name].min;
+            let extraMax = window.thumbExtremes[self.props.params.name].max;
             if (trigger.indexOf(e.trigger) === -1) {
                 return;
             }
             if (e.trigger === 'rangeSelectorButton') {
                 option = self.state.options;
+                let diff = 0;
                 let selectedButtons = option.rangeSelector.buttons;
                 let currentSelectedText  = e.rangeSelectorButton.text;
                 selectedButtons.forEach((item, index) => {
                     if (item.text === currentSelectedText) {
                         option.rangeSelector.selected = index;
+                        if (index <= 6) {
+                            diff = item.count * 1000;
+                        }
+                        else {
+                            diff = 0;
+                        }
                         return;
                     }
                 });
+                endTime = self.max;
+                startTime = self.max - diff;
+                if (diff === 0) {
+                    startTime = extraMin;
+                    endTime = extraMax;
+                }
+                else {
+                    if (startTime < extraMin) {
+                        startTime = extraMin;
+                        endTime = extraMin + diff;
+                        if (endTime > extraMax) {
+                            endTime = extraMax;
+                        }
+                    }
+                }
             }
             else {
                 option = self.state.options;
@@ -1467,11 +1490,17 @@ export default class Trend extends Component {
                 else {
                     option.rangeSelector.selected = undefined;
                 }
+                startTime = Math.round(e.userMin);
+                endTime = Math.round(e.userMax);
+                if (startTime < extraMin) {
+                    startTime = extraMin;
+                }
+                if (endTime > extraMax) {
+                    endTime = extraMax;
+                }
+                startTime = self.getTime(startTime);
+                endTime = self.getTime(endTime);
             }
-            startTime = Math.round(e.userMin);
-            endTime = Math.round(e.userMax);
-            startTime = self.getTime(startTime);
-            endTime = self.getTime(endTime);
             self.min = startTime;
             self.max = endTime;
             let url = api.getTrend
@@ -1480,9 +1509,6 @@ export default class Trend extends Component {
                 + 'startTime=' + startTime
                 + '&endTime=' + endTime;
             self.getTrendData(url, option, true, false);
-            if (e.target.chart) {
-                e.target.chart.hideLoading();
-            }
         }
     }
 

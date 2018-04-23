@@ -418,13 +418,12 @@ export default class Sidebar extends Component {
     }
 
     render() {
-        let showAllUrl = '/' + 'table';
         return (
             <div>
                 <div style={{position: 'relative', zIndex: '1'}}>
                     <div className="data-set">
                         <span className="dataset">Data</span>
-                        <span className="show-all" onClick={this.showAll.bind(this, showAllUrl)} style={{display: this.props.showAll ? 'inline-block' : 'none'}}>Show All</span>
+                        <span className="show-all" onClick={this.showAll.bind(this, '/table')} style={{display: this.props.showAll ? 'inline-block' : 'none'}}>Show All</span>
                     </div>
                     <UploadData returnDataList={dataList => this.returnDataList(dataList)}
                                 type="sidebar"

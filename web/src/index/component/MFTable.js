@@ -208,13 +208,12 @@ export default class MFTable extends Component {
      * @param  {Object}  item    [Current prompt box configuration object]
      */
     dialogAction(item) {
-        let name = typeof this.state.nameList === 'array' ? this.state.nameList.join(',') : '';
+        let name = Object.prototype.toString.call(this.state.nameList) === '[object Array]' ? this.state.nameList.join(',') : '';
         let url = item.url || '';
         let value = item.value;
         if (value === 'confirm') {
             url = url + encodeURIComponent(name);
             axiosInstance.delete(url).then(response => {
-                const data = response.data;
                 let listData = this.state.list.filter(item => {
                     return item.name !== name;
                 });
@@ -718,10 +717,10 @@ export default class MFTable extends Component {
      */
     renderContent(item, dialogId) {
         if (this.state.overlay) {
-            let name = typeof this.state.nameList === 'array' ? this.state.nameList.join(',') : '';
+            let name = Object.prototype.toString.call(this.state.nameList) === '[object Array]' ? this.state.nameList.join(',') : '';
             if (item.dialogType === 'confirm' && this.state.dialogDisplay.confirm) {
                 return item.dialogContent.map((currentContent, index) => {
-                    let className = 'name-list' + ' ' + dialogId + index;
+                    let className = 'name-list ' + dialogId + index;
                     return (
                         <div className="dialog-container" key={index}>
                             <div className={className}>{name}</div>
@@ -781,7 +780,7 @@ export default class MFTable extends Component {
      */
     renderDialog() {
         return dialog.map((item, index) => {
-            let {dialogTitle, dialogAction, dialogContent, dialogType} = item;
+            let {dialogTitle, dialogAction, dialogType} = item;
             let dialogId = 'dialog' + index;
             let dialogDisplay = this.state.dialogDisplay;
             return (
