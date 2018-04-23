@@ -119,6 +119,9 @@ export default class Sidebar extends Component {
                 dialogName: obj.name,
                 dialogType: obj.type
             });
+            if (typeof obj.callback === 'function') {
+                obj.callback();
+            }
         });
     }
 

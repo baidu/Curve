@@ -67,7 +67,8 @@ export default class Trend extends Component {
             smallBandMenuStyle: false,
             // if trend is loading
             loading: true,
-            neverReflow: false
+            neverReflow: false,
+            datasInit: true
         };
         this.abnormalSelectedPoints = [];
         this.abnormalSelectedIndex = [];
@@ -75,120 +76,10 @@ export default class Trend extends Component {
         this.enlargeExtremesMax = undefined;
         // The minimum value that the x-axis can set when reducing the operation
         this.enlargeExtremesMin = undefined;
+        this.latestMax = undefined;
+        this.latestMin = undefined;
     }
 
-    hotKeyOpera(e) {
-        const self = this;
-        let t = e.keyCode || e.which || e.charCode;
-        let keyArr = [32, 38, 87, 40, 83, 37, 65, 39, 68];
-        if (t &&  keyArr.indexOf(t) !== -1) {
-            // 38, 87: enlarge
-            // 40, 83: Shrink down
-            // 37: Left shift
-            // 39: Right shift
-            let chart = self.chart;
-            let axis = chart && chart.xAxis[0].getExtremes();
-            console.log('get')
-            console.log(axis)
-            let min = axis && self.getTime(Math.round(axis.min));
-            let max = axis && self.getTime(Math.round(axis.max));
-            let step = 0;
-            let startTime;
-            let endTime;
-            let name = self.props.params.name;
-            if (min <= max) {
-                step = parseInt((max - min) * 0.25, 10);
-            }
-            let extremesMax = window.thumbExtremes[name] ? window.thumbExtremes[name].max : max;
-            let extremesMin = window.thumbExtremes[name] ? window.thumbExtremes[name].min : min;
-            // If there is no data and the minimum value is greater than or equal to the maximum value, the keyboard operation is no longer performed
-            if (t === 38 || t === 87) {
-                if (min + step < max - step) {
-                    chart.xAxis[0].setExtremes(min + step, max - step, false);
-                    startTime = min + step;
-                    endTime = max - step;
-                }
-                else if (min + step >= max - step) {
-                    chart.xAxis[0].setExtremes(min + step, max - step, false);
-                    // self.enlargeExtremesMax = max - step;
-                    // self.enlargeExtremesMin = min + step;
-                    startTime = min + step;
-                    endTime = max - step;
-                }
-                // else {
-                //     chart.xAxis[0].setExtremes(self.enlargeExtremesMin, self.enlargeExtremesMax, false);
-                //     startTime = self.enlargeExtremesMin;
-                //     endTime = self.enlargeExtremesMax;
-                // }
-            }
-            else if (t === 40 || t === 83) {
-                if (min - step >= extremesMin && max + step <= extremesMax) {
-                    chart.xAxis[0].setExtremes(min - step, max + step, false);
-                    startTime = min - step;
-                    endTime = max + step;
-                }
-                else if (min - step >= extremesMin && max + step >= extremesMax) {
-                    chart.xAxis[0].setExtremes(min - step, extremesMax, false);
-                    startTime = min - step;
-                    endTime = extremesMax;
-                }
-                else if (min - step <= extremesMin && max + step <= extremesMax) {
-                    chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
-                    startTime = extremesMin;
-                    endTime = max + step;
-                }
-                else if (min - step <= extremesMin && max + step >= extremesMax) {
-                    chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
-                    startTime = extremesMin;
-                    endTime = extremesMax;
-                }
-            }
-            else if (t === 37 || t === 65) {
-                if (min - step >= extremesMin) {
-                    chart.xAxis[0].setExtremes(min - step, max - step, false);
-                    startTime = min - step;
-                    endTime = max - step;
-                }
-                else {
-                    // self.extremesMax = self.extremesMax ? self.extremesMax : min + step;
-                    // chart.xAxis[0].setExtremes(extremesMin, self.extremesMax, false);
-                    chart.xAxis[0].setExtremes(extremesMin, extremesMin + step, false);
-                    startTime = extremesMin;
-                    endTime = extremesMin + step;
-                }
-            }
-            else if (t === 39 || t === 68) {
-                if (max + step <= extremesMax) {
-                    chart.xAxis[0].setExtremes(min + step, max + step, false);
-                    console.log('set')
-                    console.log(chart.xAxis[0].getExtremes());
-                    startTime = min + step;
-                    endTime = max + step;
-                }
-                else {
-                    // self.extremesMin = self.extremesMin ? self.extremesMin : min + step;
-                    // chart.xAxis[0].setExtremes(self.extremesMin, extremesMax, false);
-                    chart.xAxis[0].setExtremes(extremesMax - step, extremesMax, false);
-                    // startTime = self.extremesMin;
-                    startTime = extremesMax - step;
-                    endTime = extremesMax;
-                }
-            }
-            if (startTime && endTime) {
-                self.min = startTime;
-                self.max = endTime;
-                let url = api.getTrend
-                    + name
-                    + '/curves?'
-                    + 'startTime=' + startTime
-                    + '&endTime=' + endTime;
-                self.getTrendData(url, undefined, undefined, false);
-            }
-            // Scroll around one screen
-            // 65: prev screen
-            // 68: next: next screen
-        }
-    }
     componentDidMount() {
         const self = this;
         self.renderTrend();
@@ -202,7 +93,7 @@ export default class Trend extends Component {
             }
             e = e ? e : window.event;
             key.currentKey = e.keyCode || e.which || e.charCode;
-            // self.hotKeyOpera(e);
+            // self.keyOpera(e);
         });
         // Keyboard operation trend graph
         $('body').on('keyup', function (e) {
@@ -212,108 +103,7 @@ export default class Trend extends Component {
                 e.preventDefault();
             }
             e = e ? e : window.event;
-            self.hotKeyOpera(e);
-            // if (t &&  keyArr.indexOf(t) !== -1) {
-            //     // 38, 87: enlarge
-            //     // 40, 83: Shrink down
-            //     // 37: Left shift
-            //     // 39: Right shift
-            //     let chart = self.chart;
-            //     let axis = chart && chart.xAxis[0].getExtremes();
-            //     let min = axis && Math.round(axis.min);
-            //     let max = axis && Math.round(axis.max);
-            //     let step = 0;
-            //     let startTime;
-            //     let endTime;
-            //     let name = self.props.params.name;
-            //     if (min <= max) {
-            //         step = parseInt((max - min) * 0.25, 10);
-            //     }
-            //     let extremesMax = window.thumbExtremes[name] ? window.thumbExtremes[name].max : max;
-            //     let extremesMin = window.thumbExtremes[name] ? window.thumbExtremes[name].min : min;
-            //     // If there is no data and the minimum value is greater than or equal to the maximum value, the keyboard operation is no longer performed
-            //     if (t === 38 || t === 87) {
-            //         if (min + step < max - step) {
-            //             chart.xAxis[0].setExtremes(min + step, max - step, false);
-            //             startTime = min + step;
-            //             endTime = max - step;
-            //         }
-            //         else if (min + step >= max - step) {
-            //             chart.xAxis[0].setExtremes(min + step, max - step, false);
-            //             // self.enlargeExtremesMax = max - step;
-            //             // self.enlargeExtremesMin = min + step;
-            //             startTime = min + step;
-            //             endTime = max - step;
-            //         }
-            //         // else {
-            //         //     chart.xAxis[0].setExtremes(self.enlargeExtremesMin, self.enlargeExtremesMax, false);
-            //         //     startTime = self.enlargeExtremesMin;
-            //         //     endTime = self.enlargeExtremesMax;
-            //         // }
-            //     }
-            //     else if (t === 40 || t === 83) {
-            //         if (min - step >= extremesMin && max + step <= extremesMax) {
-            //             chart.xAxis[0].setExtremes(min - step, max + step, false);
-            //             startTime = min - step;
-            //             endTime = max + step;
-            //         }
-            //         else if (min - step >= extremesMin && max + step >= extremesMax) {
-            //             chart.xAxis[0].setExtremes(min - step, extremesMax, false);
-            //             startTime = min - step;
-            //             endTime = extremesMax;
-            //         }
-            //         else if (min - step <= extremesMin && max + step <= extremesMax) {
-            //             chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
-            //             startTime = extremesMin;
-            //             endTime = max + step;
-            //         }
-            //         else if (min - step <= extremesMin && max + step >= extremesMax) {
-            //             chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
-            //             startTime = extremesMin;
-            //             endTime = extremesMax;
-            //         }
-            //     }
-            //     else if (t === 37 || t === 65) {
-            //         if (min - step >= extremesMin) {
-            //             chart.xAxis[0].setExtremes(min - step, max - step, false);
-            //             startTime = min - step;
-            //             endTime = max - step;
-            //         }
-            //         else {
-            //             // self.extremesMax = self.extremesMax ? self.extremesMax : min + step;
-            //             // chart.xAxis[0].setExtremes(extremesMin, self.extremesMax, false);
-            //             chart.xAxis[0].setExtremes(extremesMin, extremesMin + step, false);
-            //             startTime = extremesMin;
-            //             endTime = extremesMin + step;
-            //         }
-            //     }
-            //     else if (t === 39 || t === 68) {
-            //         if (max + step <= extremesMax) {
-            //             chart.xAxis[0].setExtremes(min + step, max + step, false);
-            //             startTime = min + step;
-            //             endTime = max + step;
-            //         }
-            //         else {
-            //             // self.extremesMin = self.extremesMin ? self.extremesMin : min + step;
-            //             // chart.xAxis[0].setExtremes(self.extremesMin, extremesMax, false);
-            //             chart.xAxis[0].setExtremes(extremesMax - step, extremesMax, false);
-            //             // startTime = self.extremesMin;
-            //             startTime = extremesMax - step;
-            //             endTime = extremesMax;
-            //         }
-            //     }
-            //     if (startTime && endTime) {
-            //         let url = api.getTrend
-            //             + name
-            //             + '/curves?'
-            //             + 'startTime=' + startTime
-            //             + '&endTime=' + endTime;
-            //         self.getTrendData(url, undefined, undefined, false);
-            //     }
-            //     // Scroll around one screen
-            //     // 65: prev screen
-            //     // 68: next: next screen
-            // }
+            self.keyOpera(e);
             if (t === 32) {
                 key.currentKey = null;
             }
@@ -513,6 +303,106 @@ export default class Trend extends Component {
                 bandSeries: this.state.bandSeries
             });
         });
+    }
+
+    keyOpera(e) {
+        const self = this;
+        let t = e.keyCode || e.which || e.charCode;
+        let keyArr = [32, 38, 87, 40, 83, 37, 65, 39, 68];
+        if (t &&  keyArr.indexOf(t) !== -1) {
+            // 38, 87: enlarge
+            // 40, 83: Shrink down
+            // 37: Left shift
+            // 39: Right shift
+            let chart = self.chart;
+            let axis = chart && chart.xAxis[0].getExtremes();
+            let min = axis && !(Math.round(axis.min) % 1000) ? Math.round(axis.min) : self.getTime(axis.min);
+            let max = axis && !(Math.round(axis.max) % 1000) ? Math.round(axis.max) : self.getTime(axis.max);
+            let step = 0;
+            let startTime;
+            let endTime;
+            let name = self.props.params.name;
+            if (min <= max) {
+                step = parseInt((max - min) * 0.25, 10);
+            }
+            else {
+                return;
+            }
+            let extremesMax = window.thumbExtremes[name] ? window.thumbExtremes[name].max : max;
+            let extremesMin = window.thumbExtremes[name] ? window.thumbExtremes[name].min : min;
+            // If there is no data and the minimum value is greater than or equal to the maximum value, the keyboard operation is no longer performed
+            if (t === 38 || t === 87) {
+                if (min + step < max - step) {
+                    chart.xAxis[0].setExtremes(min + step, max - step, false);
+                    startTime = min + step;
+                    endTime = max - step;
+                }
+                else if (min + step >= max - step) {
+                    chart.xAxis[0].setExtremes(min + step, max - step, false);
+                    startTime = min + step;
+                    endTime = max - step;
+                }
+            }
+            else if (t === 40 || t === 83) {
+                if (min - step >= extremesMin && max + step <= extremesMax) {
+                    chart.xAxis[0].setExtremes(min - step, max + step, false);
+                    startTime = min - step;
+                    endTime = max + step;
+                }
+                else if (min - step >= extremesMin && max + step >= extremesMax) {
+                    chart.xAxis[0].setExtremes(min - step, extremesMax, false);
+                    startTime = min - step;
+                    endTime = extremesMax;
+                }
+                else if (min - step <= extremesMin && max + step <= extremesMax) {
+                    chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
+                    startTime = extremesMin;
+                    endTime = max + step;
+                }
+                else if (min - step <= extremesMin && max + step >= extremesMax) {
+                    chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
+                    startTime = extremesMin;
+                    endTime = extremesMax;
+                }
+            }
+            else if (t === 37 || t === 65) {
+                if (min - step >= extremesMin) {
+                    chart.xAxis[0].setExtremes(min - step, max - step, false);
+                    startTime = min - step;
+                    endTime = max - step;
+                }
+                else {
+                    chart.xAxis[0].setExtremes(extremesMin, max, false);
+                    startTime = extremesMin;
+                    endTime = max;
+                }
+            }
+            else if (t === 39 || t === 68) {
+                if (max + step <= extremesMax) {
+                    chart.xAxis[0].setExtremes(min + step, max + step, false);
+                    startTime = min + step;
+                    endTime = max + step;
+                }
+                else {
+                    chart.xAxis[0].setExtremes(min, extremesMax, false);
+                    startTime = min;
+                    endTime = extremesMax;
+                }
+            }
+            if (startTime && endTime && startTime <= endTime) {
+                self.min = startTime;
+                self.max = endTime;
+                let url = api.getTrend
+                    + name
+                    + '/curves?'
+                    + 'startTime=' + startTime
+                    + '&endTime=' + endTime;
+                self.getTrendData(url, undefined, undefined, false);
+            }
+            // Scroll around one screen
+            // 65: prev screen
+            // 68: next: next screen
+        }
     }
 
     // redraw trend
@@ -795,11 +685,8 @@ export default class Trend extends Component {
                         self.allSeriesPoints = chart.series[i].points;
                         self.abnormalSelectedPoints = [];
                         if (self.min && self.max) {
-                            chart.xAxis[0].setExtremes(self.min, self.max);
+                            chart.xAxis[0].setExtremes(self.min, self.max, false);
                         }
-                        //
-                        // self.min = chart.xAxis[0].min;
-                        // self.max = chart.xAxis[0].max;
                     }
                 });
             }
@@ -1264,18 +1151,24 @@ export default class Trend extends Component {
         let listUrl = api.getDataList;
         if (self.chart) {
             self.chart.showLoading('Data is loading, please wait...');
-            self.chart.xAxis[0].setExtremes(self.min, self.max);
+            self.chart.xAxis[0].setExtremes(self.min, self.max, false);
         }
-        axiosInstance.get(listUrl).then(function (response) {
-            const data = response.data;
-            if (data.msg === 'redirect' && data.data.length) {
-                hashHistory.push(data.data);
-                return;
-            }
-            self.setState({
-                list: data.data
+        if (!self.state.datasInit) {
+            axiosInstance.get(listUrl).then(function (response) {
+                const data = response.data;
+                if (data.msg === 'redirect' && data.data.length) {
+                    hashHistory.push(data.data);
+                    return;
+                }
+                if (self.chart) {
+                    self.chart.xAxis[0].setExtremes(self.min, self.max, false);
+                }
+                self.setState({
+                    list: data.data,
+                    datasInit: false
+                });
             });
-        });
+        }
         axiosInstance.get(url).then(function (response) {
             const data = response.data;
             if (data.msg === 'redirect' && data.data.length) {
@@ -1283,7 +1176,7 @@ export default class Trend extends Component {
                 return;
             }
             if (self.chart) {
-                self.chart.xAxis[0].setExtremes(self.min, self.max);
+                self.chart.xAxis[0].setExtremes(self.min, self.max, false);
             }
             let bands = data.data.bands;
             let trends = data.data.trends;
@@ -1346,6 +1239,18 @@ export default class Trend extends Component {
             self.chart.hideLoading();
             eventProxy.trigger('loadTrend', {
                 list: name
+            });
+        }, function (err) {
+            eventProxy.trigger('openDialog', {
+                title: 'Note',
+                content: err.message,
+                name: '',
+                type: 'alert',
+                callback: function () {
+                    if (self.chart) {
+                        self.chart.hideLoading();
+                    }
+                }
             });
         });
     }
