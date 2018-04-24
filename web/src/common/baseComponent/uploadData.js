@@ -82,7 +82,7 @@ export default class UploadData extends Component {
                 message.success(self.state.fileName + ' upload successful');
                 if ($('.trend').length) {
                     $('.trend').find('.loading-process .loading').width(398);
-                    $('.trend').find('.loading-process').remove();
+                    setTimeout(function () {$('.trend').find('.loading-process').remove()}, 500);
                 }
                 if ($('.mftable-list').length) {
                     if ($('.mftable-list').find('.loading').css('display') === 'block') {
@@ -124,13 +124,8 @@ export default class UploadData extends Component {
                         num++;
                     }, 800);
                     window.timeIds1 = setInterval(function () {
-                        let loadingWidth = 398 * step.percent / 100;
-                        if (loadingWidth <= 398) {
+                        let loadingWidth = 398 * step.percent / 100 - 398 * 0.1;
                             $('.trend').find('.loading-process .loading').width(loadingWidth);
-                        }
-                        else {
-                            $('.trend').find('.loading-process .loading').width(398);
-                        }
                     }, 100);
                 }
             },

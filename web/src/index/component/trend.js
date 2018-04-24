@@ -67,7 +67,8 @@ export default class Trend extends Component {
             smallBandMenuStyle: false,
             // if trend is loading
             loading: true,
-            neverReflow: false
+            neverReflow: false,
+            datasInit: true
         };
         this.abnormalSelectedPoints = [];
         this.abnormalSelectedIndex = [];
@@ -75,6 +76,8 @@ export default class Trend extends Component {
         this.enlargeExtremesMax = undefined;
         // The minimum value that the x-axis can set when reducing the operation
         this.enlargeExtremesMin = undefined;
+        this.latestMax = undefined;
+        this.latestMin = undefined;
     }
 
     componentDidMount() {
@@ -83,112 +86,24 @@ export default class Trend extends Component {
         self.getOperaMenuData();
         let num = 1;
         $('body').on('keydown', function (e) {
+            let t = e.keyCode || e.which || e.charCode;
+            let keyArr = [32, 38, 87, 40, 83, 37, 65, 39, 68];
+            if (t && keyArr.indexOf(t) !== -1) {
+                e.preventDefault();
+            }
             e = e ? e : window.event;
             key.currentKey = e.keyCode || e.which || e.charCode;
+            // self.keyOpera(e);
         });
         // Keyboard operation trend graph
         $('body').on('keyup', function (e) {
-            e = e ? e : window.event;
             let t = e.keyCode || e.which || e.charCode;
             let keyArr = [32, 38, 87, 40, 83, 37, 65, 39, 68];
-            if (t &&  keyArr.indexOf(t) !== -1) {
-                // 38, 87: enlarge
-                // 40, 83: Shrink down
-                // 37: Left shift
-                // 39: Right shift
-                let chart = self.chart;
-                let axis = chart && chart.xAxis[0].getExtremes();
-                let min = axis && Math.round(axis.min);
-                let max = axis && Math.round(axis.max);
-                let step = 0;
-                let startTime;
-                let endTime;
-                let name = self.props.params.name;
-                if (min <= max) {
-                    step = parseInt((max - min) * 0.25, 10);
-                }
-                let extremesMax = window.thumbExtremes[name] ? window.thumbExtremes[name].max : max;
-                let extremesMin = window.thumbExtremes[name] ? window.thumbExtremes[name].min : min;
-                // If there is no data and the minimum value is greater than or equal to the maximum value, the keyboard operation is no longer performed
-                if (t === 38 || t === 87) {
-                    if (min + step < max - step) {
-                        chart.xAxis[0].setExtremes(min + step, max - step, false);
-                        startTime = min + step;
-                        endTime = max - step;
-                    }
-                    else if (min + step === max - step) {
-                        chart.xAxis[0].setExtremes(min + step, max - step, false);
-                        self.enlargeExtremesMax = max - step;
-                        self.enlargeExtremesMin = min + step;
-                        startTime = min + step;
-                        endTime = max - step;
-                    }
-                    else {
-                        chart.xAxis[0].setExtremes(self.enlargeExtremesMin, self.enlargeExtremesMax, false);
-                        startTime = self.enlargeExtremesMin;
-                        endTime = self.enlargeExtremesMax;
-                    }
-                }
-                else if (t === 40 || t === 83) {
-                    if (min - step >= extremesMin && max + step <= extremesMax) {
-                        chart.xAxis[0].setExtremes(min - step, max + step, false);
-                        startTime = min - step;
-                        endTime = max + step;
-                    }
-                    else if (min - step >= extremesMin && max + step >= extremesMax) {
-                        chart.xAxis[0].setExtremes(min - step, extremesMax, false);
-                        startTime = min - step;
-                        endTime = extremesMax;
-                    }
-                    else if (min - step <= extremesMin && max + step <= extremesMax) {
-                        chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
-                        startTime = extremesMin;
-                        endTime = max + step;
-                    }
-                    else if (min - step <= extremesMin && max + step >= extremesMax) {
-                        chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
-                        startTime = extremesMin;
-                        endTime = extremesMax;
-                    }
-                }
-                else if (t === 37 || t === 65) {
-                    if (min - step >= extremesMin) {
-                        chart.xAxis[0].setExtremes(min - step, max - step, false);
-                        startTime = min - step;
-                        endTime = max - step;
-                    }
-                    else {
-                        self.extremesMax = self.extremesMax ? self.extremesMax : min + step;
-                        chart.xAxis[0].setExtremes(extremesMin, self.extremesMax, false);
-                        startTime = extremesMin;
-                        endTime = self.extremesMax;
-                    }
-                }
-                else if (t === 39 || t === 68) {
-                    if (max + step <= extremesMax) {
-                        chart.xAxis[0].setExtremes(min + step, max + step, false);
-                        startTime = min + step;
-                        endTime = max + step;
-                    }
-                    else {
-                        self.extremesMin = self.extremesMin ? self.extremesMin : min + step;
-                        chart.xAxis[0].setExtremes(self.extremesMin, extremesMax, false);
-                        startTime = self.extremesMin;
-                        endTime = extremesMax;
-                    }
-                }
-                if (startTime && endTime) {
-                    let url = api.getTrend
-                        + name
-                        + '/curves?'
-                        + 'startTime=' + startTime
-                        + '&endTime=' + endTime;
-                    self.getTrendData(url, undefined, undefined, false);
-                }
-                // Scroll around one screen
-                // 65: prev screen
-                // 68: next: next screen
+            if (t && keyArr.indexOf(t) !== -1) {
+                e.preventDefault();
             }
+            e = e ? e : window.event;
+            self.keyOpera(e);
             if (t === 32) {
                 key.currentKey = null;
             }
@@ -199,7 +114,7 @@ export default class Trend extends Component {
             let action = $(this).attr('data-action');
             let startTime = 0;
             let endTime = 0;
-            let currentX = window.currentX;
+            let currentX = parseInt($(this).attr('data-currentx'), 10);
             let name = self.props.params.name;
             let currentIndex = 0;
             // get real startTime and endTime
@@ -377,10 +292,10 @@ export default class Trend extends Component {
 
         eventProxy.on('bandVisible', legend => {
             this.state.bandSeries.forEach((item, index) => {
-                if (!legend[index]) {
+                if (!legend[item.name]) {
                     item.visible = false;
                 }
-                else if (legend[index] === 'show') {
+                else if (legend[item.name] === 'show') {
                     item.visible = true;
                 }
             });
@@ -388,6 +303,106 @@ export default class Trend extends Component {
                 bandSeries: this.state.bandSeries
             });
         });
+    }
+
+    keyOpera(e) {
+        const self = this;
+        let t = e.keyCode || e.which || e.charCode;
+        let keyArr = [32, 38, 87, 40, 83, 37, 65, 39, 68];
+        if (t &&  keyArr.indexOf(t) !== -1) {
+            // 38, 87: enlarge
+            // 40, 83: Shrink down
+            // 37: Left shift
+            // 39: Right shift
+            let chart = self.chart;
+            let axis = chart && chart.xAxis[0].getExtremes();
+            let min = axis && !(Math.round(axis.min) % 1000) ? Math.round(axis.min) : self.getTime(axis.min);
+            let max = axis && !(Math.round(axis.max) % 1000) ? Math.round(axis.max) : self.getTime(axis.max);
+            let step = 0;
+            let startTime;
+            let endTime;
+            let name = self.props.params.name;
+            if (max - min >= 3600000) {
+                step = parseInt((max - min) * 0.25, 10);
+            }
+            else {
+                return;
+            }
+            let extremesMax = window.thumbExtremes[name] ? window.thumbExtremes[name].max : max;
+            let extremesMin = window.thumbExtremes[name] ? window.thumbExtremes[name].min : min;
+            // If there is no data and the minimum value is greater than or equal to the maximum value, the keyboard operation is no longer performed
+            if (t === 38 || t === 87) {
+                if (min + step < max - step) {
+                    chart.xAxis[0].setExtremes(min + step, max - step, false);
+                    startTime = min + step;
+                    endTime = max - step;
+                }
+                else if (min + step >= max - step) {
+                    chart.xAxis[0].setExtremes(min + step, max - step, false);
+                    startTime = min + step;
+                    endTime = max - step;
+                }
+            }
+            else if (t === 40 || t === 83) {
+                if (min - step >= extremesMin && max + step <= extremesMax) {
+                    chart.xAxis[0].setExtremes(min - step, max + step, false);
+                    startTime = min - step;
+                    endTime = max + step;
+                }
+                else if (min - step >= extremesMin && max + step >= extremesMax) {
+                    chart.xAxis[0].setExtremes(min - step, extremesMax, false);
+                    startTime = min - step;
+                    endTime = extremesMax;
+                }
+                else if (min - step <= extremesMin && max + step <= extremesMax) {
+                    chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
+                    startTime = extremesMin;
+                    endTime = max + step;
+                }
+                else if (min - step <= extremesMin && max + step >= extremesMax) {
+                    chart.xAxis[0].setExtremes(extremesMin, extremesMax, false);
+                    startTime = extremesMin;
+                    endTime = extremesMax;
+                }
+            }
+            else if (t === 37 || t === 65) {
+                if (min - step >= extremesMin) {
+                    chart.xAxis[0].setExtremes(min - step, max - step, false);
+                    startTime = min - step;
+                    endTime = max - step;
+                }
+                else {
+                    chart.xAxis[0].setExtremes(extremesMin, max, false);
+                    startTime = extremesMin;
+                    endTime = max;
+                }
+            }
+            else if (t === 39 || t === 68) {
+                if (max + step <= extremesMax) {
+                    chart.xAxis[0].setExtremes(min + step, max + step, false);
+                    startTime = min + step;
+                    endTime = max + step;
+                }
+                else {
+                    chart.xAxis[0].setExtremes(min, extremesMax, false);
+                    startTime = min;
+                    endTime = extremesMax;
+                }
+            }
+            if (startTime && endTime && startTime <= endTime) {
+                self.min = startTime;
+                self.max = endTime;
+                let url = api.getTrend
+                    + name
+                    + '/curves?'
+                    + 'startTime=' + startTime
+                    + '&endTime=' + endTime;
+                self.getTrendData(url, undefined, undefined, false);
+            }
+            // Scroll around one screen
+            // 65: prev screen
+            // 68: next: next screen
+        }
     }
 
     // redraw trend
@@ -650,6 +665,8 @@ export default class Trend extends Component {
             + '/curves?'
             + 'startTime=' + start
             + '&endTime=' + end;
+        self.min = start;
+        self.max = end;
         if (bandName) {
             url += '&bandName=' + bandName;
         }
@@ -670,11 +687,8 @@ export default class Trend extends Component {
                         self.allSeriesPoints = chart.series[i].points;
                         self.abnormalSelectedPoints = [];
                         if (self.min && self.max) {
-                            chart.xAxis[0].setExtremes(self.min, self.max);
+                            chart.xAxis[0].setExtremes(self.min, self.max, false);
                         }
-                        //
-                        // self.min = chart.xAxis[0].min;
-                        // self.max = chart.xAxis[0].max;
                     }
                 });
             }
@@ -770,18 +784,19 @@ export default class Trend extends Component {
                 return false;
             }
         };
-        let mouseOverFunction = function (e) {
-            window.currentOperaPoint = e;
-            window.chartTrend = e.target.series.chart;
-            window.currentIndex = e.target.index;
-            window.currentX = e.target.x;
-        };
+        // let mouseOverFunction = function (e) {
+        //     window.currentOperaPoint = e;
+        //     window.chartTrend = e.target.series.chart;
+        //     window.currentIndex = e.target.index;
+        //     window.currentX = e.target.x;
+        // };
         // The configuration parameters required for the trend graph
         let options = {
             lang: {
                 noData: 'No data found in the uploaded file, please check.'
             },
-            colors: ['#7cb5ec'],
+            colors: ['#7cb5ec', '#80699B', '#90ed7d', '#f7a35c', '#8085e9',
+                '#f15c80', '#e4d354', '#8085e8', '#8d4653', '#91e8e1'],
             noData: {
                 style: {
                     fontWeight: 'normal',
@@ -847,56 +862,56 @@ export default class Trend extends Component {
             },
             rangeSelector: {
                 buttons: [{
-                    type: 'hour',
-                    count: 1,
+                    type: 'second',
+                    count: 3600,
                     text: '1h'
                 }, {
-                    type: 'hour',
-                    count: 6,
+                    type: 'second',
+                    count: 21600,
                     text: '6h'
                 }, {
-                    type: 'minute',
-                    count: 720,
+                    type: 'second',
+                    count: 43200,
                     text: '12h',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 1440,
+                    type: 'second',
+                    count: 86400,
                     text: '1d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 4320,
+                    type: 'second',
+                    count: 259200,
                     text: '3d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 10080,
+                    type: 'second',
+                    count: 604800,
                     text: '7d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
-                    type: 'minute',
-                    count: 20160,
+                    type: 'second',
+                    count: 1209600,
                     text: '14d',
                     dataGrouping: {
                         units: [
-                            ['minute', [1]]
+                            ['second', [1]]
                         ]
                     }
                 }, {
@@ -908,9 +923,9 @@ export default class Trend extends Component {
                     x: -5
                 },
                 buttonSpacing: 10,
-                buttonTheme: { // styles for the buttons
+                buttonTheme: {
+                    // styles for the buttons
                     'fill': 'none',
-                    // stroke: 'none',
                     'stroke-width': 1,
                     'r': 1,
                     'style': {
@@ -1037,11 +1052,11 @@ export default class Trend extends Component {
                     },
                     events: {
                     },
-                    point: {
-                        events: {
-                            mouseOver: mouseOverFunction
-                        }
-                    },
+                    // point: {
+                    //     events: {
+                    //         mouseOver: mouseOverFunction
+                    //     }
+                    // },
                     animation: false
                 }
             }
@@ -1106,6 +1121,7 @@ export default class Trend extends Component {
                 options: options,
                 type: 'stockChart'
             });
+            self.getAllTime(result);
             window.thumbExtremes[self.props.params.name] = {
                 max: result[result.length - 1][0],
                 min: result[0][0]
@@ -1137,18 +1153,24 @@ export default class Trend extends Component {
         let listUrl = api.getDataList;
         if (self.chart) {
             self.chart.showLoading('Data is loading, please wait...');
-            self.chart.xAxis[0].setExtremes(self.min, self.max);
+            self.chart.xAxis[0].setExtremes(self.min, self.max, false);
         }
-        axiosInstance.get(listUrl).then(function (response) {
-            const data = response.data;
-            if (data.msg === 'redirect' && data.data.length) {
-                hashHistory.push(data.data);
-                return;
-            }
-            self.setState({
-                list: data.data
+        if (!self.state.datasInit) {
+            axiosInstance.get(listUrl).then(function (response) {
+                const data = response.data;
+                if (data.msg === 'redirect' && data.data.length) {
+                    hashHistory.push(data.data);
+                    return;
+                }
+                if (self.chart) {
+                    self.chart.xAxis[0].setExtremes(self.min, self.max, false);
+                }
+                self.setState({
+                    list: data.data,
+                    datasInit: false
+                });
             });
-        });
+        }
         axiosInstance.get(url).then(function (response) {
             const data = response.data;
             if (data.msg === 'redirect' && data.data.length) {
@@ -1156,14 +1178,14 @@ export default class Trend extends Component {
                 return;
             }
             if (self.chart) {
-                self.chart.xAxis[0].setExtremes(self.min, self.max);
+                self.chart.xAxis[0].setExtremes(self.min, self.max, false);
             }
             let bands = data.data.bands;
             let trends = data.data.trends;
             let trendsBands = [];
             let trendsTrends = [];
             let name = self.props.params.name;
-            trends.forEach(item => {
+            trends.forEach((item, index) => {
                 if (item.type === 'arearange') {
                     self.optionAreaRange(item);
                     trendsTrends.push(item);
@@ -1171,9 +1193,10 @@ export default class Trend extends Component {
                 if (item.type === 'line' || !item.type) {
                     if (item.name === 'base line') {
                         self.optionBaseLine(item);
-                    }
-                    if (item.name === 'label line') {
+                    } else if (item.name === 'label line') {
                         self.optionLabelLine(item);
+                    } else {
+                        self.optionLine(item, index);
                     }
                     trendsTrends.push(item);
                 }
@@ -1186,7 +1209,7 @@ export default class Trend extends Component {
             options.yAxis.min = data.data.yAxis[0];
             options.yAxis.max = data.data.yAxis[1];
             options.series = trends;
-            options.rangeSelector.selected = undefined;
+            // options.rangeSelector.selected = undefined;
             options.chart.width = self.getTrendWidth();
             clearInterval(self.loadingTime);
             clearInterval(self.loadingTipTime);
@@ -1219,6 +1242,18 @@ export default class Trend extends Component {
             eventProxy.trigger('loadTrend', {
                 list: name
             });
+        }, function (err) {
+            eventProxy.trigger('openDialog', {
+                title: 'Note',
+                content: err.message,
+                name: '',
+                type: 'alert',
+                callback: function () {
+                    if (self.chart) {
+                        self.chart.hideLoading();
+                    }
+                }
+            });
         });
     }
 
@@ -1235,7 +1270,6 @@ export default class Trend extends Component {
     }
 
     optionAreaRange(item) {
-        let self = this;
         item.lineWidth = 0;
         item.color = 'rgb(240,255,240)';
         item.zIndex = 1;
@@ -1257,8 +1291,6 @@ export default class Trend extends Component {
     }
 
     optionLabelLine(item) {
-        let self = this;
-        let zones = [];
         item.showInLegend = false;
         item.lineWidth = 2;
         item.zIndex = 100;
@@ -1278,6 +1310,18 @@ export default class Trend extends Component {
         item.dataGrouping = {
             enabled: false
         };
+    }
+
+    optionLine(item, index) {
+        let colors = this.state.options.colors;
+        item.showInLegend = false;
+        item.lineWidth = 2;
+        item.zIndex = 2 + index;
+        item.enableMouseTracking = true;
+        item.dataGrouping = {
+            enabled: false
+        };
+        item.color = colors[index % colors.length];
     }
 
     labelTooltip(current, total, pre, next, currentTime, bandName, x) {
@@ -1389,21 +1433,47 @@ export default class Trend extends Component {
         let startTime;
         let endTime;
         // Set the extreme value to avoid the big picture redrawing before the request
-        // self.refs.container.chart.xAxis[0].setExtremes(self.min, self.max);
+        if (e.target.chart) {
+            e.target.chart.showLoading('Data is loading, please wait...');
+        }
         if (e.trigger) {
+            let extraMin = window.thumbExtremes[self.props.params.name].min;
+            let extraMax = window.thumbExtremes[self.props.params.name].max;
             if (trigger.indexOf(e.trigger) === -1) {
                 return;
             }
             if (e.trigger === 'rangeSelectorButton') {
                 option = self.state.options;
+                let diff = 0;
                 let selectedButtons = option.rangeSelector.buttons;
                 let currentSelectedText  = e.rangeSelectorButton.text;
                 selectedButtons.forEach((item, index) => {
                     if (item.text === currentSelectedText) {
                         option.rangeSelector.selected = index;
+                        if (index <= 6) {
+                            diff = item.count * 1000;
+                        }
+                        else {
+                            diff = 0;
+                        }
                         return;
                     }
                 });
+                endTime = self.max;
+                startTime = self.max - diff;
+                if (diff === 0) {
+                    startTime = extraMin;
+                    endTime = extraMax;
+                }
+                else {
+                    if (startTime < extraMin) {
+                        startTime = extraMin;
+                        endTime = extraMin + diff;
+                        if (endTime > extraMax) {
+                            endTime = extraMax;
+                        }
+                    }
+                }
             }
             else {
                 option = self.state.options;
@@ -1420,9 +1490,17 @@ export default class Trend extends Component {
                 else {
                     option.rangeSelector.selected = undefined;
                 }
+                startTime = Math.round(e.userMin);
+                endTime = Math.round(e.userMax);
+                if (startTime < extraMin) {
+                    startTime = extraMin;
+                }
+                if (endTime > extraMax) {
+                    endTime = extraMax;
+                }
+                startTime = self.getTime(startTime);
+                endTime = self.getTime(endTime);
             }
-            startTime = Math.round(e.userMin);
-            endTime = Math.round(e.userMax);
             self.min = startTime;
             self.max = endTime;
             let url = api.getTrend
@@ -1432,6 +1510,30 @@ export default class Trend extends Component {
                 + '&endTime=' + endTime;
             self.getTrendData(url, option, true, false);
         }
+    }
+
+    getAllTime(data) {
+        let self = this;
+        let result = data.map(item => {
+            return item[0];
+        });
+        self.allTime = result;
+    }
+
+    getTime(time) {
+        let resultTime;
+        for (let i = 0; i < this.allTime.length - 1; i ++) {
+            if (this.allTime[i] <= time && this.allTime[i + 1] >= time) {
+                if (time - this.allTime[i] >= this.allTime[i + 1] - time) {
+                    resultTime = this.allTime[i + 1];
+                }
+                else {
+                    resultTime = this.allTime[i];
+                }
+                break;
+            }
+        }
+        return resultTime;
     }
 
     returnMenuList(menuList) {
