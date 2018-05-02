@@ -1272,7 +1272,7 @@ export default class Trend extends Component {
     optionAreaRange(item) {
         item.lineWidth = 0;
         item.color = 'rgb(240,255,240)';
-        item.zIndex = 1;
+        item.zIndex = 0;
         item.enableMouseTracking = false;
         item.showInLegend = true;
         item.dataGrouping = {
@@ -1305,7 +1305,7 @@ export default class Trend extends Component {
     optionArea(item) {
         item.lineWidth = 0;
         item.fillOpacity = 0.3;
-        item.zIndex = 0;
+        item.zIndex = 1;
         item.enableMouseTracking = true;
         item.dataGrouping = {
             enabled: false
