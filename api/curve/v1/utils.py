@@ -158,8 +158,7 @@ class RFCTimeFormat(TimeFormat):
         :param time_str:
         :return:
         """
-        return int(
-            time.mktime(time.strptime(time_str[:10] + ' ' + time_str[11:19], RFCTimeFormat.time_format)))
+        return int(time.mktime(time.strptime(time_str[:10] + ' ' + time_str[11:19], RFCTimeFormat.time_format)))
 
 
 E_TIME_FORMATTER = enum(unix=UnixTimeFormat, short=ShortTimeFormat, rfc=RFCTimeFormat)
