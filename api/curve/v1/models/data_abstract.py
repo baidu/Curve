@@ -7,6 +7,8 @@
     :copyright: (c) 2017-2018 by Baidu, Inc.
     :license: Apache, see LICENSE for more details.
 """
+import urllib
+
 from app import db
 from .common import (
     auto_init,
@@ -45,8 +47,8 @@ class DataAbstract(db.Model):
         """
         return {
             'id': self.id,
-            'name': self.name,
-            'uri': '/v1/data/%s' % self.name,
+            'name': urllib.unquote(self.name.encode('utf-8')),
+            'uri': '/v1/data/%s' % urllib.unquote(self.name.encode('utf-8')),
             'createTime': self.create_time * 1000,
             'updateTime': self.update_time * 1000,
             'labelRatio': self.label_ratio,

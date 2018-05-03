@@ -125,7 +125,7 @@ class DataDataname(Resource):
             'traceId': '',
             'data': {
                 'data': [(point[0] * 1000, point[1]) for point in thumb],
-                'name': data_name,
+                'name': 'thumb',
                 'type': 'line'
             }
         }, ensure_ascii=False))
