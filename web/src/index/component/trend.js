@@ -1510,6 +1510,11 @@ export default class Trend extends Component {
                 + '&endTime=' + endTime;
             self.getTrendData(url, option, true, false);
         }
+        else {
+            if (e.target.chart) {
+                e.target.chart.hideLoading();
+            }
+        }
     }
 
     getAllTime(data) {
