@@ -169,7 +169,7 @@ export default class Trend extends Component {
                 });
                 return;
             }
-            self.getTrendData(url, undefined, undefined, false);
+            self.getTrendData(url, undefined, undefined, false, true);
         });
 
         let TREND_LOADING = 'The trend is loading, please wait';
@@ -397,7 +397,7 @@ export default class Trend extends Component {
                     + '/curves?'
                     + 'startTime=' + startTime
                     + '&endTime=' + endTime;
-                self.getTrendData(url, undefined, undefined, false);
+                self.getTrendData(url, undefined, undefined, false, true);
             }
             // Scroll around one screen
             // 65: prev screen
@@ -415,7 +415,7 @@ export default class Trend extends Component {
             + '/curves?'
             + 'startTime=' + start
             + '&endTime=' + end;
-        this.getTrendData(url, undefined, undefined, false);
+        this.getTrendData(url, undefined, undefined, false, true);
     }
 
     shouldComponentUpdate(nextProps) {
@@ -810,11 +810,12 @@ export default class Trend extends Component {
                 events: {
                     load: loadFunction,
                     selection: selectionFunction
-                },
+                }
+                // ,
                 // animation: {
                 //     duration: 0
                 // }
-                animation: false
+                // animation: false
             },
             title: {
                 text: '',
@@ -858,7 +859,8 @@ export default class Trend extends Component {
                     week: '%Y<br/>%m-%d',
                     month: '%Y-%m',
                     year: '%Y'
-                }
+                },
+                animation: false
             },
             rangeSelector: {
                 buttons: [{
@@ -1051,7 +1053,8 @@ export default class Trend extends Component {
                         }
                     },
                     events: {
-                    },
+                    }
+                    ,
                     // point: {
                     //     events: {
                     //         mouseOver: mouseOverFunction
@@ -1145,7 +1148,7 @@ export default class Trend extends Component {
     }
 
     // Rendering trend graph
-    getTrendData(url, options, setExtremes, reflowThumb) {
+    getTrendData(url, options, setExtremes, reflowThumb, setData) {
         const self = this;
         if (!options) {
             options = self.state.options;
@@ -1232,8 +1235,21 @@ export default class Trend extends Component {
                 loading: false,
                 neverReflow: reflowThumb
             };
-            // redraw trend
-            self.setState(paramsOptions);
+            if (setData) {
+                //setdata
+                trends.forEach((trendItem, trendIndex) => {
+                    self.chart.series.forEach((seriesItem, seriesIndex) => {
+                        if (self.chart.series[seriesIndex].name === trendItem.name) {
+                            self.chart.series[seriesIndex].setData(trendItem.data);
+                            return;
+                        }
+                    });
+                });
+            }
+            else {
+                // redraw trend
+                self.setState(paramsOptions);
+            }
             eventProxy.trigger('loadBand', {
                 name,
                 trendsBands
@@ -1508,7 +1524,7 @@ export default class Trend extends Component {
                 + '/curves?'
                 + 'startTime=' + startTime
                 + '&endTime=' + endTime;
-            self.getTrendData(url, option, true, false);
+            self.getTrendData(url, option, true, false, true);
         }
         else {
             if (e.target.chart) {
