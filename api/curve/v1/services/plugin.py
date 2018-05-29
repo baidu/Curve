@@ -225,7 +225,7 @@ class Plugin(object):
         :param line: data raws
         :return:
         """
-        values = np.asarray([point[0] for point in line if point[1] is not None])
+        values = np.asarray([point[1] for point in line if point[1] is not None])
         value_min, value_max = np.min(values), np.max(values)
         y_axis_min_per, y_axis_max_per = np.percentile(values, 0.3), np.percentile(values, 99.7)
         y_axis_min = y_axis_min_per - (y_axis_max_per + y_axis_min_per) * 0.05
