@@ -212,7 +212,7 @@ class DataDataname(Resource):
             else:
                 # UNIX_s
                 return E_TIME_FORMATTER.unix
-        elif re.match(r'%d{4}-%d{2}-%d{2}\s%d{2}:%d{2}:%d{2}', time_str):
+        elif re.match(r'\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2}', time_str):
             # YYYY-mm-dd HH:MM:SS
             return E_TIME_FORMATTER.rfc
         return None
