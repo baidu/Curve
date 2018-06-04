@@ -89,7 +89,11 @@ class DataDatanameCurves(Resource):
         for ref_name, ref_line in tmp:
             ref = {'name': urllib.unquote(ref_name.encode('utf-8')), 'type': 'line', 'data': None}
             _, ref_line = plugin('sampling', ref_line, config.SAMPLE_PIXELS)
-            if ref_line[0][2] is not None:
+            is_area = False
+            for point in ref_line:
+                if point[2] is not None:
+                    is_area = True
+            if is_area:
                 ref['type'] = 'arearange'
                 ref['data'] = [
                     (point[0] * 1000, point[1] - point[2], point[1] + point[2])
