@@ -44,16 +44,30 @@ export default class UploadData extends Component {
             },
             beforeUpload(file) {
                 // console.log('beforeUpload', file.name);
+                let fileNames = file.name.split('.');
+                let names = [];
+                fileNames.forEach((item, index) => {
+                    if (index < fileNames.length - 1) {
+                        names.push(item);
+                    }
+                });
                 self.setState({
-                    fileName: file.name.split('.')[0]
+                    fileName: names.join('.')
                 });
             },
             onStart(file) {
                 // console.log('onStart', file.name);
                 // this.refs.inner.abort(file);
+                let fileNames = file.name.split('.');
+                let names = [];
+                fileNames.forEach((item, index) => {
+                    if (index < fileNames.length - 1) {
+                        names.push(item);
+                    }
+                });
                 self.setState({
                     dataList: self.props.dataList ? self.props.dataList : self.state.dataList,
-                    fileName: file.name.split('.')[0]
+                    fileName: names.join('.')
                 });
                 let html = '';
                 html = '<div class="loading-process">'
