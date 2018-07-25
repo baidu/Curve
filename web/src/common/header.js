@@ -18,7 +18,7 @@ export default class ViewLayout extends Component {
         super(props);
 
         this.state = {
-            foldMenu: 'block'
+
         };
     }
 
@@ -43,19 +43,15 @@ export default class ViewLayout extends Component {
 
     render() {
         return (
-        <Layout>
-            <Header className="header"
-                style= {{height: '50px', backgroundColor: '#388ff7', padding: '0px', lineHeight: '50px'}}>
-                <div className="logo">Curve</div>
-            </Header>
-            <Layout>
-                <Layout>
-                    <Content style={{background: '#fff', padding: 0, margin: 0, minHeight: 580}}>
-                       {this.props.children}
-                    </Content>
-                </Layout>
-            </Layout>
-        </Layout>
+            <div>
+                <div className="header"
+                    style= {{height: '50px', backgroundColor: '#388ff7', padding: '0px', lineHeight: '50px'}}>
+                    <div className="logo">Curve</div>
+                </div>
+                <div style={{background: '#fff', padding: 0, margin: 0, minHeight: 580, position: 'relative'}}>
+                   {this.props.children}
+                </div>
+            </div>
         );
     }
 }

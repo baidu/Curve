@@ -63,7 +63,7 @@ export const viewListConfig = {
         //     ref: 'batchExport'
         // },
         // {
-        //     text: 'Batch deleting',
+        //     text: 'Batch delete',
         //     value: 'delete',
         //     url: api.deleteData,
         //     ref: 'batchDelete'

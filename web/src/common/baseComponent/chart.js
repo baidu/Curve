@@ -46,6 +46,7 @@ export default class Chart extends Component {
         let chartConfig = config.chart;
         let chartType = this.props.type || 'chart';
 
+        console.log(config)
         this.chart = new Highcharts[chartType]({
             ...config,
             chart: {
@@ -53,7 +54,7 @@ export default class Chart extends Component {
                 renderTo: this.refs.chart
             }
         }, this.props.callback);
-        eventProxy.trigger('loadedChart', this.chart);
+        // eventProxy.trigger('loadedChart', this.chart);
         if (!this.props.neverReflow) {
             this.chart && this.chart.options && this.chart.reflow();
         }

@@ -22,10 +22,13 @@
 .trend {
   margin-left: 20px;
   margin-top: 15px;
-  position: relative;
+  position: absolute;
+  left: 200px;
+  top: 0;
+  transition: left 0.5s;
+  background: #fff;
 }
 .band {
-  height: 500px;
   width: 150px;
   box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.10);
   position: absolute;
@@ -69,6 +72,8 @@
 }
 .reference-line-content {
   min-height: 50px;
+  max-height: 60px;
+  overflow-y: auto;
 }
 .band-list {
   background: #f4f4f4;
@@ -92,6 +97,16 @@
     color: #388ff7;
   }
 }
+.band-list-content {
+  max-height: 375px;
+  overflow-y: auto;
+  min-height: 380px;
+  .legend {
+    &:hover {
+      cursor: pointer;
+    }
+  }
+}
 .reference-line-content {
 }
 .legend,
@@ -102,9 +117,6 @@
   line-height: 28px;
   height: 28px;
   font-size: 12px;
-  &:hover {
-    cursor: pointer;
-  }
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
@@ -123,8 +135,8 @@
   }
 }
 
-.highcharts-tooltip {
-  width: 100px;
+.selection {
+
 }
 .selection li {
   &:hover {
@@ -141,7 +153,6 @@
   .left,
   .right {
     color: #388ff7;
-    margin-top: 7px;
     &:hover {
       cursor: pointer;
     }
@@ -153,8 +164,27 @@
     float: right;
   }
 }
+.label-opera {
+  text-align: center;
+  margin-bottom: 5px;
+  width: 100px;
+  color: #388ff7;
+  &:hover {
+    cursor: pointer;
+    background: #388ff7;
+    color: #fff;
+  }
+}
+.load-trend {
+  font-style: normal;
+  color: #388ff7;
+  &:hover {
+    cursor: pointer;
+    background: #388ff7;
+    color: #fff;
+  }
+}
 .small-band {
-  height: 500px;
   width: 40px;
   box-shadow: 0px 1px 3px 0px rgba(0,0,0,0.10);
   position: absolute;
@@ -202,6 +232,9 @@
   text-align: center;
   padding-top: 300px;
   color: #888;
+  position: absolute;
+  left: 50%;
+  top: 0;
 }
 .loading-tip {
   text-align: center;
@@ -217,4 +250,16 @@
 }
 .label-opera {
   text-align: center;
+}
+.area-tooltip-content {
+  .label-opera {
+    cursor: pointer;
+    color: #388ff7;
+  }
+}
+.area-tooltip {
+  height: 500px;
+}
+.highcharts-tooltip-box  {
+  height: 40px;
 }

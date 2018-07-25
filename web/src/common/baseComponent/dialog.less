@@ -1,0 +1,29 @@
+.dialog-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  opacity: 0;
+  .dialog {
+    position: fixed;
+    top: 100px;
+    left: 50%;
+    margin-left: -200px;
+    margin-top: 0;
+    width: 400px;
+    opacity: 0;
+    transform: translateY(-30px);
+    transition: transform 0.15s, opacity 0.15s;
+    -webkit-transition: transform 0.15s, opacity 0.15s;
+  }
+}
+.dialog-overlay.active {
+  opacity: 1;
+  z-index: 2;
+  .dialog {
+    transform: translateY(30px);
+    opacity: 1;
+    transition: transform 0.15s, opacity 0.15s;
+    -webkit-transition: transform 0.15s, opacity 0.15s;
+  }
+}

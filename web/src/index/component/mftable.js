@@ -3,8 +3,7 @@
  * @author cuiyuan
  */
 
-import './MFTable.less';
-import './sidebar.less';
+import './mftable.less';
 
 import React, {Component} from 'react';
 import moment from 'moment';
@@ -12,8 +11,6 @@ import {Link, hashHistory} from 'react-router';
 import {axiosInstance} from '../../tools/axiosInstance';
 import {viewListConfig} from '../../config/MFTableConfig';
 import eventProxy from '../../tools/eventProxy';
-import {Layout, Icon} from 'antd';
-import Sidebar from './sidebar';
 
 // icon
 // search
@@ -27,7 +24,7 @@ import Download from 'react-icons/lib/fa/download';
 // close
 import Close from 'react-icons/lib/fa/close';
 
-const {Sider, Content} = Layout;
+// const {Sider, Content} = Layout;
 // api
 const api = require('../../common/api').default.api;
 // Header, prompt box, batch operation configuration
@@ -68,14 +65,10 @@ export default class MFTable extends Component {
         });
         this.state = {
             // Data list
-            list: [],
-            // In the load data, true: indicates that the load is being loaded, false: the load completion
-            loading: true,
-            // Mask layer display, true: display display; false: represent hidden
-            overlay: false,
+            list: this.props.list,
             // The value of the width of each column
             width,
-            // Default operation Icon
+            // // Default operation Icon
             actionIconList: actionIconMap,
             // Default batch operation
             refActive: false,
@@ -83,28 +76,12 @@ export default class MFTable extends Component {
             selectAllChecked: false,
             // The check box for each line is unchecked by default
             listChecked: [],
-            // The prompt box is not displayed by default
-            dialogDisplay: {
-                confirm: false,
-                alert: false
-            },
             // Current operation data
             currentItem: {},
             // A collection of data names involved in the operation
             nameList: [],
             // The width of body
-            windowWidth: 'auto',
-            name: '',
-            data: [],
-            menuDisplay: 'block',
-            foldMenu: 'block',
-            unFoldMenu: 'none',
-            sideList: [],
-            overlayDisplay: 'none',
-            dialogTitle: '',
-            dialogContent: '',
-            // Customize bullet content
-            dialogContentCustom: ''
+            windowWidth: 'auto'
         };
         // Delete operations, including single deletions and batch operations
         this.delete = this.delete.bind(this);
@@ -112,14 +89,10 @@ export default class MFTable extends Component {
         this.export = this.export.bind(this);
         // Switch check box operation
         this.toggle = this.toggle.bind(this);
-        // Closing the prompt box operation
-        this.close = this.close.bind(this);
         // Search operation
         this.search = this.search.bind(this);
         // Batch operation, obtained by listConfig.batch configuration
         this.batchAction = this.batchAction.bind(this);
-        // The prompt box operation is configured through the listConfig.dialog configuration
-        this.dialogAction = this.dialogAction.bind(this);
         // Setting the width of the table
         this.setWindowWidth = this.setWindowWidth.bind(this);
         // Set permissions
@@ -133,12 +106,10 @@ export default class MFTable extends Component {
         this.getBodyData();
         // Bind the resize event: recalculate the width of the list per item
         window.addEventListener('resize', this.setWindowWidth);
-        eventProxy.on('loadTrend', obj => {
-            if (typeof obj.list === 'string') {
-                return;
-            }
-            this.setState({
-                sideList: obj.list
+        let self = this;
+        eventProxy.on('list', (obj) => {
+            self.setState({
+                list: obj.list
             });
         });
     }
@@ -170,7 +141,7 @@ export default class MFTable extends Component {
         // Calculates the width of the other columns except the check box and operation columns.
         // The total width of the table - the width of the operation column - the width of the check box - the padding width on both sides of the check box.
         if (this.refs.list) {
-            let containerWidth = this.refs.list.offsetWidth - ACTION_ITEM_WIDTH - CHECKBOX_WIDTH - 2 * PADDING_WIDTH;
+            let containerWidth = this.refs.list.offsetWidth - ACTION_ITEM_WIDTH - CHECKBOX_WIDTH - 2 * PADDING_WIDTH - 40;
             this.setState({
                 windowWidth: containerWidth
             }, () => {
@@ -189,60 +160,14 @@ export default class MFTable extends Component {
         if (e.which !== 13 && e.keyCode !== 13) {
             return;
         }
-        this.setState({
-            loading: true
-        });
-        let url = api.getDataList + '?pattern=' + encodeURIComponent(this.refs.searchBox.value);
+        this.props.showLoading();
+        let url = api.getDataList + '?pattern=' + encodeURIComponent(e.target.value);
         axiosInstance.get(url).then(response => {
             const data = response.data;
+            this.props.hideLoading();
             this.setState({
-                list: data.data,
-                loading: false
+                list: data.data
             });
-        });
-    }
-
-    /**
-     * The operation of the prompt box footer
-     *
-     * @param  {Object}  item    [Current prompt box configuration object]
-     */
-    dialogAction(item) {
-        let name = Object.prototype.toString.call(this.state.nameList) === '[object Array]' ? this.state.nameList.join(',') : '';
-        let url = item.url || '';
-        let value = item.value;
-        if (value === 'confirm') {
-            url = url + encodeURIComponent(name);
-            axiosInstance.delete(url).then(response => {
-                let listData = this.state.list.filter(item => {
-                    return item.name !== name;
-                });
-                this.setState({
-                    list: listData,
-                    overlay: false,
-                    dialogDisplay: {
-                        confirm: false,
-                        alert: false
-                    }
-                });
-            });
-        }
-        else if (value === 'cancel') {
-            this.close();
-        }
-    }
-
-    /**
-     * Close the prompt box
-     *
-     */
-    close() {
-        this.setState({
-            overlay: false,
-            dialogDisplay: {
-                confirm: false,
-                alert: false
-            }
         });
     }
 
@@ -261,13 +186,10 @@ export default class MFTable extends Component {
             let listChecked = data.data.map(item => false);
             this.setState({
                 list: data.data,
-                loading: false,
+                // loading: false,
                 listChecked
             }, () => {
                 this.refreshCellWidth();
-                this.setState({
-
-                });
             });
         });
     }
@@ -303,7 +225,7 @@ export default class MFTable extends Component {
         let containerWidth = this.state.windowWidth;
         // Calculate the maximum value of each column
         for (let i = 0; i < maxWidth.length; i++) {
-            finalWidth.push(maxWidth[i] / sum * containerWidth);
+            finalWidth.push(maxWidth[i] / sum * containerWidth + 20);
         }
         this.setState({
             width: finalWidth
@@ -358,7 +280,7 @@ export default class MFTable extends Component {
      */
     renderHeaderItem() {
         let percent = this.state.width;
-        this.getCellMinWidth();
+        // this.getCellMinWidth();
         return header.map((item, index) => {
             let width = percent && percent[index]
                 ? percent[index] === 'auto' ? 'auto' : percent[index] - 2 * PADDING_WIDTH + 'px' : 'auto';
@@ -373,7 +295,7 @@ export default class MFTable extends Component {
                      className={className}
                      style={{
                          width: width,
-                         minWidth: currentMinWidth
+                         // minWidth: currentMinWidth
                      }}
                 >
                     {item.text}
@@ -479,7 +401,8 @@ export default class MFTable extends Component {
     renderBody() {
         // The return result of list is empty, showing "no results" and enhancing the user experience.
         // The return result of list is not empty, and the corresponding data items are displayed
-        if (!this.state.list.length) {
+        let list = this.state.list;
+        if (!list.length) {
             return (
                 <div className="no-data">No data</div>
             );
@@ -487,7 +410,7 @@ export default class MFTable extends Component {
         else {
             let actionIconList = this.state.actionIconList;
             let exportUrl = api.exportData;
-            return this.state.list.map((item, index) => {
+            return list.map((item, index) => {
                 let checked = this.state.listChecked[index];
                 let className = checked ? 'input-label checked' : 'input-label';
                 let viewUrl = '/home/' + item.name;
@@ -514,7 +437,7 @@ export default class MFTable extends Component {
                                       className="action"
                                       style={{display: actionIconList['export'] ? 'inline-block' : 'none'}}
                             />
-                            <Trash onClick={name => this.delete(item, 'confirm')}
+                            <Trash onClick={(e, name, type) => this.delete(e, item, 'confirm')}
                                    className="action"
                                    style={{display: actionIconList['delete'] ? 'inline-block' : 'none'}}
                             />
@@ -538,7 +461,7 @@ export default class MFTable extends Component {
         text.push(itemList.name);
         text.push(moment(itemList.time.start).format('YYYY-MM-DD HH:mm:ss') + ' ~ ' + moment(itemList.time.end).format('YYYY-MM-DD HH:mm:ss'));
         text.push(itemList.period.length);
-        text.push(itemList.labelRatio * 100 + '%');
+        text.push(itemList.labelRatio);
         itemList.read = item.public_read ? true : false;
         itemList.write = item.public_edit ? true : false;
         return width.map((widthItem, index) => {
@@ -597,7 +520,7 @@ export default class MFTable extends Component {
         let publicEdit = false;
         let publicRead = false;
         let nameList = [currentItem.name];
-        let title = this.getDialogTitle(dialogType);
+        // let title = this.getDialogTitle(dialogType);
         if (type === 'write') {
             list.forEach(item => {
                 if (item.name === name) {
@@ -647,52 +570,10 @@ export default class MFTable extends Component {
                 });
             }
             else {
-                this.setDialogDisplay(dialogType, title, nameList, currentItem);
+
             }
         }).catch(error => {
             let response = error.response;
-            this.setDialogDisplay('alert', 'Error Tip', '', undefined, response.msg);
-        });
-    }
-
-    /**
-     * Get the title of the prompt box for the current display
-     *
-     * @param  {string}   type       [View the type of the prompt box]
-     * @return {string}   title      [The title of the current prompt box]
-     */
-    getDialogTitle(type) {
-        let title;
-        for (let i = 0; i < dialog.length; i ++) {
-            let dialogTmp = dialog[i];
-            if (dialogTmp.dialogType === type) {
-                title = dialogTmp.dialogTitle;
-            }
-        }
-        return title;
-    }
-
-    /**
-     * Set up the display of the current prompt, including the title title, the footer operation, the content content
-     *
-     * @param  {string}  type                   [The prompt box type, type is confirm: a prompt with a confirmation function; type is alert: a common view of the function]
-     * @param  {string}  title                  [Prompt box title]
-     * @param  {string}  nameList               [The list of data names for the current operation]
-     * @param  {Object}  currentItem            [Current data object]
-     * @param  {string}  dialogContentCustom    [Customize bullet content]
-     */
-    setDialogDisplay(type, title, nameList, currentItem, dialogContentCustom) {
-        let dialogDisplay = {
-            confirm: type === 'confirm',
-            alert: type === 'alert'
-        };
-        this.setState({
-            title,
-            nameList,
-            overlay: true,
-            currentItem,
-            dialogDisplay,
-            dialogContentCustom
         });
     }
 
@@ -702,53 +583,46 @@ export default class MFTable extends Component {
      * @param  {Object}  currentItem    [Current data object]
      * @param  {string}  type           [Prompt box type]
      */
-    delete(currentItem, type) {
+    delete(e, currentItem, type) {
+        e.stopPropagation();
         let nameList = [currentItem.name];
-        let title = this.getDialogTitle(type);
-        this.setDialogDisplay(type, title, nameList, currentItem);
-    }
-
-    /**
-     * Render dialog box content
-     *
-     * @param  {Object}  item      [Current data objects]
-     * @param  {string}  dialogId  [Prompt box ID]
-     * @return {Object}            [react object]
-     */
-    renderContent(item, dialogId) {
-        if (this.state.overlay) {
-            let name = Object.prototype.toString.call(this.state.nameList) === '[object Array]' ? this.state.nameList.join(',') : '';
-            if (item.dialogType === 'confirm' && this.state.dialogDisplay.confirm) {
-                return item.dialogContent.map((currentContent, index) => {
-                    let className = 'name-list ' + dialogId + index;
-                    return (
-                        <div className="dialog-container" key={index}>
-                            <div className={className}>{name}</div>
-                            {currentContent}
-                        </div>
-                    );
-                });
-            }
-            else if (item.dialogType === 'alert' && this.state.dialogDisplay.alert) {
-                // let currentItem = this.state.currentItem;
-                if (this.state.dialogContentCustom.length) {
-                    return (
-                        <div className="dialog-container">
-                            {this.state.dialogContentCustom}
-                        </div>
-                    );
-                }
-                else {
-                    return item.dialogContent.map((currentContent, index) => {
-                        return (
-                            <div className="dialog-container" key={index}>
-                                {currentContent}
-                            </div>
-                        );
+        let self = this;
+        let url = api.deleteData + currentItem.name;
+        eventProxy.trigger('beforeOpenDialog', {
+            dialogTitle: 'Delete',
+            dialogContent: 'Are you sure you want to delete ' + currentItem.name + '?',
+            dialogType: 'confirm',
+            dialogShow: true,
+            dialogOverlayBackgroundColor: 'rgba(0, 0, 0, 0.4)',
+            dialogParams: {
+                name: currentItem.name,
+                url
+            },
+            dialogCallback: {
+                okCallback: function (args) {
+                    let list = self.state.list;
+                    let index = 0;
+                    for (let i = 0; i < list.length; i ++) {
+                        if (list[i].name === args) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    list.splice(index, 1);
+                    self.props.setList(list);
+                    self.setState({
+                        list
                     });
+                },
+                cancelCallback: function (args) {
+                    self.props.hideLoading();
                 }
+            },
+            dialogCallbackMessage: {
+                success: 'Successfully deleted, the next data will be displayed',
+                error: 'Delete failed, please try again'
             }
-        }
+        });
     }
 
     /**
@@ -760,7 +634,7 @@ export default class MFTable extends Component {
     export(url, nameList) {
         window.location.href = url + nameList;
     }
-
+    //
     /**
      * Get the set of selected data names
      *
@@ -771,58 +645,6 @@ export default class MFTable extends Component {
         return list.filter((item, index) => {
             return this.state.listChecked[index];
         }).map(item => item.name);
-    }
-
-    /**
-     * Render prompt box
-     *
-     * @return {Object}         [react object]
-     */
-    renderDialog() {
-        return dialog.map((item, index) => {
-            let {dialogTitle, dialogAction, dialogType} = item;
-            let dialogId = 'dialog' + index;
-            let dialogDisplay = this.state.dialogDisplay;
-            return (
-                <div className={dialogDisplay[dialogType] ? 'dialog show' : 'dialog'}
-                     key={index}
-                     ref={dialogId}
-                >
-                    <div className="dialog-head">
-                        <div>{dialogTitle}</div>
-                        <Close className="close" onClick={this.close} />
-                    </div>
-                    <div className="dialog-body">
-                        <div className="dialog-content">
-                            {this.renderContent(item, dialogId)}
-                        </div>
-                        <div className="dialog-footer">
-                            {this.renderDialogFooter(dialogAction)}
-                        </div>
-                    </div>
-                </div>
-            );
-        });
-    }
-
-    /**
-     * Footer of the render prompt box
-     *
-     * @param  {Array}   action  [Operation list configuration]
-     * @return {Object}          [react object]
-     */
-    renderDialogFooter(action) {
-        return action.map((item, index) => {
-            let className = 'operation-btn ' + item.value;
-            return (
-                <button className={className}
-                        key={index}
-                        onClick={currentItem => this.dialogAction(item)}
-                >
-                    {item.text}
-                </button>
-            );
-        });
     }
 
     /**
@@ -871,141 +693,48 @@ export default class MFTable extends Component {
         let {url, text, value} = item;
         let nameList = this.getNameList();
         if (value === 'export') {
-            this.export(url, nameList.join(','));
+
         }
         else if (value === 'delete') {
-            this.setState({
-                text,
-                overlay: true,
-                nameList,
-                dialogDisplay: {
-                    confirm: true,
-                    alert: false
-                }
-            });
+
         }
     }
 
-    /**
-     * Rendering summary
-     * @param {string} name  [Data name]
-     * @param {array} list   [Data list]
-     */
-    returnSummary(name, list) {
+    setList(list) {
         this.setState({
-            name,
-            sideList: list
+            list
         });
     }
 
-    /**
-     * Switch side sidebar
-     * @param {string} type  [sidebar type]
-     */
-    toggleMenu(type) {
-        if (type === 'fold') {
-            this.setState({
-                menuDisplay: 'none',
-                foldMenu: 'none',
-                unFoldMenu: 'block'
-            });
-        }
-        else if (type === 'unfold') {
-            this.setState({
-                menuDisplay: 'block',
-                foldMenu: 'block',
-                unFoldMenu: 'none'
-            });
-        }
-        eventProxy.trigger('loadingTip', 'Redrawing graphics, please wait');
-    }
-
-    /**
-     * close summary
-     */
-    hideSummary() {
-        eventProxy.trigger('hideSummary', this.refs.overlay);
-        this.refs.overlay.style.display = 'none';
-    }
-
-    /**
-     * show overlayer
-     * @param {boolean} show  [Does it show]
-     */
-    returnShowOverlay(show) {
-        if (this.state.overlayDisplay !== show) {
-            this.setState({
-                overlayDisplay: show ? 'block' : 'none'
-            });
-        }
-    }
-
     render() {
-        let params = {
-            name: 'test0',
-            list: this.state.list,
-            menuDisplay: this.state.menuDisplay
-        } || {};
+        let mftableWidth = document.body.clientWidth;
+        let left = 200;
+        if (this.props.foldMenu) {
+            mftableWidth = document.body.clientWidth;
+            left = 0;
+        }
+        else {
+            mftableWidth = document.body.clientWidth - 200;
+        }
         return (
-            <Layout>
-                <Sider className="index-sidebar"
-                       style={{display: this.state.menuDisplay, position: 'static'}}
-                >
-                    <Sidebar
-                            returnSummary={(name, list) => this.returnSummary(name, list)}
-                            hideSummary={this.state.hideSummary}
-                            returnShowOverlay={show => this.returnShowOverlay(show)}
-                             params={params}
-                             overlay={this.refs.overlay}
-                             list={this.state.list}
-                             type={this.state.type}
-                             ref="sidebar"
-                            showAll={false}
-                    >
-                    </Sidebar>
-                </Sider>
-                <Icon type="menu-fold"
-                      className="menu-fold"
-                      onClick={this.toggleMenu.bind(this, 'fold')}
-                      style={{display: this.state.foldMenu}}
-                />
-                <Icon type="menu-unfold"
-                      className="menu-unfold"
-                      onClick={this.toggleMenu.bind(this, 'unfold')}
-                      style={{display: this.state.unFoldMenu}}
-                />
-                <Content className="index-con">
-                    <div>
-                        <div className="mftable-list">
-                            <div ref="list">
-                                <div className="operation-box clearfix">
-                                    <div className="search-box">
-                                        <input type="text"
-                                               className="search-input"
-                                               onKeyUp={e => this.search(e)}
-                                               ref="searchBox"
-                                        />
-                                        <SearchIcon className="search-icon" />
-                                    </div>
-                                    {this.renderBatchAction()}
-                                </div>
-                                <div className="head" ref="head">
-                                    {this.renderHeader()}
-                                </div>
-                                <div className="body" ref="body">
-                                    {this.renderBody()}
-                                </div>
-                                <div className={this.state.loading ? 'loading show' : 'loading'}></div>
-                                <div className={this.state.loading ? 'loading-container show' : 'loading-container'}></div>
-                            </div>
-                            <div className={this.state.overlay ? 'overlay show' : 'overlay'}
-                                 ref="overlay"
-                            ></div>
-                            {this.renderDialog()}
-                        </div>
+            <div className="mftable-list" style={{
+                width: mftableWidth + 'px',
+                left: left + 'px'
+            }} ref="list">
+                <div className="operation-box clearfix">
+                    <div className="search-box">
+                        <input type="text" className="search-input" ref="searchBox" onKeyUp={this.search}/>
+                        <SearchIcon className="search-icon" />
                     </div>
-                </Content>
-            </Layout>
+                    {this.renderBatchAction()}
+                </div>
+                <div className="head" ref="head">
+                    {this.renderHeader()}
+                </div>
+                <div className="body" ref="body">
+                    {this.renderBody()}
+                </div>
+            </div>
         );
     }
 }
