@@ -3,7 +3,6 @@
  * @author cuiyuan
  */
 
-// import './MFTable.less';
 import './table.less';
 
 import React, {Component} from 'react';
@@ -12,7 +11,6 @@ import {Link, hashHistory} from 'react-router';
 import {axiosInstance} from '../../tools/axiosInstance';
 import {viewListConfig} from '../../config/MFTableConfig';
 import eventProxy from '../../tools/eventProxy';
-// import {Layout, Icon} from 'antd';
 import Sidebar from './sidebar';
 import MFTable from './mftable';
 import Outdent from 'react-icons/lib/fa/dedent';

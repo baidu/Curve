@@ -6,7 +6,6 @@
 import './index.less';
 
 import React, {Component} from 'react';
-// import {Layout, Icon, Button} from 'antd';
 import Sidebar from './sidebar';
 import Trend from './trend';
 import Dialog from '../../common/baseComponent/dialog';

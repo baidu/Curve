@@ -5,9 +5,7 @@
 import './sidebar.less';
 
 import React, {Component} from 'react';
-import {message} from 'antd';
 import {Link, hashHistory} from 'react-router';
-// import {Button, Icon} from 'antd';
 import {axiosInstance} from '../../tools/axiosInstance';
 import eventProxy from '../../tools/eventProxy';
 import UploadData from '../../common/baseComponent/uploadData';

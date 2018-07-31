@@ -6,7 +6,6 @@
 import './band.less';
 
 import React, {Component} from 'react';
-import eventProxy from '../../tools/eventProxy';
 import cookie from 'react-cookies';
 import AngleRight from 'react-icons/lib/fa/angle-double-right';
 import Calendar from 'react-icons/lib/fa/calendar';
@@ -14,7 +13,6 @@ import Save from 'react-icons/lib/fa/floppy-o';
 import AngleLeft from 'react-icons/lib/fa/angle-double-left';
 import Bars from 'react-icons/lib/fa/bars';
 import Thlarge from 'react-icons/lib/fa/th-large';
-import u from "underscore";
 
 export default class Band extends Component {
     constructor(props) {
