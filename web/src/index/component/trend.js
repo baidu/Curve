@@ -732,6 +732,19 @@ export default class Trend extends Component {
 
     getThumbDate(props) {
         let dataName = props.dataName || this.props.dataName;
+        if (!dataName) {
+            dataName = props.list[0].name;
+            eventProxy.trigger('messageTip', {
+                messageType: 'error',
+                messageContent: 'No ' + dataName + ' data, just jump to the first data',
+                messageShow: true,
+                messageDuration: 2.5,
+                messageCallback: function () {
+                    let nextUrl = '/home/' + dataName;
+                    hashHistory.push(nextUrl);
+                }
+            });
+        }
         let url = api.getThumbTrend + dataName + '/thumb';
         axiosInstance.get(url).then(response => {
             const data = response.data;
