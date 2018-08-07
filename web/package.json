@@ -1,6 +1,6 @@
 {
-  "name": "antd-demo",
-  "version": "0.1.0",
+  "name": "Curve",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "antd": "^2.13.13",
