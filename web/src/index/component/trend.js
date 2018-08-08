@@ -16,6 +16,7 @@ import moment from 'moment';
 import $ from 'jquery';
 import Band from '../../common/baseComponent/band';
 import cookie from 'react-cookies';
+import Highcharts from 'react-highcharts/ReactHighstock';
 
 const api = require('../../common/api').default.api;
 const dateFormat = 'YYYY-MM-DD HH:mm';
@@ -29,8 +30,8 @@ export default class Trend extends Component {
         this.state = {
             // Whether to display a mask, true means display, false means not selected
             loading: true,
-            // Label mode, simple means that only the selected points are processed, and complex means that the selected points are visually optimized.
-            selectType: 'simple',
+            // Label mode, simple or complex. Simple means that only the selected points are processed, and complex means that the selected points are visually optimized.
+            selectType: 'complex',
             // Trend map configuration
             options: {
                 lang: {
@@ -319,8 +320,329 @@ export default class Trend extends Component {
             // Trend object
             chart: {}
         };
+        this.chartOptions = {
+            lang: {
+                noData: 'No data found in the uploaded file, please check.'
+            },
+            colors: ['#7cb5ec', '#80699B', '#90ed7d', '#f7a35c', '#8085e9',
+                '#f15c80', '#e4d354', '#8085e8', '#8d4653', '#91e8e1'],
+            noData: {
+                style: {
+                    fontWeight: 'normal',
+                    fontSize: '13px',
+                    color: '#ccc'
+                }
+            },
+            chart: {
+                height: 660,
+                zoomType: 'x',
+                events: {
+                    load: function () {},
+                    selection: function (e) {
+                        e.preventDefault();
+                        return self.selection(e, self.state.selectType);
+                    }
+                },
+                borderRadius: 8,
+                backgroundColor: '#0d0836',
+                spacingBottom: 45,
+                spacingLeft: 30,
+                spacingRight: 44,
+                spacingTop: 60
+                // ,
+                // animation: {
+                //     duration: 0
+                // }
+                // animation: false
+            },
+            title: {
+                text: '',
+                style: {
+                    fontSize: '16px'
+                }
+            },
+            scrollbar: {
+                enabled: true,
+                height: 0,
+                buttonArrowColor: 'transparent',
+                liveRedraw: false
+            },
+            navigator: {
+                adaptToUpdatedData: false,
+                enabled: true,
+                maskFill: 'rgba(47, 73, 255, 0.3)',
+                height: 60,
+                outlineWidth: 0,
+                series: {
+                    data: [],
+                    type: 'line',
+                    color: '#0c3946',
+                    fillOpacity: 0,
+                    dataGrouping: {
+                        smoothed: true
+                    },
+                    lineWidth: 1,
+                    marker: {
+                        enabled: false
+                    },
+                    name: 'sample demo'
+                },
+                type: 'datetime',
+                dateTimeLabelFormats: {
+                    second: '%Y-%m-%d<br/>%H:%M:%S',
+                    minute: '%Y-%m-%d<br/>%H:%M',
+                    hour: '%Y-%m-%d<br/>%H:%M',
+                    day: '%Y<br/>%m-%d',
+                    week: '%Y<br/>%m-%d',
+                    month: '%Y-%m',
+                    year: '%Y'
+                },
+                animation: false,
+                xAxis: {
+                    labels: {
+                        style: {
+                            color: 'rgba(204, 204, 204, 0.6)'
+                        },
+                        format: '{value:%Y-%m-%d<br/>%H:%M:%S}',
+                        align: 'center',
+                        y: 20
+                    }
+                },
+                margin: 35
+            },
+            rangeSelector: {
+                buttons: [{
+                    type: 'second',
+                    count: 3600,
+                    text: '1h'
+                }, {
+                    type: 'second',
+                    count: 21600,
+                    text: '6h'
+                }, {
+                    type: 'second',
+                    count: 43200,
+                    text: '12h',
+                    dataGrouping: {
+                        units: [
+                            ['second', [1]]
+                        ]
+                    }
+                }, {
+                    type: 'second',
+                    count: 86400,
+                    text: '1d',
+                    dataGrouping: {
+                        units: [
+                            ['second', [1]]
+                        ]
+                    }
+                }, {
+                    type: 'second',
+                    count: 259200,
+                    text: '3d',
+                    dataGrouping: {
+                        units: [
+                            ['second', [1]]
+                        ]
+                    }
+                }, {
+                    type: 'second',
+                    count: 604800,
+                    text: '7d',
+                    dataGrouping: {
+                        units: [
+                            ['second', [1]]
+                        ]
+                    }
+                }, {
+                    type: 'second',
+                    count: 1209600,
+                    text: '14d',
+                    dataGrouping: {
+                        units: [
+                            ['second', [1]]
+                        ]
+                    }
+                }],
+                inputEnabled: false,
+                buttonPosition: {
+                    x: 0,
+                    y: -33
+                },
+                buttonSpacing: 15,
+                buttonTheme: {
+                    // styles for the buttons
+                    'fill': 'none',
+                    'stroke-width': 1,
+                    'r': 1,
+                    'style': {
+                        color: 'rgba(255, 255, 255, 0.3)',
+                        textShadow: 'none',
+                        fontWeight: 'normal'
+                    },
+                    'states': {
+                        hover: {
+                            fill: '#388ff7',
+                            style: {
+                                color: '#fff',
+                                cursor: 'pointer',
+                                textShadow: 'none',
+                                fontWeight: 'normal'
+                            }
+                        },
+                        select: {
+                            fill: '#388ff7',
+                            style: {
+                                color: '#fff',
+                                cursor: 'pointer',
+                                textShadow: 'none',
+                                fontWeight: 'normal'
+                            }
+                        },
+                        disabled: {
+                            style: {
+                                color: 'rgba(255, 255, 255, 0.1)',
+                                cursor: 'not-allowed',
+                                textShadow: 'none',
+                                fontWeight: 'normal'
+                            }
+                        }
+                    }
+                },
+                labelStyle: {
+                    display: 'none'
+                }
+            },
+            loading: {
+                style: {
+                    backgroundColor: '#12104f',
+                    opacity: 0.5
+                },
+                labelStyle: {
+                    fontSize: '12px',
+                    color: '#fff',
+                    opacity: 0.6
+                }
+            },
+            tooltip: {
+                shared: false,
+                enabled: false,
+                backgroundColor: '#fff',
+                borderRadius: 1,
+                borderWidth: 0,
+                shadow: true,
+                animation: true,
+                style: {
+                    fontSize: '12px',
+                    pointerEvents: 'auto'
+                },
+                useHTML: true,
+                // formatter: tooltipFormatterFunction,
+                hideDelay: 5000
+            },
+            xAxis: {
+                crosshair: false,
+                events: {
+                    // afterSetExtremes: afterSetExtremesFunction
+                },
+                type: 'datetime',
+                dateTimeLabelFormats: {
+                    second: '%Y-%m-%d<br/><br/>%H:%M:%S',
+                    minute: '%Y-%m-%d<br/><br/>%H:%M',
+                    hour: '%Y-%m-%d<br/><br/>%H:%M',
+                    day: '%Y<br/><br/>%m-%d',
+                    week: '%Y<br/><br/>%m-%d',
+                    month: '%Y-%m',
+                    year: '%Y'
+                },
+                categories: [],
+                tickColor: '#979797',
+                tickLength: 5
+            },
+            yAxis: {
+                // max: max,
+                // min: min,
+                opposite: false,
+                startOnTick: false,
+                lineWidth: 0,
+                showFirstLabel: true,
+                showLastLabel: true
+            },
+            legend: {
+                enabled: false,
+                symbolRadius: 0,
+                symbolWidth: 25,
+                squareSymbol: false,
+                align: 'right',
+                backgroundColor: '#fff',
+                borderWidth: 0,
+                layout: 'vertical',
+                verticalAlign: 'top',
+                y: 20,
+                x: 20,
+                width: 150,
+                itemMarginTop: 5,
+                itemMarginBottom: 10
+            },
+            plotOptions: {
+                line: {
+                    // boostThreshold: 200,
+                    marker: {
+                        states: {
+                            hover: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    point: {
+                        events: {}
+                    },
+                    tooltip: {
+                        hideDelay: 5000
+                    },
+                    turboThreshold: 3000
+                },
+                area: {
+                    point: {
+                        events: {}
+                    },
+                    animation: false,
+                    trackByArea: true,
+                    connectNulls: false
+                },
+                series: {
+                    stickyTracking: false,
+                    turboThreshold: 3000,
+                    marker: {
+                        states: {
+                            hover: {
+                                enabled: true
+                            }
+                        }
+                    },
+                    states: {
+                        hover: {
+                            enabled: false
+                        }
+                    },
+                    events: {
+                    }
+                    ,
+                    // point: {
+                    //     events: {
+                    //         mouseOver: mouseOverFunction
+                    //     }
+                    // },
+                    animation: false
+                }
+            }
+        };
         this.returnChart = this.returnChart.bind(this);
         this.redrawTrend = this.redrawTrend.bind(this);
+        this.selectedPoint = [];
+        this.selectedPointIndex = [];
+        this.tempSelectedPoint = [];
     }
 
     componentDidMount() {
@@ -384,12 +706,12 @@ export default class Trend extends Component {
                 endTime = $(this).attr('data-next-end-time');
             }
             let dataName = self.props.dataName;
-            let url = api.getTrend
-                + dataName
-                + '/curves?'
-                + 'startTime=' + startTime
-                + '&endTime=' + endTime
-                + '&bandName=' + bandName;
+            // let url = api.getTrend
+            //     + dataName
+            //     + '/curves?'
+            //     + 'startTime=' + startTime
+            //     + '&endTime=' + endTime
+            //     + '&bandName=' + bandName;
             if (startTime > endTime) {
                 eventProxy.trigger('beforeOpenDialog', {
                     dialogTitle: 'Note',
@@ -400,7 +722,8 @@ export default class Trend extends Component {
                 });
             }
             else {
-                self.setTrendData(dataName, startTime, endTime);
+                let time = self.chart && self.chart.xAxis[0].getExtremes();
+                self.setTrendData(dataName, time.min, time.max);
             }
         });
 
@@ -495,8 +818,10 @@ export default class Trend extends Component {
         let selectedMin = Math.round(e.xAxis[0].min);
         if (this.spacebarDown) {
             this.cancelLabel(selectedMin, selectedMax, selectType, e);
+            this.spacebarDown = false;
         }
         else {
+            this.spacebarDown = false;
             this.label(selectedMin, selectedMax, selectType, e);
         }
     }
@@ -510,16 +835,16 @@ export default class Trend extends Component {
             + '&endTime=' + selectedMax
             + '&label=0';
         let time = chart && chart.xAxis[0].getExtremes();
-        if (!selectType || selectType === 'simple') {
+        // if (!selectType || selectType === 'simple') {
             axiosInstance.put(url).then(response => {
                 return this.setTrendData(dataName, time.min, time.max);
             }).catch(err => {
                 console.log(err);
             });
-        }
-        else {
-
-        }
+        // }
+        // else {
+        //
+        // }
     }
 
     getMenuList(props) {
@@ -533,6 +858,7 @@ export default class Trend extends Component {
     }
 
     label(selectedMin, selectedMax, selectType, e) {
+        const self = this;
         let dataName = this.props.dataName;
         let chart = this.chart;
         let url = api.labelTrend
@@ -542,15 +868,196 @@ export default class Trend extends Component {
             + '&label=1';
         let time = chart && chart.xAxis[0].getExtremes();
         if (selectType === 'simple') {
+            self.setLabel(url, time.min, time.max);
+        }
+        else if (selectType === 'complex') {
+            // Select points
+            let currentSelectedPoints = self.selectedPoints(e);
+            // filter points
+            let currentFinalSelectedPoints = self.filterSelectedPoints(currentSelectedPoints);
+            // Paint the selected points
+            self.paintPoints(currentFinalSelectedPoints);
+            // get params of label operation
+            let timeObj = self.getLabelParam(e);
+            let url = api.labelTrend
+                + dataName + '/label'
+                + '?startTime=' + timeObj.startTime
+                + '&endTime=' + timeObj.endTime
+                + '&label=1';
             axiosInstance.put(url).then(response => {
-                return this.setTrendData(dataName, time.min, time.max);
+                // return this.setTrendData(dataName, min, max);
             }).catch(err => {
                 console.log(err);
             });
+            // self.setLabel(url, time.min, time.max);
+            return false;
         }
-        else {
+    }
 
+    setLabel(url, min, max) {
+        let dataName = this.props.dataName;
+        axiosInstance.put(url).then(response => {
+            return this.setTrendData(dataName, min, max);
+        }).catch(err => {
+            console.log(err);
+        });
+    }
+
+    getLabelParam(e) {
+        let startTime = Math.round(e.xAxis[0].min);
+        let endTime = Math.round(e.xAxis[0].max);
+        return {
+            startTime,
+            endTime
         }
+    }
+
+    selectedPoints(e) {
+        const self = this;
+        let chart = self.chart;
+        let currentSelectedPoint = [];
+        chart.series.forEach(function (series) {
+            if (series.type === 'line' && series.name === 'base line') {
+                series.points.forEach(point => {
+                    if (point.x >= e.xAxis[0].min && point.x <= e.xAxis[0].max) {
+                        // self.selectedPoint.push(point);
+                        currentSelectedPoint.push(point);
+                    }
+                });
+                // console.log(self.selectedPoint)
+            }
+        });
+        return currentSelectedPoint;
+    }
+
+    filterSelectedPoints(currentSelectedPoints) {
+        let chart = this.chart;
+        // get base line and it's index
+        let baseLineIndex = 0;
+        chart.series.forEach((item, index) => {
+            if (item.type === 'line' && item.name === 'base line') {
+                baseLineIndex = index;
+            }
+        });
+        let baseLineData = chart.series[baseLineIndex].data;
+        let filterSelectedPoints = currentSelectedPoints;
+        let finalSelectedPoints = [];
+        let retainSelectedPoint = [];
+        // No passing point
+        if (filterSelectedPoints.length === 0) {
+            // No processing, this labeling is invalid
+        }
+        // Through a point
+        else if (filterSelectedPoints.length === 2) {
+            // three solution
+            // First point
+            if (filterSelectedPoints[0].index === 0) {
+                retainSelectedPoint = filterSelectedPoints.slice(1);
+                if (retainSelectedPoint[0].index + 1 < baseLineData.length) {
+                    retainSelectedPoint.push(baseLineData[retainSelectedPoint[0].index + 1]);
+                }
+            }
+            // Last point
+            else if (filterSelectedPoints[1].index === baseLineData.length - 1) {
+                retainSelectedPoint = filterSelectedPoints.slice(0, filterSelectedPoints.length - 1);
+                if (retainSelectedPoint[0].index - 1 > 0) {
+                    retainSelectedPoint.unshift(baseLineData[retainSelectedPoint[0].index - 1]);
+                }
+            }
+            // Somewhere in the middle
+            else {
+                // remove first point
+                retainSelectedPoint = filterSelectedPoints.slice(1);
+                if (retainSelectedPoint[0].index + 1 < baseLineData.length) {
+                    retainSelectedPoint.push(baseLineData[retainSelectedPoint[0].index + 1]);
+                }
+            }
+        }
+        // Through multiple points
+        else {
+            // remove first point and latest point
+            retainSelectedPoint = filterSelectedPoints.slice(1);
+            if (retainSelectedPoint[retainSelectedPoint.length - 1].index + 1 < baseLineData.length) {
+                retainSelectedPoint.push(baseLineData[retainSelectedPoint[retainSelectedPoint.length - 1].index + 1]);
+            }
+        }
+        finalSelectedPoints = retainSelectedPoint;
+        // this.selectedPoint = finalSelectedPoints;
+        return finalSelectedPoints;
+    }
+
+    paintPoints(currentFinalSelectedPoints) {
+        let chart = this.chart;
+        let labelLineIndex = 0;
+        let baseLineIndex = 0;
+        chart.series.forEach((item, index) => {
+            if (item.type === 'line' && item.name === 'label line') {
+                labelLineIndex =  index;
+            }
+            if (item.type === 'line' && item.name === 'base line') {
+                baseLineIndex = index;
+            }
+        });
+        let baseLineData = this.chart.series[baseLineIndex].data;
+        // set this.selectedPoint
+        // three source，init/latest selected/current selected
+        // init label data
+        let currentSelectedPoints = [];
+        let selectedPoint = [];
+        this.labelSet.forEach(item => {
+            selectedPoint = [];
+            baseLineData.forEach(data => {
+                if (data.x >= item[0] && data.x <= item[1]) {
+                    selectedPoint.push(data);
+                }
+            });
+            currentSelectedPoints = this.filterSelectedPoints(selectedPoint);
+            this.selectedPoint = this.selectedPoint.concat([...currentSelectedPoints]);
+        });
+        // latest label data concat current selected
+        this.selectedPointIndex = [];
+        this.selectedPoint = this.selectedPoint.concat([...currentFinalSelectedPoints]);
+        this.selectedPoint.forEach(item => {
+            this.selectedPointIndex.push(item.index);
+        });
+
+        // add series and remove series
+        // find label series and remove it
+        chart.series[labelLineIndex].remove(labelLineIndex);
+        // add new label line
+        let newLabelLineData = [];
+        baseLineData.forEach((item, index) => {
+            if (this.selectedPointIndex.indexOf(item.index) !== -1) {
+                newLabelLineData.push({
+                    x: item.x,
+                    y: item.y
+                    // ,
+                    // color: '#ff0000'
+                });
+            }
+            else {
+                newLabelLineData.push({
+                    x: item.x,
+                    y: null
+                    // ,
+                    // color: '#7cb5ec'
+                });
+            }
+        });
+        // show new label line
+        chart.addSeries({
+            data: newLabelLineData,
+            color: '#ff0000',
+            zIndex: 100,
+            name: 'label line',
+            showInLegend: false,
+            enableMouseTracking: true,
+            zoneAxis: 'x',
+            dataGrouping: {
+                enabled: false
+            }
+        });
+        console.log(chart)
     }
 
     tooltipFormatter(e, chart) {
@@ -567,59 +1074,60 @@ export default class Trend extends Component {
         }
         let currentX = chart.x;
         let currentY = chart.y;
-        if (labelLine) {
-            let menuList = '';
-            if (this.state.menuList) {
-                menuList += '<ul class="selection" id="selection">';
-                for (let i = 0; i < this.state.menuList.length; i ++) {
-                    menuList += ''
-                        + '<li style="cursor: pointer;" data-action="'
-                        + this.state.menuList[i].action
-                        + '" data-currentx="'
-                        + currentX
-                        + '">'
-                        + this.state.menuList[i].name
-                        + '</li>';
-                }
-                menuList += '</ul>';
-                return menuList;
-            }
-            else {
-                return false;
-            }
-        }
-        else if (area) {
-            let band = [];
-            for (let i = 0; i < this.state.bands.length; i++) {
-                if (this.state.bands[i].name === area.name) {
-                    // Get the current triggered band
-                    band = this.state.bands[i];
-                    break;
-                }
-            }
-            let tooltip = '';
-            let bandList = band && band.bands;
-            if (bandList) {
-                for (let i = 0; i < bandList.length; i ++) {
-                    let currentBand = bandList[i];
-                    if (currentBand.currentTime.duration.start <= currentX
-                        && currentBand.currentTime.duration.end >= currentX) {
-                        // Get information about the currently triggered band
-                        tooltip = this.labelTooltip(currentBand, area.name);
-                        break;
-                    }
-                }
-            }
-            if (tooltip.length) {
-                return tooltip;
-            }
-            else {
-                return false;
-            }
-        }
-        else {
-            return false;
-        }
+        return currentX + ' ' + currentY;
+        // if (labelLine) {
+        //     let menuList = '';
+        //     if (this.state.menuList) {
+        //         menuList += '<ul class="selection" id="selection">';
+        //         for (let i = 0; i < this.state.menuList.length; i ++) {
+        //             menuList += ''
+        //                 + '<li style="cursor: pointer;" data-action="'
+        //                 + this.state.menuList[i].action
+        //                 + '" data-currentx="'
+        //                 + currentX
+        //                 + '">'
+        //                 + this.state.menuList[i].name
+        //                 + '</li>';
+        //         }
+        //         menuList += '</ul>';
+        //         return menuList;
+        //     }
+        //     else {
+        //         return false;
+        //     }
+        // }
+        // else if (area) {
+        //     let band = [];
+        //     for (let i = 0; i < this.state.bands.length; i++) {
+        //         if (this.state.bands[i].name === area.name) {
+        //             // Get the current triggered band
+        //             band = this.state.bands[i];
+        //             break;
+        //         }
+        //     }
+        //     let tooltip = '';
+        //     let bandList = band && band.bands;
+        //     if (bandList) {
+        //         for (let i = 0; i < bandList.length; i ++) {
+        //             let currentBand = bandList[i];
+        //             if (currentBand.currentTime.duration.start <= currentX
+        //                 && currentBand.currentTime.duration.end >= currentX) {
+        //                 // Get information about the currently triggered band
+        //                 tooltip = this.labelTooltip(currentBand, area.name);
+        //                 break;
+        //             }
+        //         }
+        //     }
+        //     if (tooltip.length) {
+        //         return tooltip;
+        //     }
+        //     else {
+        //         return false;
+        //     }
+        // }
+        // else {
+        //     return false;
+        // }
     }
 
     labelTooltip(currentBand, bandName) {
@@ -702,6 +1210,7 @@ export default class Trend extends Component {
 
     afterSetExtremes(e) {
         e.preventDefault();
+        this.selectedPoint = [];
         let type = e.trigger;
         let index;
         let max = Math.round(e.max);
@@ -751,8 +1260,13 @@ export default class Trend extends Component {
             this.state.options.navigator.series.data = data.data.data;
             let extremesMax = data.data.data[data.data.data.length - 1][0];
             let extremesMin = data.data.data[0][0];
+            let options = this.state.options;
+            if ($('.container-skin').hasClass('skin-black')) {
+                this.chartOptions.navigator.series.data = data.data.data;
+                options = Object.assign({}, this.state.options, this.chartOptions);
+            }
             this.setState({
-                options: this.state.options,
+                options,
                 extremesMax,
                 extremesMin
             });
@@ -778,6 +1292,7 @@ export default class Trend extends Component {
     }
 
     setTrendData(dataName, startTime, endTime, index, notShowTrendLoading) {
+        const self = this;
         let url = api.getTrend
             + dataName
             + '/curves?'
@@ -808,6 +1323,57 @@ export default class Trend extends Component {
             });
             // Set the trend graph data
             this.state.options.series = series;
+            // complex mode
+            if (this.state.selectType === 'complex') {
+                let baseLineData = [];
+                let newSeries = [];
+                let baseLineIndex = 0;
+                let originBaseLineData = [];
+                series.forEach((item, index) => {
+                    // set base line
+                    if (item.type === 'line' && item.name === 'base line') {
+                        // double data
+                        originBaseLineData = item.data;
+                        item.data.forEach(data => {
+                            baseLineData.push(data);
+                            baseLineData.push(data);
+                        });
+                        item.data = baseLineData;
+                        baseLineIndex = index;
+                    }
+                    else if (item.type === 'line' && item.name === 'label line') {
+                        let zones = [];
+                        let labelSet = this.getLabelSet(item);
+                        labelSet.forEach(set => {
+                            if (set[0] === set[1]) {
+                                // for better show label line
+                                originBaseLineData.forEach((data, dataIndex) => {
+                                    if (data[0] === set[0]) {
+                                        if (dataIndex + 1 < originBaseLineData.length) {
+                                            set[1] = originBaseLineData[dataIndex + 1][0];
+                                        }
+                                    }
+                                });
+                            }
+                            zones.push({
+                                value: set[0],
+                                color: '#7cb5ec'
+                            });
+                            zones.push({
+                                value: set[1],
+                                color: '#ff0000'
+                            });
+                        });
+                        zones.push({
+                            color: '#7cb5ec'
+                        });
+                        item.data = originBaseLineData;
+                        item.zones = zones;
+                    }
+                    newSeries.push(item);
+                });
+                this.state.options.series = newSeries;
+            }
             // Set the width of the trend graph
             let chartWidth = this.getTrendWidth();
             this.state.options.chart.width = chartWidth;
@@ -822,12 +1388,47 @@ export default class Trend extends Component {
                 min: startTime,
                 max: endTime
             });
+            let options = this.state.options;
+            if ($('.container-skin').hasClass('skin-black')) {
+                this.chartOptions.xAxis.max = endTime;
+                this.chartOptions.xAxis.min = startTime;
+                this.chartOptions.yAxis.max = data.data.yAxis[1];
+                this.chartOptions.yAxis.min = data.data.yAxis[0];
+                options = Object.assign({}, this.state.options, this.chartOptions);
+            }
             this.setState({
                 loading: false,
-                options: this.state.options,
+                options,
                 bands
             }, () => {
-
+                // // set this.selectedPoint
+                // if (!this.selectedPoint.length) {
+                //     let labelLineIndex = 0;
+                //     let baseLineIndex = 0;
+                //     let chart = this.chart;
+                //     chart.series.forEach((item, index) => {
+                //         if (item.type === 'line' && item.name === 'label line') {
+                //             labelLineIndex =  index;
+                //         }
+                //         if (item.type === 'line' && item.name === 'base line') {
+                //             baseLineIndex = index;
+                //         }
+                //     });
+                //     let baseLineData = this.chart.series[baseLineIndex].data;
+                //     let currentSelectedPoints = [];
+                //     let selectedPoint = [];
+                //     this.labelSet.forEach(item => {
+                //         selectedPoint = [];
+                //         baseLineData.forEach(data => {
+                //             if (data.x >= item[0] && data.x <= item[1]) {
+                //                 selectedPoint.push(data);
+                //             }
+                //         });
+                //         currentSelectedPoints = this.filterSelectedPoints(selectedPoint);
+                //         this.selectedPoint = this.selectedPoint.concat([...currentSelectedPoints]);
+                //     });
+                //     console.log(this.selectedPoint)
+                // }
             });
             if (!notShowTrendLoading) {
                 this.props.hideLoading();
@@ -839,6 +1440,7 @@ export default class Trend extends Component {
     }
 
     getLabelSet(data) {
+        this.tempSelectedPoint = [];
         let labelSet = [];
         let labelItem = [];
         let series = data.data;
@@ -869,6 +1471,7 @@ export default class Trend extends Component {
             }
         }
         this.labelSet = labelSet;
+        console.log(labelSet)
         return labelSet;
     }
 
@@ -882,26 +1485,38 @@ export default class Trend extends Component {
     }
 
     getTrendWidth(bandMenuFold) {
-        let width = document.body.clientWidth;
-        // Four situations
-        // 1.Left to the right
-        if (this.props.foldMenu && bandMenuFold) {
-            width = document.body.clientWidth - 40;
+        if ($('.container-skin').hasClass('skin-black')) {
+            let width = document.body.clientWidth;
+            if (this.props.foldMenu) {
+                width = document.body.clientWidth - 30;
+            }
+            else {
+                width = document.body.clientWidth - 200 - 30;
+            }
+            return width - 25;
         }
-        // 2.Left to the right
-        else if (this.props.foldMenu && !bandMenuFold){
-            // 200 is the width of the sidebar, 150 is the width of the legend
-            width = document.body.clientWidth - 150;
-        }
-        // 3.Left and right
-        else if (!this.props.foldMenu && bandMenuFold) {
-            width = document.body.clientWidth - 200 - 40;
-        }
-        // 4.Left exhibition right exhibition
         else {
-            width = document.body.clientWidth - 200 - 150;
+            let width = document.body.clientWidth;
+            // Four situations
+            // 1.Left to the right
+            if (this.props.foldMenu && bandMenuFold) {
+                width = document.body.clientWidth - 40;
+            }
+            // 2.Left to the right
+            else if (this.props.foldMenu && !bandMenuFold){
+                // 200 is the width of the sidebar, 150 is the width of the legend
+                width = document.body.clientWidth - 150;
+            }
+            // 3.Left and right
+            else if (!this.props.foldMenu && bandMenuFold) {
+                width = document.body.clientWidth - 200 - 40;
+            }
+            // 4.Left exhibition right exhibition
+            else {
+                width = document.body.clientWidth - 200 - 150;
+            }
+            return width - 25;
         }
-        return width - 25;
     }
 
     optionLine(item, index) {
@@ -915,10 +1530,30 @@ export default class Trend extends Component {
         if (item.name === 'base line') {
             item.zIndex = 4;
             item.color = '#7cb5ec';
+            if ($('.container-skin').hasClass('skin-black')) {
+                item.zIndex = 99;
+                item.lineWidth = 3;
+                item.color = '#00fe88';
+                item.dataGrouping = {
+                    enabled: false
+                };
+                this.baseLine = item.data;
+            }
         }
         else if (item.name === 'label line') {
             item.zIndex = 5;
             item.color = '#ff0000';
+            item.zoneAxis = 'x';
+            if ($('.container-skin').hasClass('skin-black')) {
+                item.showInLegend = false;
+                item.lineWidth = 3;
+                item.zIndex = 100;
+                item.enableMouseTracking = true;
+                item.dataGrouping = {
+                    enabled: false
+                };
+                item.color = '#ff0000';
+            }
         }
         else {
             let colors = this.state.options.colors;
@@ -935,6 +1570,18 @@ export default class Trend extends Component {
         item.dataGrouping = {
             enabled: false
         };
+        if ($('.container-skin').hasClass('skin-black')) {
+            item.lineWidth = 0;
+            item.color = 'rgba(255,255,255,0.15)';
+            // item.fillColor = 'red';
+            // item.fillOpacity = 'red';
+            item.zIndex = 0;
+            item.enableMouseTracking = false;
+            item.showInLegend = false;
+            item.dataGrouping = {
+                enabled: false
+            };
+        }
     }
 
     optionArea(item, index) {
@@ -989,6 +1636,42 @@ export default class Trend extends Component {
     returnChart(chart) {
         this.chart = chart;
         this.refs.band.initBand(chart);
+        // set this.selectedPoint
+        // let labelLineIndex = 0;
+        // let baseLineIndex = 0;
+        // chart.series.forEach((item, index) => {
+        //     if (item.type === 'line' && item.name === 'label line') {
+        //         labelLineIndex =  index;
+        //     }
+        //     if (item.type === 'line' && item.name === 'base line') {
+        //         baseLineIndex = index;
+        //     }
+        // });
+        // let selectedPoints = [];
+        // this.tempSelectedPoint.forEach(item => {
+        //     selectedPoints.push(item[0]);
+        // });
+        // this.selectedPoint = [];
+        // let baseLineData = this.chart.series[baseLineIndex].data;
+        // baseLineData.forEach(item => {
+        //     if (selectedPoints.indexOf(item.x) !== -1) {
+        //         this.selectedPoint.push(item);
+        //     }
+        // });
+        // console.log(this.selectedPoint)
+        // let currentSelectedPoints = [];
+        // let selectedPoint = [];
+        // this.labelSet.forEach(item => {
+        //     selectedPoint = [];
+        //     baseLineData.forEach(data => {
+        //         if (data.x >= item[0] && data.x <= item[1]) {
+        //             selectedPoint.push(data);
+        //         }
+        //     });
+        //     currentSelectedPoints = this.filterSelectedPoints(selectedPoint);
+        //     this.selectedPoint = this.selectedPoint.concat([...currentSelectedPoints]);
+        // });
+        // console.log(this.selectedPoint)
     }
 
     redrawTrend(foldMenu) {

@@ -94,9 +94,9 @@ export default class Sidebar extends Component {
 
     showViewSummaryTrigger(e, name) {
         e.preventDefault();
-        e.stopPropagation();
-        e.nativeEvent.stopImmediatePropagation();
-        e.cancelBubble = true;
+        // e.stopPropagation();
+        // e.nativeEvent.stopImmediatePropagation();
+        // e.cancelBubble = true;
         this.state.showViewSummaryTrigger[name] = true;
         this.setState({
             showViewSummaryTrigger: this.state.showViewSummaryTrigger
@@ -105,9 +105,9 @@ export default class Sidebar extends Component {
 
     hideViewSummaryTrigger(e, name) {
         e.preventDefault();
-        e.stopPropagation();
-        e.nativeEvent.stopImmediatePropagation();
-        e.cancelBubble = true;
+        // e.stopPropagation();
+        // e.nativeEvent.stopImmediatePropagation();
+        // e.cancelBubble = true;
         this.state.showViewSummaryTrigger[name] = false;
         this.setState({
             showViewSummaryTrigger: this.state.showViewSummaryTrigger
@@ -198,12 +198,13 @@ export default class Sidebar extends Component {
             return (
                 <li key={index}
                     onClick={(e, name) => this.dataClick(e, item.name)}
-                    onMouseOver={(e, name) => this.showViewSummaryTrigger.bind(this, e, item.name)}
-                    onMouseOut={(e, name) => this.hideViewSummaryTrigger.bind(this, e, item.name)}
+                    onMouseOver={(e, name) => this.showViewSummaryTrigger(e, item.name)}
+                    onMouseOut={(e, name) => this.hideViewSummaryTrigger(e, item.name)}
                     title={item.name}
                     className={item.name === this.props.dataName ? 'active' : ''}
                     ref={'li' + item.name}
                 >
+                    <span className="active-left"></span>
                     <Link to={link} className="link">
                     <span className="data-name">
                         <i className="data-name-content" title={item.name}>
@@ -284,6 +285,10 @@ export default class Sidebar extends Component {
                 height: clientHeight + 'px',
                 left: this.props.foldMenu ? '-200px' : 0
             }}>
+                <div className="header header-black"
+                     style={{height: '60px', backgroundColor: '#388ff7', padding: '0px', lineHeight: '60px'}}>
+                    <div className="logo"></div>
+                </div>
                 <div className="data-set">
                     <span className="dataset">Data</span>
                     <span className="show-all" onClick={this.showAll}

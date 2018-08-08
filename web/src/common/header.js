@@ -3,6 +3,8 @@
  * @author mohaiyan
  */
 
+import './css/header.less';
+
 import React, {Component} from 'react';
 // import {Link} from 'react-router';
 // import {viewLayoutConfig} from './headerConfigExample';
@@ -43,13 +45,16 @@ export default class ViewLayout extends Component {
 
     render() {
         return (
-            <div>
-                <div className="header"
-                    style= {{height: '50px', backgroundColor: '#388ff7', padding: '0px', lineHeight: '50px'}}>
+            <div className="container-skin skin-white">
+                <div className="header header-white"
+                    style={{height: '50px', backgroundColor: '#388ff7', padding: '0px', lineHeight: '50px'}}>
                     <div className="logo">Curve</div>
                 </div>
-                <div style={{background: '#fff', padding: 0, margin: 0, minHeight: 580, position: 'relative'}}>
+                <div className="children-container-white">
                    {this.props.children}
+                </div>
+                <div className="children-container-black">
+                    {this.props.children}
                 </div>
             </div>
         );

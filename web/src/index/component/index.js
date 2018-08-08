@@ -140,6 +140,7 @@ export default class Home extends Component {
         return (
             <div>
                 <Sidebar dataName={this.props.params.name}
+                         spaceName={this.props.params.spaceName}
                          setList={list => this.setList(list)}
                          list={this.state.list}
                          showUploading={this.showUploading}
@@ -158,6 +159,7 @@ export default class Home extends Component {
                          onClick={this.toggleSidebar}
                 ></Outdent>
                 <Trend dataName={this.props.params.name}
+                       spaceName={this.props.params.spaceName}
                        list={this.state.list}
                        hideLoading={this.hideLoading}
                        foldMenu={this.state.foldMenu}

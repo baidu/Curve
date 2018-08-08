@@ -227,15 +227,98 @@ export default class Band extends Component {
 
     }
 
+    // render arearange
+    renderAreaRange() {
+        return (<div></div>);
+        // const self = this;
+        // if (this.props.trendSeries && this.props.trendSeries.length) {
+        //     let widthArr = [];
+        //     this.props.trendSeries.map((item, index) => {
+        //         if (['original', 'label'].indexOf(item.class) === -1 && item.type === 'arearange') {
+        //             widthArr.push(item.name.length * 12);
+        //         }
+        //     });
+        //     let width = Math.max.apply(null, widthArr);
+        //     return this.props.trendSeries.map((item, index) => {
+        //         if (item.type === 'arearange') {
+        //             if (self.state.seriesStatus[item.name]) {
+        //                 let displayObj = self.state.seriesStatus[item.name];
+        //                 let displayLoading = displayObj.displayLoading;
+        //                 let displayNumber = displayObj.displayNumber;
+        //                 let displayDone = displayObj.displayDone;
+        //                 let processing = 0;
+        //                 if (item.processing !== 1) {
+        //                     processing = Math.round(item.processing * 100);
+        //                 }
+        //                 return (
+        //                     <label className="legend arearange" key={index} title={item.name}>
+        //                         <span className="symbol" style={{background: item.color ? item.color : 'rgba(255,255,255,0.15)'}}></span>
+        //                         <span className="legend-label" title={item.name} style={{width: width + 'px'}}>{item.name}</span>
+        //                         <span className="processing-list">
+        //                         <span className="processing processing-number" style={{visibility: displayNumber ? 'visible' : 'hidden'}}>{processing}%</span>
+        //                             <span className="processing processing-loading" style={{visibility: displayLoading ? 'visible' : 'hidden'}}></span>
+        //                             <span className="processing processing-done" style={{visibility: displayDone ? 'visible' : 'hidden'}}></span>
+        //                         </span>
+        //                     </label>
+        //                 );
+        //             }
+        //         }
+        //     });
+        // }
+    }
+
+    // render base line and label line
+    renderLine() {
+        return (<div></div>);
+        // let self = this;
+        // if (this.props.trendSeries && this.props.trendSeries.length) {
+        //     let widthArr = [];
+        //     this.props.trendSeries.map((item, index) => {
+        //         if (['original', 'label'].indexOf(item.class) !== -1) {
+        //             widthArr.push(item.name.length * 12);
+        //         }
+        //     });
+        //     let width = Math.max.apply(null, widthArr);
+        //     return this.props.trendSeries.map((item, index) => {
+        //         if (item.type === 'line') {
+        //             if (['original', 'label'].indexOf(item.class) !== -1) {
+        //                 if (self.state.seriesStatus[item.name]) {
+        //                     let displayObj = self.state.seriesStatus[item.name];
+        //                     let displayLoading = displayObj.displayLoading;
+        //                     let displayNumber = displayObj.displayNumber;
+        //                     let displayDone = displayObj.displayDone;
+        //                     let processing = 0;
+        //                     if (item.processing !== 1) {
+        //                         processing = Math.round(item.processing * 100);
+        //                     }
+        //                     return (
+        //                         <label className="legend base-label" key={index} title={item.name}>
+        //                             <span className="symbol" style={{borderColor: item.color ? item.color : '#000'}}></span>
+        //                             <span className="legend-label" title={item.name} style={{width: width + 'px'}}>{item.name}</span>
+        //                             <span className="processing-list">
+        //                             <span className="processing processing-number" style={{visibility: displayNumber ? 'visible' : 'hidden'}}>{processing}%</span>
+        //                                 <span className="processing processing-loading" style={{visibility: displayLoading ? 'visible' : 'hidden'}}></span>
+        //                                 <span className="processing processing-done" style={{visibility: displayDone ? 'visible' : 'hidden'}}></span>
+        //                             </span>
+        //                         </label>
+        //                     );
+        //                 }
+        //             }
+        //         }
+        //     });
+        // }
+    }
+
     render() {
         return (
             <div>
-                <div className="band" style={{
-                    display: this.state.foldMenu ? 'none' : 'block'
-                }}>
-                <span className="fold-band">
-                    <AngleRight className="angle-left" onClick={this.toggleBandMenu}></AngleRight>
-                </span>
+                <div className="band-white">
+                    <div className="band" style={{
+                        display: this.state.foldMenu ? 'none' : 'block'
+                    }}>
+                    <span className="fold-band">
+                        <AngleRight className="angle-left" onClick={this.toggleBandMenu}></AngleRight>
+                    </span>
                     <h4 className="reference-line">Reference</h4>
                     <div className="reference-line-content">
                         {this.renderReferenceLine()}
@@ -248,15 +331,28 @@ export default class Band extends Component {
                     <div className="band-list-content">
                         {this.renderBand()}
                     </div>
-                </div>
-                <div className="small-band" style={{
-                    display: this.state.foldMenu ? 'block' : 'none'
-                }}>
+                    </div>
+                    <div className="small-band" style={{
+                        display: this.state.foldMenu ? 'block' : 'none'
+                    }}>
                     <span className="fold-band">
                         <AngleLeft className="angle-right" onClick={this.toggleBandMenu}></AngleLeft>
                     </span>
-                    <div className="small-reference-line"><Bars></Bars></div>
-                    <div className="small-band-list"><Thlarge></Thlarge></div>
+                        <div className="small-reference-line"><Bars></Bars></div>
+                        <div className="small-band-list"><Thlarge></Thlarge></div>
+                    </div>
+                </div>
+                <div className="band-black">
+                    <div className="base-label-line-content">
+                        {this.renderLine()}
+                    </div>
+                    <div className="reference-line-content">
+                        {this.renderReferenceLine()}
+                        {this.renderAreaRange()}
+                    </div>
+                    <div className="band-list-content">
+                        {this.renderBand()}
+                    </div>
                 </div>
             </div>
         );
