@@ -94,9 +94,6 @@ export default class Sidebar extends Component {
 
     showViewSummaryTrigger(e, name) {
         e.preventDefault();
-        e.stopPropagation();
-        e.nativeEvent.stopImmediatePropagation();
-        e.cancelBubble = true;
         this.state.showViewSummaryTrigger[name] = true;
         this.setState({
             showViewSummaryTrigger: this.state.showViewSummaryTrigger
@@ -105,9 +102,6 @@ export default class Sidebar extends Component {
 
     hideViewSummaryTrigger(e, name) {
         e.preventDefault();
-        e.stopPropagation();
-        e.nativeEvent.stopImmediatePropagation();
-        e.cancelBubble = true;
         this.state.showViewSummaryTrigger[name] = false;
         this.setState({
             showViewSummaryTrigger: this.state.showViewSummaryTrigger
@@ -198,8 +192,8 @@ export default class Sidebar extends Component {
             return (
                 <li key={index}
                     onClick={(e, name) => this.dataClick(e, item.name)}
-                    onMouseOver={(e, name) => this.showViewSummaryTrigger.bind(this, e, item.name)}
-                    onMouseOut={(e, name) => this.hideViewSummaryTrigger.bind(this, e, item.name)}
+                    onMouseOver={(e, name) => this.showViewSummaryTrigger(e, item.name)}
+                    onMouseOut={(e, name) => this.hideViewSummaryTrigger(e, item.name)}
                     title={item.name}
                     className={item.name === this.props.dataName ? 'active' : ''}
                     ref={'li' + item.name}
