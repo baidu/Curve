@@ -117,3 +117,6 @@ GitHub Oauth is supported, please put a configuration file into ```api/curve/aut
 ```
 
 > [Doc:Creating-An-Github-Oauth-App](https://developer.github.com/apps/building-oauth-apps/creating-an-oauth-app/)
+
+### Change Log
+* 2018-08-07  [Function Optimization]: Refactoring code

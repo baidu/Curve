@@ -13,6 +13,8 @@ let COMMON_SERVER = '';
 let apiConfig = {
     // Get the operation menu
     getTooltipMenu: COMMON_SERVER + '/v1/menus',
+    // Menu data operation
+    menuOpera: COMMON_SERVER + '/v1/data/',
     // Get the trend graph
     getTrend: COMMON_SERVER + '/v1/data/',
     // Get the thumbnail trend graph
