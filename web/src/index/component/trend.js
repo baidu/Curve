@@ -364,7 +364,7 @@ export default class Trend extends Component {
             }
             if (startTime && endTime) {
                 self.labelSet.splice(currentLabelItemIndex, 1);
-                self.cancelLabel(startTime, endTime, 'simple', e);
+                self.actionLabel(startTime, endTime, action);
             }
         });
 
@@ -498,6 +498,27 @@ export default class Trend extends Component {
         }
         else {
             this.label(selectedMin, selectedMax, selectType, e);
+        }
+    }
+
+    actionLabel(startTime, endTime, action, selectType) {
+        let dataName = this.props.dataName;
+        let chart = this.chart;
+        let url = api.menuOpera
+            + dataName
+            + '?startTime=' + startTime
+            + '&endTime=' + endTime
+            + '&action=' + action;
+        let time = chart && chart.xAxis[0].getExtremes();
+        if (!selectType || selectType === 'simple') {
+            axiosInstance.put(url).then(response => {
+                return this.setTrendData(dataName, time.min, time.max);
+            }).catch(err => {
+                console.log(err);
+            });
+        }
+        else {
+
         }
     }
 

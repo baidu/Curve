@@ -46,7 +46,6 @@ export default class Chart extends Component {
         let chartConfig = config.chart;
         let chartType = this.props.type || 'chart';
 
-        console.log(config)
         this.chart = new Highcharts[chartType]({
             ...config,
             chart: {
