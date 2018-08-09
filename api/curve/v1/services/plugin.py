@@ -195,7 +195,9 @@ class Plugin(object):
         :param args: args to run
         :return:
         """
-        if method not in self.PLUGIN_METHOD.keys() + Plugin.get_menus():
+        # actions_in_menu is a list of user actions, E.g. ['cancel_label']
+        actions_in_menu = [m[0] for m in Plugin.get_menus()]
+        if method not in self.PLUGIN_METHOD.keys() + actions_in_menu:
             return None
         res = []
         for _, plugin in sorted(Plugin.__get_plugins().items()):
@@ -317,7 +319,7 @@ class Plugin(object):
     def get_menus():
         """
         get menu list
-        :return:
+        :return: [(action, menu_name)]
         """
         if Plugin.menus is None:
             Plugin.menus = []
