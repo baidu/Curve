@@ -94,9 +94,6 @@ export default class Sidebar extends Component {
 
     showViewSummaryTrigger(e, name) {
         e.preventDefault();
-        // e.stopPropagation();
-        // e.nativeEvent.stopImmediatePropagation();
-        // e.cancelBubble = true;
         this.state.showViewSummaryTrigger[name] = true;
         this.setState({
             showViewSummaryTrigger: this.state.showViewSummaryTrigger
@@ -105,9 +102,6 @@ export default class Sidebar extends Component {
 
     hideViewSummaryTrigger(e, name) {
         e.preventDefault();
-        // e.stopPropagation();
-        // e.nativeEvent.stopImmediatePropagation();
-        // e.cancelBubble = true;
         this.state.showViewSummaryTrigger[name] = false;
         this.setState({
             showViewSummaryTrigger: this.state.showViewSummaryTrigger
