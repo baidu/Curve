@@ -171,7 +171,7 @@ class DataDataname(Resource):
                 # put timestamp into unix timestamp
                 "timestamp": pd.to_datetime(data["timestamp"], unit="ns").values.astype(np.int64) // (10 ** 9),
                 "value": data["value"].apply(self._parse_value),
-            },
+            })
             if "label" in data.columns.values:
                 final_data["label"] = data["label"].apply(self._parse_label)
             else:
