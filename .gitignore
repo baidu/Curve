@@ -1,3 +1,11 @@
+# By user
+*.swp
+Curve/web/node_modules/**
+Curve/api/curve/web/**
+Curve/api/curve/v1/routes.py
+Curve/api/curve/v1/schemas.py
+Curve/api/curve/v1/validators.py
+
 # OS
 .DS_Store
 
