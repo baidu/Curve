@@ -169,25 +169,31 @@ class DataDataname(Resource):
         if "timestamp" in data.columns.values and "value" in data.columns.values:
             final_data = pd.DataFrame({
                 # put timestamp into unix timestamp
-                "timestamp": pd.to_datetime(data["timestamp"]).values.astype(np.int64) // (10 ** 9),
+                "timestamp": pd.to_datetime(data["timestamp"], unit="ns").values.astype(np.int64) // (10 ** 9),
                 "value": data["value"].apply(self._parse_value),
             },
-            index=pd.to_datetime(data["timestamp"]).values.astype(np.int64) // (10 ** 9))
             if "label" in data.columns.values:
                 final_data["label"] = data["label"].apply(self._parse_label)
+            else:
+                final_data["label"] = pd.Series([None for _ in xrange(len(final_data.value))])
 
         else:
             raise ValueError("Bad formatted data, data.columns.values: {}".format(data.columns.values))
 
-        if "label" not in final_data.columns.values:
-            final_data["label"] = pd.Series([None for _ in xrange(len(final_data.value))])
-
+        points = {}
+        for i in xrange(final_data.shape[0]):
+            row = final_data.iloc[i]
+            points[row['timestamp']] = (
+                row['timestamp'],
+                row['value'],
+                row['label']
+            )
 
         # TODO handle more than just unix timestamp
         formatter = E_TIME_FORMATTER.unix
 
-        points = final_data.to_dict('index')
-        points = {k : (v['timestamp'], v['value'], v['label']) for k,v in points.iteritems()}
+        # points = final_data.to_dict('index')
+        # points = {k : (v['timestamp'], v['value'], v['label']) for k,v in points.iteritems()}
 
         # points = {}
         # reader = csv.reader(upload_file)
