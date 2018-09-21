@@ -38,6 +38,8 @@ from v1.utils import (
 )
 import config
 
+import pandas as pd
+
 
 class DataDataname(Resource):
     """
@@ -84,7 +86,8 @@ class DataDataname(Resource):
             return self.render(msg='expect file input', status=422)
         upload_file = request.files.values()[0]
         try:
-            points, time_formatter = self._parse_file(upload_file)  # parse data in csv
+            # points, time_formatter = self._parse_file(upload_file)  # parse data in csv
+            points, time_formatter = self._parse_file_pd(upload_file)  # parse data in csv
         except Exception as e:
             return self.render(msg=e.message, status=422)
         if len(points) < 2:
@@ -160,6 +163,54 @@ class DataDataname(Resource):
                     current_app.logger.error(msg)
                     raise Exception(msg)
         return points, formatter
+
+    def _parse_file_pd(self, upload_file):
+        data = pd.read_csv(upload_file)
+        if "timestamp" in data.columns.values and "value" in data.columns.values:
+            final_data = pd.DataFrame({
+                # put timestamp into unix timestamp
+                "timestamp": pd.to_datetime(data["timestamp"]).values.astype(np.int64) // (10 ** 9),
+                "value": data["value"].apply(self._parse_value),
+            },
+            index=pd.to_datetime(data["timestamp"]).values.astype(np.int64) // (10 ** 9))
+            if "label" in data.columns.values:
+                final_data["label"] = data["label"].apply(self._parse_label)
+
+        else:
+            raise ValueError("Bad formatted data, data.columns.values: {}".format(data.columns.values))
+
+        if "label" not in final_data.columns.values:
+            final_data["label"] = pd.Series([None for _ in xrange(len(final_data.value))])
+
+
+        # TODO handle more than just unix timestamp
+        formatter = E_TIME_FORMATTER.unix
+
+        points = final_data.to_dict('index')
+        points = {k : (v['timestamp'], v['value'], v['label']) for k,v in points.iteritems()}
+
+        # points = {}
+        # reader = csv.reader(upload_file)
+        # formatter = None
+        # for line in reader:
+        #     if formatter is None:
+        #         formatter = self._find_time_format(line[0])
+        #     if formatter is not None:
+        #         try:
+        #             timestamp = formatter.str2time(line[0])
+        #             value = None
+        #             if len(line) > 1:
+        #                 value = self._parse_value(line[1])
+        #             label = None
+        #             if len(line) > 2:
+        #                 label = self._parse_label(line[2])
+        #             points[timestamp] = (timestamp, value, label)
+        #         except ValueError as e:
+        #             msg = 'line %d: %s' % (reader.line_num, e.message)
+        #             current_app.logger.error(msg)
+        #             raise Exception(msg)
+        return points, formatter
+
 
     def put(self, dataName):
         """
