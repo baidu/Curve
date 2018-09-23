@@ -13,7 +13,9 @@
 """
 
 import numpy as np
+from v1 import utils
 
+logger = utils.getLogger(__name__)
 
 def sampling(api, line, target_amount):
     """
@@ -39,7 +41,7 @@ def sampling(api, line, target_amount):
     #         for timestamp, points in sorted(tmp.items())
     #     ]
 
-    
+    logger.debug("Line[:5]: {}".format(line[:5]))
     return 'default', line
 
 
