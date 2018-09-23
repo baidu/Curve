@@ -40,6 +40,7 @@ import config
 
 import pandas as pd
 
+logger = utils.getLogger(__name__)
 
 class DataDataname(Resource):
     """
@@ -84,32 +85,61 @@ class DataDataname(Resource):
             return self.render(msg='%s is exists' % data_name, status=422)
         if len(request.files) < 1:
             return self.render(msg='expect file input', status=422)
+
+        # gets the uploaded csv file
         upload_file = request.files.values()[0]
         try:
+            # parses the incoming csv into long format
             # points, time_formatter = self._parse_file(upload_file)  # parse data in csv
             points, time_formatter = self._parse_file_pd(upload_file)  # parse data in csv
         except Exception as e:
             return self.render(msg=e.message, status=422)
         if len(points) < 2:
             return self.render(msg='at least 2 point', status=422)
+
+
         timestamps = np.asarray(sorted(points.keys()))
         periods = np.diff(timestamps)
         period = int(np.median(periods))
         start_time = utils.ifloor(timestamps.min(), period)
         end_time = utils.ifloor(timestamps.max(), period) + period
-        data_raw = []  # drop those points not divisible by period
+        
+        # # drop those points not divisible by period
+        # data_raw = []  
+        # data_raw_list = []
+        # in_points = 0
+        # for timestamp in range(start_time, end_time, period):
+        #     if timestamp in points:
+        #         point = points[timestamp]
+        #         data_raw.append(
+        #             Raw(timestamp=point[0], value=point[1], label=point[2]))
+        #         data_raw_list.append((point[0], point[1], None))
+        #         in_points += 1
+        #     else:
+        #         data_raw.append(Raw(timestamp=timestamp))
+        #         data_raw_list.append((timestamp, None, None))
+
+        
+        # use raw points regardless of divisibility by period
+        data_raw = []  
         data_raw_list = []
-        for timestamp in range(start_time, end_time, period):
-            if timestamp in points:
-                point = points[timestamp]
-                data_raw.append(
-                    Raw(timestamp=point[0], value=point[1], label=point[2]))
-                data_raw_list.append((point[0], point[1], None))
-            else:
-                data_raw.append(Raw(timestamp=timestamp))
-                data_raw_list.append((timestamp, None, None))
+        for timestamp, point in points.iteritems():
+            data_raw.append(
+                Raw(timestamp=point[0], value=point[1], label=point[2]))
+            data_raw_list.append((point[0], point[1], None))
+
+        logger.debug("""
+start_time: {},
+end_time: {},
+period: {}""".format(start_time, end_time, period))
+
         plugin = Plugin(data_service)
-        _, (axis_min, axis_max) = plugin('y_axis', data_raw_list)  # cal y_axis for data
+        try:
+            _, (axis_min, axis_max) = plugin('y_axis', data_raw_list)  # cal y_axis for data
+        except Exception as e:
+            logger.error("Error implementing 'y_axis' plugin\nError: {}".format(e.message))
+            raise e
+    
         data_abstract = DataAbstract(  # save abstract for data
             start_time=start_time,
             end_time=end_time,
@@ -121,7 +151,13 @@ class DataDataname(Resource):
             time_formatter=time_formatter.__name__
         )
         data_service.abstract = data_abstract
-        _, thumb = plugin('sampling', data_raw_list, config.SAMPLE_PIXELS)  # init thumb for data
+
+        try:
+            _, thumb = plugin('sampling', data_raw_list, config.SAMPLE_PIXELS)  # init thumb for data
+        except Exception as e:
+            logger.error("Error calling 'sampling' plugin\nError: {}".format(e.message))
+            raise e
+
         thumb = Thumb(thumb=json.dumps({
             'msg': 'OK',
             'server': request.host,
@@ -190,6 +226,9 @@ class DataDataname(Resource):
                 row['label']
             )
 
+        logger.debug("""
+len(points): {}
+number points with not None value: {}""".format(len(points), len([k for k,v in points.iteritems() if v[1] is not None])))
         # TODO handle more than just unix timestamp
         formatter = E_TIME_FORMATTER.unix
 

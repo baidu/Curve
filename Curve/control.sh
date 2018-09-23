@@ -36,7 +36,7 @@ cutoff() {
 
 
 help() {
-    echo "${0} <start|stop|reload|terminate|version>"
+    echo "${0} <start|start-dev|stop|reload|terminate|version>"
     exit 1
 }
 
@@ -178,6 +178,25 @@ start() {
     echo "Curve started."
 }
 
+start-dev() {
+    if [ -e ${G_API_DIR}/uwsgi.pid ]; then
+        PID=`cat ${G_API_DIR}/uwsgi.pid`
+        if [ `ps -ef | fgrep curve_uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
+            echo "Curve is running."
+            return
+        fi
+    fi
+    check
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    fi
+    echo "start Curve Dev..."
+    source ${G_VENV_DIR}/bin/activate
+    cd ${G_API_DIR}
+    ${G_VENV_DIR}/bin/curve_uwsgi uwsgi-dev.ini
+    echo "Curve Dev started."
+}
+
 stop() {
     echo "stop Curve..."
     cd ${G_API_DIR}
@@ -227,6 +246,10 @@ check)
 start)
     version
     start
+    ;;
+start-dev)
+    version
+    start-dev
     ;;
 stop)
     stop
