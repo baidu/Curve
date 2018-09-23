@@ -22,6 +22,7 @@ from v1.utils import (
     E_PLUGIN_TYPE
 )
 
+logger = utils.getLogger(__name__)
 
 class DataMeta(object):
     """
@@ -186,6 +187,7 @@ class Plugin(object):
                 output = getattr(Plugin, after_method)(*output)
             return output
         except Exception as e:
+            logger.error("Error invoking model and method: {}, {}\nError type: {}\nError message: {}".format(model, method, type(e), e.message))
             current_app.logger.error(e)
 
     def __call__(self, method, *args):
@@ -200,6 +202,7 @@ class Plugin(object):
         if method not in self.PLUGIN_METHOD.keys() + actions_in_menu:
             return None
         res = []
+        logger.debug("Before plugin.Plugin.__call__ for loop")
         for _, plugin in sorted(Plugin.__get_plugins().items()):
             if method not in plugin.__dict__:
                 continue
@@ -213,7 +216,9 @@ class Plugin(object):
                 else:
                     return output
             except Exception as e:
+                logger.error("Error invoking plugin and method: {}, {} \n\n {}".format(plugin, method, e.message))
                 current_app.logger.error(e)
+        logger.debug("After plugin.Plugin.__call__ for loop")
         if method in self.PLUGIN_METHOD \
                 and self.PLUGIN_METHOD[method] == self.PLUGIN_TYPE.SINGLE:
             return self._invoke(Plugin, method, *args)

@@ -13,7 +13,9 @@
 """
 
 import numpy as np
+from v1 import utils
 
+logger = utils.getLogger(__name__)
 
 def sampling(api, line, target_amount):
     """
@@ -23,21 +25,23 @@ def sampling(api, line, target_amount):
     :param target_amount: amount of points after sampling
     :return: (plugin_name, [[timestamp, value]]), tuple is not recommended
     """
-    # Assume timestamp, value, range is not nullable
-    if len(line) > target_amount and len(line) > 2:
-        period = api.get_abstract().period  # timestamp is marked as the start time of a period
-        start_time = line[0][0]
-        end_time = line[-1][0]
-        amount = (end_time - start_time) / period  # point amount without sampling
-        aggr_period = iceil(amount, target_amount) / target_amount * period
-        start_time = ifloor(line[0][0], aggr_period)
-        tmp = {timestamp: [] for timestamp in range(start_time, end_time + period, aggr_period)}
-        for point in line:
-            tmp[ifloor(point[0], aggr_period)].append(point)
-        line = [
-            [timestamp, mean(points, lambda x: x[1]), mean(points, lambda x: x[2])]
-            for timestamp, points in sorted(tmp.items())
-        ]
+    # # Assume timestamp, value, range is not nullable
+    # if len(line) > target_amount and len(line) > 2:
+    #     period = api.get_abstract().period  # timestamp is marked as the start time of a period
+    #     start_time = line[0][0]
+    #     end_time = line[-1][0]
+    #     amount = (end_time - start_time) / period  # point amount without sampling
+    #     aggr_period = iceil(amount, target_amount) / target_amount * period
+    #     start_time = ifloor(line[0][0], aggr_period)
+    #     tmp = {timestamp: [] for timestamp in range(start_time, end_time + period, aggr_period)}
+    #     for point in line:
+    #         tmp[ifloor(point[0], aggr_period)].append(point)
+    #     line = [
+    #         [timestamp, mean(points, lambda x: x[1]), mean(points, lambda x: x[2])]
+    #         for timestamp, points in sorted(tmp.items())
+    #     ]
+
+    logger.debug("Line[:5]: {}".format(line[:5]))
     return 'default', line
 
 

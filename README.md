@@ -3,7 +3,7 @@ Curve
 
 Curve is an open-source tool to help label anomalies on time-series data. The labeled data (also known as the ground truth) is necessary for evaluating time-series anomaly detection methods. Otherwise, one can not easily choose a detection method, or say method A is better than method B. The labeled data can also be used as the training set if one wants to develop supervised learning methods for detection.
 
-Curve is designed to support plugin, so one can equip Curve with customized and powerful functions to help label effectively. For example, a plugin to identify anomalies which are similar to the one you labeled, so you don't have to search them through all the data.
+Curve is designed to support plugins, so one can equip Curve with customized and powerful functions to help label effectively. For example, a plugin to identify anomalies which are similar to the one you labeled, so you don't have to search them through all the data.
 
 Curve is originally developed by Baidu and Tsinghua NetMan Lab. [click for preview](http://curve.baidu.com/web/index.html)
 
@@ -11,13 +11,31 @@ Curve is originally developed by Baidu and Tsinghua NetMan Lab. [click for previ
 
 ## Getting Started
 
+### To build the docker deployment container
+```bash
+docker build --tag curve .
+```
+### To build the docker development container
+```bash
+docker build --tag curve-dev .
+```
+
+### To run depolyment container
+```bash
+docker run -p 8890:8080 -it curve 
+```
+
+### To run development container
+```bash
+docker run -v $(pwd)/Curve:/root/Curve -p 8890:8080 -it curve-dev /bin/bash
+```
 ### Run and stop
 
 Simply use control.sh to start or stop Curve.
 
 ```bash
-./control.sh start
-./control.sh stop
+# ./control.sh start
+# ./control.sh stop
 ```
 Server will blind 8080 by default, you can change it in `./api/uwsgi.ini`.
 

@@ -10,6 +10,7 @@
 import time
 
 import numpy as np
+import logging
 
 try:
     from StringIO import StringIO
@@ -162,3 +163,19 @@ class RFCTimeFormat(TimeFormat):
 
 
 E_TIME_FORMATTER = enum(unix=UnixTimeFormat, short=ShortTimeFormat, rfc=RFCTimeFormat)
+
+def getLogger(filename, level='DEBUG'):
+
+    logger = logging.getLogger(filename)
+    logger.setLevel(level)
+
+    # create console handler with a higher log level
+    ch = logging.StreamHandler()
+    ch.setLevel(level)
+    # create formatter and add it to the handlers
+    formatter = logging.Formatter(
+        '\n%(asctime)s - %(name)s:%(lineno)d - %(module)s.%(funcName)s - %(levelname)s - %(message)s\n')
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
+
+    return logger

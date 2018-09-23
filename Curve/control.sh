@@ -5,7 +5,7 @@
 # Python:
 #   1. version: 2.7.3+/3.1.2+ is recommended
 #   2. other:
-#       * python should belong to current user
+#       * python should belong to current user, otherwise virtualenv is required
 #       * pip is required
 # Node.js:
 #   1. version: 4.7.0+ is recommended
@@ -19,6 +19,7 @@ cd "$(dirname "$0")"
 readonly G_ROOT_DIR=`pwd`
 readonly G_WEB_DIR="${G_ROOT_DIR}/web"
 readonly G_API_DIR="${G_ROOT_DIR}/api"
+readonly G_VENV_DIR="${G_ROOT_DIR}/venv"
 
 G_VERSION='none'
 if [ -e .git ]; then
@@ -35,7 +36,7 @@ cutoff() {
 
 
 help() {
-    echo "${0} <start|stop|reload|terminate|version>"
+    echo "${0} <start|start-dev|stop|reload|terminate|version>"
     exit 1
 }
 
@@ -82,7 +83,7 @@ check_web() {
 }
 
 check_py() {
-    readonly VENV_VERSION_FILE="${G_ROOT_DIR}/pylib_version"
+    readonly VENV_VERSION_FILE="${G_VENV_DIR}/version"
     VENV_VERSION=''
     if [ -e ${VENV_VERSION_FILE} ]; then
         VENV_VERSION=`cat ${VENV_VERSION_FILE}`
@@ -93,8 +94,22 @@ check_py() {
     fi
 
     cutoff
+    echo "deploy venv..."
+    if [ ! -e "${G_ROOT_DIR}/venv" ]; then
+        # pip install --upgrade pip
+        # pip install virtualenv
+        virtualenv --no-site-packages ${G_VENV_DIR}
+    fi
+    source ${G_VENV_DIR}/bin/activate
     pip install -r ${G_API_DIR}/requirements.txt
+    if [ ! -e ${G_VENV_DIR}/bin/curve_uwsgi ]; then
+        cd ${G_VENV_DIR}/bin
+        ln -s uwsgi curve_uwsgi
+        cd -
+    fi
     echo ${G_VERSION} > ${VENV_VERSION_FILE}
+    deactivate
+    echo "venv deployed."
     cutoff
 }
 
@@ -113,8 +128,10 @@ check_api() {
     cutoff
     echo "deploy api..."
     cd ${G_ROOT_DIR}
+    source ${G_VENV_DIR}/bin/activate
     pip install swagger-py-codegen==0.2.9
     swagger_py_codegen --ui --spec -s doc/web_api.yaml api -p curve
+    deactivate
     if [ -e ${G_API_DIR}/curve/web/swagger-ui ]; then
         rm -rf ${G_API_DIR}/curve/web/swagger-ui
     fi
@@ -145,25 +162,46 @@ check() {
 start() {
     if [ -e ${G_API_DIR}/uwsgi.pid ]; then
         PID=`cat ${G_API_DIR}/uwsgi.pid`
-        if [ `ps -ef | fgrep uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
+        if [ `ps -ef | fgrep curve_uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
             echo "Curve is running."
             return
         fi
     fi
     check
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
     fi
     echo "start Curve..."
+    source ${G_VENV_DIR}/bin/activate
     cd ${G_API_DIR}
-    uwsgi uwsgi.ini
+    ${G_VENV_DIR}/bin/curve_uwsgi uwsgi.ini
     echo "Curve started."
+}
+
+start-dev() {
+    if [ -e ${G_API_DIR}/uwsgi.pid ]; then
+        PID=`cat ${G_API_DIR}/uwsgi.pid`
+        if [ `ps -ef | fgrep curve_uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
+            echo "Curve is running."
+            return
+        fi
+    fi
+    check
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    fi
+    echo "start Curve Dev..."
+    source ${G_VENV_DIR}/bin/activate
+    cd ${G_API_DIR}
+    ${G_VENV_DIR}/bin/curve_uwsgi uwsgi-dev.ini
+    echo "Curve Dev started."
 }
 
 stop() {
     echo "stop Curve..."
     cd ${G_API_DIR}
-    [ -e uwsgi.pid ] && uwsgi --stop uwsgi.pid
+    source ${G_VENV_DIR}/bin/activate
+    [ -e uwsgi.pid ] && ${G_VENV_DIR}/bin/curve_uwsgi --stop uwsgi.pid
     echo "Curve stopped."
 }
 
@@ -171,28 +209,30 @@ reload() {
     check
     if [ -e ${G_API_DIR}/uwsgi.pid ]; then
         PID=`cat ${G_API_DIR}/uwsgi.pid`
-        if [ `ps -ef | fgrep uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
+        if [ `ps -ef | fgrep curve_uwsgi | fgrep ${PID} | wc -l` -gt 0 ]; then
             echo "reload Curve..."
+            source ${G_VENV_DIR}/bin/activate
             cd ${G_API_DIR}
-            uwsgi --reload uwsgi.pid
+            ${G_VENV_DIR}/bin/curve_uwsgi --reload uwsgi.pid
             echo "Curve reloaded."
             return
         fi
     fi
     echo "clean Curve..."
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
     fi
     echo "start Curve..."
+    source ${G_VENV_DIR}/bin/activate
     cd ${G_API_DIR}
-    uwsgi uwsgi.ini
+    ${G_VENV_DIR}/bin/curve_uwsgi uwsgi.ini
     echo "Curve reloaded."
 }
 
 terminate() {
     echo "terminate Curve..."
-    if [ `ps -ef | fgrep uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
-        ps -ef | fgrep uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
+    if [ `ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | wc -l` -gt 0 ]; then
+        ps -ef | fgrep curve_uwsgi | fgrep -v 'grep' | awk '{ print $2 }' | xargs kill -9
         echo "Curve terminated."
     fi
     echo "Curve is not running."
@@ -206,6 +246,10 @@ check)
 start)
     version
     start
+    ;;
+start-dev)
+    version
+    start-dev
     ;;
 stop)
     stop
