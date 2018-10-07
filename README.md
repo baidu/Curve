@@ -32,7 +32,7 @@ You can load a CSV file into Curve. The CSV should have the following format
 * Second column is the value
 * Third column (optional) is the label. 0 for normal and 1 for abnormal.
 
-The header of CSV is optinal, like `timestamp,value,label`.  
+The header of CSV is optional, like `timestamp,value,label`.  
 
 Some examples of valid CSV
 
@@ -52,7 +52,7 @@ Some examples of valid CSV
 |1476460860|2704.65|0|
 |1476460920|2700.05|0|
 
-* Without the header and the label colum
+* Without the header and the label column
 
 |1476460800|2566.35|
 |---|---|
