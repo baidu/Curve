@@ -148,10 +148,13 @@ export default class Sidebar extends Component {
                         }
                     }
                     let firstDataName = list[0].name;
-                    let nextDataName = list[index + 1].name;
+                    let nextDataName = null;
                     let nextUrl = '';
+                    if (index < list.length - 1){
+                          nextDataName = list[index + 1].name;
+                    }
                     if (nextDataName) {
-                        nextUrl = '/home/' + nextDataName;
+                          nextUrl = '/home/' + nextDataName;
                     }
                     else {
                         if (firstDataName) {
