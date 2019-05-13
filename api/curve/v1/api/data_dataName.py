@@ -93,7 +93,6 @@ class DataDataname(Resource):
             return self.render(msg='at least 2 point', status=422)
         timestamps = np.asarray(sorted(points.keys()))
         periods = np.diff(timestamps)
-        #current_app.logger.info('Periods as numpy %s', points.keys())
         period = int(np.median(periods))
         start_time = utils.ifloor(timestamps.min(), period)
         end_time = utils.ifloor(timestamps.max(), period) + period
@@ -110,9 +109,7 @@ class DataDataname(Resource):
                 data_raw_list.append((timestamp, None, None))
         plugin = Plugin(data_service)
         #for item in data_raw_list:
-        #    current_app.logger.info('GOTCHA +++++ %s', item )
         _, (axis_min, axis_max) = plugin('y_axis', data_raw_list)  # cal y_axis for data
-        current_app.logger.info('iRETURNED +++++ %d %d', axis_min, axis_max )
         data_abstract = DataAbstract(  # save abstract for data
             start_time=start_time,
             end_time=end_time,
@@ -145,11 +142,10 @@ class DataDataname(Resource):
         )
 
     def _parse_file(self, upload_file):
-        
-        current_app.logger.info('Info: Loading file %s', str(upload_file))
+        #current_app.logger.info('Info: Loading file %s', str(upload_file))
         points = {}
         stream = io.StringIO(upload_file.stream.read().decode("UTF8"),newline=None)
-        current_app.logger.info('Info: Loading file %s', stream)
+        #current_app.logger.info('Info: Loading file %s', stream)
         reader = csv.reader(stream)
         formatter = None
         for line in reader:

@@ -212,7 +212,6 @@ class Plugin(object):
                 current_app.logger.info('Invoking call with __call__ %s %s', plugin, method)
                 output = self._invoke(plugin, method, *args)
                 current_app.logger.info('Returned %s', output)
-                output = 'default', (2300, 2900)
                 if method in self.PLUGIN_METHOD \
                         and self.PLUGIN_METHOD[method] == self.PLUGIN_TYPE.MULTI:
                     res.append(output)
