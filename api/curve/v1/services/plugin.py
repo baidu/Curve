@@ -46,6 +46,7 @@ class PluginAPI(object):
 
     def __init__(self, data_service):
         self.data_service = data_service
+        current_app.logger.info('Data Service is %s', data_service)
 
     @property
     def LABEL_ENUM(self):
@@ -176,6 +177,7 @@ class Plugin(object):
         return Plugin.plugins
 
     def _invoke(self, model, method, *args):
+        current_app.logger.info('Entered __invoke__')
         try:
             before_method = Plugin.BEFORE_HOOK + method
             if before_method in Plugin.__dict__:
@@ -196,8 +198,9 @@ class Plugin(object):
         :return:
         """
         # actions_in_menu is a list of user actions, E.g. ['cancel_label']
+        current_app.logger.info('Entered __call__')
         actions_in_menu = [m[0] for m in Plugin.get_menus()]
-        if method not in self.PLUGIN_METHOD.keys() + actions_in_menu:
+        if method not in list(self.PLUGIN_METHOD.keys()) + actions_in_menu:
             return None
         res = []
         for _, plugin in sorted(Plugin.__get_plugins().items()):
@@ -206,7 +209,10 @@ class Plugin(object):
             if not isinstance(plugin.__dict__[method], types.FunctionType):
                 continue
             try:
+                current_app.logger.info('Invoking call with __call__ %s %s', plugin, method)
                 output = self._invoke(plugin, method, *args)
+                current_app.logger.info('Returned %s', output)
+                output = 'default', (2300, 2900)
                 if method in self.PLUGIN_METHOD \
                         and self.PLUGIN_METHOD[method] == self.PLUGIN_TYPE.MULTI:
                     res.append(output)
@@ -227,6 +233,7 @@ class Plugin(object):
         :param line: data raws
         :return:
         """
+        current_app.logger.info('Entered __y_axis__')
         values = np.asarray([point[1] for point in line if point[1] is not None])
         value_min, value_max = np.min(values), np.max(values)
         y_axis_min_per, y_axis_max_per = np.percentile(values, 0.3), np.percentile(values, 99.7)

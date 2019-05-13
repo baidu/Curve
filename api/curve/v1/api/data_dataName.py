@@ -9,6 +9,7 @@
 """
 from __future__ import absolute_import, print_function
 
+import io
 import csv
 import json
 import re
@@ -82,15 +83,17 @@ class DataDataname(Resource):
             return self.render(msg='%s is exists' % data_name, status=422)
         if len(request.files) < 1:
             return self.render(msg='expect file input', status=422)
-        upload_file = request.files.values()[0]
+        upload_file = request.files['file']
+        current_app.logger.info('Info: %s %s %s', request.files['file'], request.files, request.files['file'].filename)
         try:
             points, time_formatter = self._parse_file(upload_file)  # parse data in csv
         except Exception as e:
-            return self.render(msg=e.message, status=422)
+            return self.render(msg=str(e), status=422)
         if len(points) < 2:
             return self.render(msg='at least 2 point', status=422)
         timestamps = np.asarray(sorted(points.keys()))
         periods = np.diff(timestamps)
+        #current_app.logger.info('Periods as numpy %s', points.keys())
         period = int(np.median(periods))
         start_time = utils.ifloor(timestamps.min(), period)
         end_time = utils.ifloor(timestamps.max(), period) + period
@@ -106,7 +109,10 @@ class DataDataname(Resource):
                 data_raw.append(Raw(timestamp=timestamp))
                 data_raw_list.append((timestamp, None, None))
         plugin = Plugin(data_service)
+        #for item in data_raw_list:
+        #    current_app.logger.info('GOTCHA +++++ %s', item )
         _, (axis_min, axis_max) = plugin('y_axis', data_raw_list)  # cal y_axis for data
+        current_app.logger.info('iRETURNED +++++ %d %d', axis_min, axis_max )
         data_abstract = DataAbstract(  # save abstract for data
             start_time=start_time,
             end_time=end_time,
@@ -139,10 +145,15 @@ class DataDataname(Resource):
         )
 
     def _parse_file(self, upload_file):
+        
+        current_app.logger.info('Info: Loading file %s', str(upload_file))
         points = {}
-        reader = csv.reader(upload_file)
+        stream = io.StringIO(upload_file.stream.read().decode("UTF8"),newline=None)
+        current_app.logger.info('Info: Loading file %s', stream)
+        reader = csv.reader(stream)
         formatter = None
         for line in reader:
+            #current_app.logger.info('%s %s, %s', line[0], line[1], line[2])
             if formatter is None:
                 formatter = self._find_time_format(line[0])
             if formatter is not None:
@@ -156,7 +167,7 @@ class DataDataname(Resource):
                         label = self._parse_label(line[2])
                     points[timestamp] = (timestamp, value, label)
                 except ValueError as e:
-                    msg = 'line %d: %s' % (reader.line_num, e.message)
+                    msg = 'line %d: %s' % (reader.line_num, str(e))
                     current_app.logger.error(msg)
                     raise Exception(msg)
         return points, formatter

@@ -13,6 +13,7 @@
 """
 import numpy as np
 
+from flask import current_app
 
 def y_axis(api, line):
     """
@@ -21,6 +22,7 @@ def y_axis(api, line):
     :param line: tuple-like ((timestamp, value)), the timestamp and value is const
     :return: plugin_name, (y_axis_min, y_axis_max)
     """
+    current_app.logger.info('Invoking y_axis plugin on  %s', line)
     values = np.asarray([point[1] for point in line if point[1] is not None])
     value_min, value_max = np.min(values), np.max(values)
     y_axis_min_per, y_axis_max_per = np.percentile(values, 0.3), np.percentile(values, 99.7)
@@ -32,4 +34,5 @@ def y_axis(api, line):
         y_axis_max = min(1, y_axis_max)
     elif value_max < 100:
         y_axis_max = min(100, y_axis_max)
+    current_app.logger.info('Returning %f %f', y_axis_min, y_axis_max)
     return 'default', (y_axis_min, y_axis_max)

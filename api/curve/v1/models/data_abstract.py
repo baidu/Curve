@@ -47,8 +47,8 @@ class DataAbstract(db.Model):
         """
         return {
             'id': self.id,
-            'name': urllib.unquote(self.name.encode('utf-8')),
-            'uri': '/v1/data/%s' % urllib.unquote(self.name.encode('utf-8')),
+            'name': urllib.parse.unquote( str(self.name, 'utf-8') ),
+            'uri': '/v1/data/%s' % urllib.parse.unquote( str(self.name, 'utf-8') ),
             'createTime': self.create_time * 1000,
             'updateTime': self.update_time * 1000,
             'labelRatio': self.label_ratio,
@@ -59,6 +59,7 @@ class DataAbstract(db.Model):
             'display': {
                 'start': self.start_time * 1000,
                 'end': min(self.start_time + 86400, self.end_time) * 1000
+                #'end': min(int(str(self.start_time, 'ISO-8859-1')) + 86400, int(str(self.end_time, 'ISO-8859-1'))) * 1000
             },
             'time': {
                 'start': self.start_time * 1000,

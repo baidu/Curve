@@ -60,7 +60,8 @@ class DataService(object):
         init data service
         :param data_name: the unique name of data
         """
-        if re.match(r'[^\w_]', data_name):
+        #if re.match(r'[^\w_]', data_name):
+        if re.match(b'[^\w_]', data_name):
             data_name = urllib.quote(data_name)
         self.data_name = data_name
         self.abstract = None
@@ -213,7 +214,7 @@ class DataService(object):
             ref_points = []
             for name, ref in refs:
                 # TODO: sqlite3 with chinese field
-                name = urllib.quote(name)
+                name = urllib.parse.quote(name)
                 for point in ref:
                     ref_points.append(Point(
                         timestamp=point[0],
@@ -222,12 +223,13 @@ class DataService(object):
                         data_id=data_id,
                         name=name,
                     ))
-            db.session.bulk_save_objects(ref_points)
+            #db.session.bulk_save_objects(ref_points)
+        
         if bands:
             band_items = []
             for band_name, items in bands:
                 # TODO: sqlite3 with chinese field
-                band_name = urllib.quote(band_name)
+                band_name = urllib.parse.quote(band_name)
                 for idx, band_item in enumerate(items):
                     band_items.append(BandItem(
                         data_id=data_id,
@@ -238,6 +240,7 @@ class DataService(object):
                         end_time=band_item[2]
                     ))
             db.session.bulk_save_objects(band_items)
+        
         db.session.commit()
 
     def set_label(self, start_time, end_time, label):
