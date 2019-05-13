@@ -46,7 +46,6 @@ class PluginAPI(object):
 
     def __init__(self, data_service):
         self.data_service = data_service
-        current_app.logger.info('Data Service is %s', data_service)
 
     @property
     def LABEL_ENUM(self):
@@ -198,7 +197,6 @@ class Plugin(object):
         :return:
         """
         # actions_in_menu is a list of user actions, E.g. ['cancel_label']
-        current_app.logger.info('Entered __call__')
         actions_in_menu = [m[0] for m in Plugin.get_menus()]
         if method not in list(self.PLUGIN_METHOD.keys()) + actions_in_menu:
             return None
@@ -232,7 +230,7 @@ class Plugin(object):
         :param line: data raws
         :return:
         """
-        current_app.logger.info('Entered __y_axis__')
+        #current_app.logger.info('Entered __y_axis__')
         values = np.asarray([point[1] for point in line if point[1] is not None])
         value_min, value_max = np.min(values), np.max(values)
         y_axis_min_per, y_axis_max_per = np.percentile(values, 0.3), np.percentile(values, 99.7)

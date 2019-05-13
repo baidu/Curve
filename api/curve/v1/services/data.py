@@ -223,8 +223,7 @@ class DataService(object):
                         data_id=data_id,
                         name=name,
                     ))
-            #db.session.bulk_save_objects(ref_points)
-        
+            db.session.bulk_save_objects(ref_points)
         if bands:
             band_items = []
             for band_name, items in bands:
@@ -240,7 +239,6 @@ class DataService(object):
                         end_time=band_item[2]
                     ))
             db.session.bulk_save_objects(band_items)
-        
         db.session.commit()
 
     def set_label(self, start_time, end_time, label):
