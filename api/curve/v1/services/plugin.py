@@ -176,7 +176,6 @@ class Plugin(object):
         return Plugin.plugins
 
     def _invoke(self, model, method, *args):
-        current_app.logger.info('Entered __invoke__')
         try:
             before_method = Plugin.BEFORE_HOOK + method
             if before_method in Plugin.__dict__:
@@ -207,9 +206,9 @@ class Plugin(object):
             if not isinstance(plugin.__dict__[method], types.FunctionType):
                 continue
             try:
-                current_app.logger.info('Invoking call with __call__ %s %s', plugin, method)
+                #current_app.logger.info('Invoking call with __call__ %s %s', plugin, method)
                 output = self._invoke(plugin, method, *args)
-                current_app.logger.info('Returned %s', output)
+                #current_app.logger.info('Returned %s', output)
                 if method in self.PLUGIN_METHOD \
                         and self.PLUGIN_METHOD[method] == self.PLUGIN_TYPE.MULTI:
                     res.append(output)
