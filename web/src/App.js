@@ -39,8 +39,8 @@ export default class App extends Component {
         return (
             <Router history={hashHistory} >
                 <Route path="/" component={ViewLayout}>
-                {creatRoute}
-                <Route path="*" component={NotFound}/>
+                    {creatRoute}
+                    <Route path="*" component={NotFound}/>
                 </Route>
             </Router>
         );

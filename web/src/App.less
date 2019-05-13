@@ -7,18 +7,16 @@
 @import "./common/css/index.less";
  
 body {
-  margin: 0;
-  padding: 0;
-}
-.ant-layout {
+    margin: 0;
+    padding: 0;
     font-family: "Microsoft YaHei";
 }
-.ant-layout .header {
+.header {
     background: url(./common/image/logo.png) no-repeat;
     background-size: 40px;
     background-position: 20px center;
 }
-.ant-layout .logo {
+.logo {
     display: inline-block;
     height: 50px;
     position: absolute;
@@ -29,10 +27,7 @@ body {
     left: 0;
     padding-left: 50px;
 }
-.ant-layout .ant-layout-header {
-    position: relative;
-}
-.ant-layout .username {
+.username {
     position: absolute;
     right: 0;
     top: 0;
@@ -66,73 +61,8 @@ body {
         }
     }
 }
-.ant-layout .username .anticon {
+.username .anticon {
     margin-right: 5px;
-}
-
-.ant-layout .ant-layout-sider-collapsed {
-    .anticon {
-        font-size: 12px;
-        margin-left: 8px;
-    }
-    .ant-layout-sider-trigger i {
-        margin-left: -3px;
-    }
-    .nav-text {
-        display: none;
-    }
-    .ant-menu-submenu-vertical > .ant-menu-submenu-title:after {
-        display: none;
-    }
-    .ant-layout-sider-trigger {
-        width: 13px;
-    }
-}
-
-.ant-layout .ant-form-item .ant-btn {
-    margin-right: 20px;
-}
-
-.ant-layout .ant-menu-inline,
-.ant-menu-vertical {
-    border-right: none;
-}
-.ant-layout-sider {
-    //position: relative;
-    .ant-layout-sider-trigger {
-        position: absolute;
-        text-align: center;
-        margin-top: -24px;
-        width: 14px;
-        height: 48px;
-        top: 50%;
-        right: -13px;
-        cursor: pointer;
-        border-radius: 0 7px 7px 0;
-        box-shadow: 2px 2px 4px 0 rgba(202, 202, 202, .5);
-        line-height: 48px;
-        background: #fff;
-        color: #108ee9;
-    }
-}
-
-.ant-layout-sider-trigger .anticon {
-    margin-left: -5px;
-}
-
-.ant-layout .ant-table {
-    color: rgba(0, 0, 0, 0.8);
-}
-
-// Table highlight style
-.ant-table {
-    .highlight-error {
-        color: #f00;
-    }
-    .ant-table-title {
-        font-size: 15px;
-        color: #000;
-    }
 }
 
 .highcharts-title {

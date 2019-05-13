@@ -1,0 +1,36 @@
+.message-tip {
+  position: fixed;
+  top: 10px;
+  max-width: 400px;
+  padding: 8px 15px;
+  border: 1px solid #000;
+  left: 50%;
+  margin-left: -200px;
+  background: #fff;
+  border-radius: 1px;
+  z-index: 1;
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: transform 0.15s, opacity 0.15s;
+  -webkit-transition: transform 0.15s, opacity 0.15s;
+  line-height: 18px;
+  font-size: 12px;
+}
+.message-tip.active {
+  opacity: 1;
+  transform: translateY(20px);
+  transition: transform 0.15s, opacity 0.15s;
+  -webkit-transition: transform 0.15s, opacity 0.15s;
+}
+.message-tip.success {
+  border-color: rgba(37, 183, 99, 0.8);
+  color: rgba(37, 183, 99, 0.8);
+}
+.message-tip.error {
+  border-color: rgba(230, 30, 30, 0.8);
+  color: rgba(230, 30, 30, 0.8);
+}
+.message-tip.warning {
+  border-color: rgba(255, 148, 0, 0.8);
+  color: rgba(255, 148, 0, 0.8);
+}

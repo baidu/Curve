@@ -5,7 +5,7 @@
  */
 
 import home from '../../index/component/index';
-import table from '../../index/component/MFTable';
+import table from '../../index/component/table';
 
 export const routeConfig = [
     {

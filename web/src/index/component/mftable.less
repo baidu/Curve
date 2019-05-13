@@ -4,6 +4,11 @@
  */
 .mftable-list {
     padding: 20px;
+    position: absolute;
+    left: 200px;
+    top: 0;
+    transition: left 0.5s;
+    background: #fff;
 }
 .mftable-list .head {
     position: relative;
@@ -21,6 +26,10 @@
 }
 .mftable-list .head .head-item {
     padding: 0 10px;
+}
+.mftable-list .body {
+  height: 550px;
+  overflow-y: auto;
 }
 .mftable-list .body .data-line,
 .mftable-list .head .data-line {
@@ -73,6 +82,9 @@
     font-size: 12px;
 }
 .mftable-list .operation button:hover {
+    cursor: not-allowed;
+}
+.mftable-list .operation button.active:hover {
     cursor: pointer;
 }
 .mftable-list .operation button.active {
@@ -97,6 +109,7 @@
 .mftable-list .action {
     margin-right: 18px;
     color: #388ff7;
+    font-size: 14px;
 }
 .mftable-list .action:hover {
     cursor: pointer;

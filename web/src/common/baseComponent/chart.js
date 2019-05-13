@@ -53,7 +53,7 @@ export default class Chart extends Component {
                 renderTo: this.refs.chart
             }
         }, this.props.callback);
-        eventProxy.trigger('loadedChart', this.chart);
+        // eventProxy.trigger('loadedChart', this.chart);
         if (!this.props.neverReflow) {
             this.chart && this.chart.options && this.chart.reflow();
         }
