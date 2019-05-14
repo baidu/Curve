@@ -75,7 +75,7 @@ Some examples of valid CSV
 Darwin(Mac OSX) or Linux(Ubuntu, CentOS, Arch, etc.) is Recommended
 
 * Dependency:
-    * Python 2.7.3+/3.1.2+, if python is not owned by current user, virtualenv is required
+    * Python 2.7.3+~~/3.1.2+~~(Python 3 does not seem to be supported as of now.), if python is not owned by current user, virtualenv is required
     * Node.js 4.7.0+
     * gcc, pip and npm path is correctly set
 
