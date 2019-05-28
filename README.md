@@ -5,7 +5,7 @@ Curve is an open-source tool to help label anomalies on time-series data. The la
 
 Curve is designed to support plugin, so one can equip Curve with customized and powerful functions to help label effectively. For example, a plugin to identify anomalies which are similar to the one you labeled, so you don't have to search them through all the data.
 
-Curve is originally developed by Baidu and Tsinghua NetMan Lab. [click for preview](http://curve.baidu.com/web/index.html) (2019.05.24 17:00:00 ~ 18:00:00 stop service for downtime maintenance, )
+Curve is originally developed by Baidu and Tsinghua NetMan Lab. [click for preview](http://curve.baidu.com/web/index.html) 
 
 <img src="https://raw.githubusercontent.com/baidu/Curve/master/doc/pic/index.png">
 
