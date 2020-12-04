@@ -129,7 +129,7 @@ check_api() {
     echo "deploy api..."
     cd ${G_ROOT_DIR}
     source ${G_VENV_DIR}/bin/activate
-    pip install swagger-py-codegen==0.2.9
+    pip install swagger-py-codegen==0.2.9 dpath==1.5.0
     swagger_py_codegen --ui --spec -s doc/web_api.yaml api -p curve
     deactivate
     if [ -e ${G_API_DIR}/curve/web/swagger-ui ]; then

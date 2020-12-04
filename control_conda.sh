@@ -113,7 +113,7 @@ check_api() {
     cutoff
     echo "deploy api..."
     cd ${G_ROOT_DIR}
-    pip install swagger-py-codegen==0.2.9
+    pip install swagger-py-codegen==0.2.9 dpath==1.5.0
     swagger_py_codegen --ui --spec -s doc/web_api.yaml api -p curve
     if [ -e ${G_API_DIR}/curve/web/swagger-ui ]; then
         rm -rf ${G_API_DIR}/curve/web/swagger-ui
