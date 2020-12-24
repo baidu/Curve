@@ -1,6 +1,10 @@
 Curve
 ---
 
+**Sorry to tell contributors and users. We decided to archive the project temporarily due to the employee work plan of collaborators.**
+
+**There are no more official support. Collaborators may offer a bit personal support.**
+
 Curve is an open-source tool to help label anomalies on time-series data. The labeled data (also known as the ground truth) is necessary for evaluating time-series anomaly detection methods. Otherwise, one can not easily choose a detection method, or say method A is better than method B. The labeled data can also be used as the training set if one wants to develop supervised learning methods for detection.
 
 Curve is designed to support plugin, so one can equip Curve with customized and powerful functions to help label effectively. For example, a plugin to identify anomalies which are similar to the one you labeled, so you don't have to search them through all the data.
